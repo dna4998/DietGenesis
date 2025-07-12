@@ -1,4 +1,6 @@
+import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useToast } from "@/hooks/use-toast";
 import HealthMetricsCard from "@/components/health-metrics-card";
 import MessagingCard from "@/components/messaging-card";
 import SubscriptionCard from "@/components/subscription-card";
@@ -12,6 +14,31 @@ interface PatientDashboardProps {
 }
 
 export default function PatientDashboard({ selectedPatientId }: PatientDashboardProps) {
+  const { toast } = useToast();
+
+  // Check for subscription status in URL parameters
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const subscriptionStatus = urlParams.get('subscription');
+    
+    if (subscriptionStatus === 'success') {
+      toast({
+        title: "Subscription Activated!",
+        description: "Your subscription has been successfully activated. Welcome to DNA Diet Club!",
+      });
+      // Clean up URL parameters
+      window.history.replaceState({}, document.title, window.location.pathname);
+    } else if (subscriptionStatus === 'cancelled') {
+      toast({
+        title: "Subscription Cancelled",
+        description: "Your subscription process was cancelled. You can try again anytime.",
+        variant: "destructive",
+      });
+      // Clean up URL parameters
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, [toast]);
+
   const { data: patient, isLoading, error } = useQuery<Patient>({
     queryKey: ["/api/patients", selectedPatientId],
   });

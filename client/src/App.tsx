@@ -24,6 +24,12 @@ function Router() {
             <ProviderDashboard />
           )}
         </Route>
+        <Route path="/patient-dashboard">
+          <PatientDashboard selectedPatientId={selectedPatientId} />
+        </Route>
+        <Route path="/provider-dashboard">
+          <ProviderDashboard />
+        </Route>
         <Route component={NotFound} />
       </Switch>
     </div>
