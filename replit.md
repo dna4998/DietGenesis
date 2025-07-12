@@ -43,6 +43,8 @@ Preferred communication style: Simple, everyday language.
 ✓ **Provider-Only AI Workflow** - AI functionality restricted to providers for professional medical decision-making
 ✓ **Simplified Patient Dashboard** - Patient view streamlined to show only demographics and messages from providers
 ✓ **Automated Plan Distribution** - AI-generated plans automatically sent to patients via messaging system
+✓ **Personalized Health Tips Widget** - Daily engaging health content with smart personalization based on patient conditions
+✓ **Enhanced Workout Tips** - Comprehensive exercise tips including HIIT, strength training, flexibility, and functional fitness
 
 ## System Architecture
 
@@ -108,6 +110,7 @@ Preferred communication style: Simple, everyday language.
 - `POST /api/patients/:id/analyze-labs` - AI analysis of patient lab results using Grok
 - `POST /api/patients/:id/analyze-gut-biome` - AI analysis of patient gut biome tests using Grok
 - `POST /api/patients/:id/generate-comprehensive-plan` - Generate complete treatment plan from AI analysis
+- `GET /api/patients/:id/daily-tip` - Get personalized daily health tip based on patient profile
 
 ## Data Flow
 

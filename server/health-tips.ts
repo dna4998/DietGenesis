@@ -161,6 +161,156 @@ const healthTipsDatabase: HealthTip[] = [
     estimatedTime: "1 hour",
     personalizedFor: ["sleep_issues", "general"],
     priority: 8
+  },
+  {
+    id: "tip_016",
+    title: "5-Minute Morning Flow",
+    content: "Start your day with 5 minutes of stretching: neck rolls, shoulder shrugs, arm circles, and gentle spinal twists. This improves circulation and reduces morning stiffness.",
+    category: "exercise",
+    difficulty: "easy",
+    estimatedTime: "5 min",
+    personalizedFor: ["general", "joint_health", "back_pain"],
+    priority: 8
+  },
+  {
+    id: "tip_017",
+    title: "Desk Break Squats",
+    content: "Every hour, do 10 bodyweight squats at your desk. This activates your glutes, improves circulation, and counteracts prolonged sitting effects.",
+    category: "exercise",
+    difficulty: "easy",
+    estimatedTime: "1 min",
+    personalizedFor: ["desk_worker", "weight_loss", "general"],
+    priority: 7
+  },
+  {
+    id: "tip_018",
+    title: "Wall Push-Up Power",
+    content: "Do 10 wall push-ups right now. Stand arm's length from a wall, place palms flat against it, and push. Perfect for building upper body strength anywhere.",
+    category: "exercise",
+    difficulty: "easy",
+    estimatedTime: "2 min",
+    personalizedFor: ["muscle_building", "upper_body", "general"],
+    priority: 6
+  },
+  {
+    id: "tip_019",
+    title: "Plank Challenge",
+    content: "Hold a plank for 30 seconds. Start on your knees if needed. Planks strengthen your core, improve posture, and support lower back health.",
+    category: "exercise",
+    difficulty: "medium",
+    estimatedTime: "1 min",
+    personalizedFor: ["core_strength", "back_pain", "general"],
+    priority: 7
+  },
+  {
+    id: "tip_020",
+    title: "Stair Climbing Boost",
+    content: "Take the stairs instead of the elevator today. If you don't have stairs, do 20 step-ups on a sturdy chair or platform. Great cardio in small doses.",
+    category: "exercise",
+    difficulty: "easy",
+    estimatedTime: "2-5 min",
+    personalizedFor: ["cardio", "weight_loss", "general"],
+    priority: 7
+  },
+  {
+    id: "tip_021",
+    title: "Resistance Band Magic",
+    content: "If you have a resistance band, do 10 bicep curls and 10 tricep extensions. No band? Use a towel with tension for similar resistance training benefits.",
+    category: "exercise",
+    difficulty: "easy",
+    estimatedTime: "3 min",
+    personalizedFor: ["muscle_building", "upper_body", "general"],
+    priority: 6
+  },
+  {
+    id: "tip_022",
+    title: "Walking Meditation",
+    content: "Take a 10-minute mindful walk. Focus on each step, your breathing, and surroundings. This combines gentle exercise with stress reduction.",
+    category: "exercise",
+    difficulty: "easy",
+    estimatedTime: "10 min",
+    personalizedFor: ["stress", "mental_health", "general"],
+    priority: 8
+  },
+  {
+    id: "tip_023",
+    title: "High-Intensity Interval (HIIT)",
+    content: "Do 30 seconds of jumping jacks, rest 30 seconds, repeat 4 times. This 4-minute HIIT session boosts metabolism and improves cardiovascular health.",
+    category: "exercise",
+    difficulty: "advanced",
+    estimatedTime: "4 min",
+    personalizedFor: ["weight_loss", "cardio", "advanced_fitness"],
+    priority: 8
+  },
+  {
+    id: "tip_024",
+    title: "Glute Activation",
+    content: "Do 15 glute bridges while lying on your back. Squeeze your glutes at the top for 2 seconds. This strengthens your posterior chain and supports lower back health.",
+    category: "exercise",
+    difficulty: "easy",
+    estimatedTime: "3 min",
+    personalizedFor: ["back_pain", "glute_strength", "general"],
+    priority: 7
+  },
+  {
+    id: "tip_025",
+    title: "Calf Raise Energy",
+    content: "While brushing your teeth or waiting for coffee, do 20 calf raises. This improves lower leg circulation and strengthens your calves.",
+    category: "exercise",
+    difficulty: "easy",
+    estimatedTime: "2 min",
+    personalizedFor: ["circulation", "lower_body", "general"],
+    priority: 6
+  },
+  {
+    id: "tip_026",
+    title: "Flexibility Flow",
+    content: "Do a 5-minute stretching routine: touch your toes, reach overhead, twist your spine gently left and right, and stretch your hip flexors.",
+    category: "exercise",
+    difficulty: "easy",
+    estimatedTime: "5 min",
+    personalizedFor: ["flexibility", "joint_health", "general"],
+    priority: 7
+  },
+  {
+    id: "tip_027",
+    title: "Cardio Burst",
+    content: "Do 2 minutes of marching in place with high knees, followed by 1 minute of arm circles. This gets your heart rate up and energizes your body.",
+    category: "exercise",
+    difficulty: "easy",
+    estimatedTime: "3 min",
+    personalizedFor: ["cardio", "energy", "general"],
+    priority: 6
+  },
+  {
+    id: "tip_028",
+    title: "Balance Challenge",
+    content: "Stand on one foot for 30 seconds, then switch. Close your eyes to make it harder. Balance exercises improve stability and prevent falls.",
+    category: "exercise",
+    difficulty: "medium",
+    estimatedTime: "2 min",
+    personalizedFor: ["balance", "fall_prevention", "general"],
+    priority: 6
+  },
+  {
+    id: "tip_029",
+    title: "Functional Movement",
+    content: "Practice the 'sit-to-stand' exercise: sit in a chair and stand up without using your hands 10 times. This builds functional leg strength for daily activities.",
+    category: "exercise",
+    difficulty: "medium",
+    estimatedTime: "2 min",
+    personalizedFor: ["functional_fitness", "leg_strength", "general"],
+    priority: 7
+  },
+  {
+    id: "tip_030",
+    title: "Active Recovery",
+    content: "Do gentle arm swings and leg swings for 2 minutes. This active recovery improves blood flow and helps your muscles recover between workouts.",
+    category: "exercise",
+    difficulty: "easy",
+    estimatedTime: "2 min",
+    personalizedFor: ["recovery", "circulation", "general"],
+    priority: 6
   }
 ];
 
@@ -169,33 +319,46 @@ export function getPatientHealthConditions(patient: Patient): string[] {
   
   // Weight-related conditions
   if (patient.weight && patient.weight > 200) {
-    conditions.push("weight_loss");
+    conditions.push("weight_loss", "cardio");
   }
   
   // Body fat related
   if (patient.bodyFat && patient.bodyFat > 25) {
-    conditions.push("weight_loss");
+    conditions.push("weight_loss", "muscle_building");
   }
   
   // Insulin resistance
   if (patient.insulinResistance === "Yes") {
-    conditions.push("diabetes", "insulin_resistance");
+    conditions.push("diabetes", "insulin_resistance", "cardio");
   }
   
   // Blood pressure related
   if (patient.bloodPressure && (patient.bloodPressure.includes("140") || patient.bloodPressure.includes("High"))) {
-    conditions.push("heart_health", "stress");
+    conditions.push("heart_health", "stress", "cardio");
   }
   
   // Age-related conditions
   if (patient.age && patient.age > 50) {
-    conditions.push("joint_health", "heart_health");
+    conditions.push("joint_health", "heart_health", "balance", "flexibility", "functional_fitness");
+  }
+  
+  // Age-related for younger adults
+  if (patient.age && patient.age < 40) {
+    conditions.push("muscle_building", "advanced_fitness");
   }
   
   // Adherence related
   if (patient.adherence && patient.adherence < 70) {
     conditions.push("motivation", "stress");
   }
+  
+  // Exercise-specific conditions based on health metrics
+  if (patient.weight && patient.bodyFat) {
+    conditions.push("core_strength", "glute_strength");
+  }
+  
+  // Add general fitness categories
+  conditions.push("upper_body", "lower_body", "circulation", "energy", "flexibility");
   
   return [...new Set(conditions)]; // Remove duplicates
 }
