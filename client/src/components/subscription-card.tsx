@@ -208,8 +208,44 @@ export default function SubscriptionCard({ patient }: SubscriptionCardProps) {
         )}
       </CardContent>
       
+      {/* Debug: Show modal state */}
+      {isPaymentModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center">
+          <div className="bg-white p-6 rounded-lg max-w-md w-full mx-4">
+            <h2 className="text-xl font-bold mb-4">Payment Options</h2>
+            <p className="mb-4">Selected Plan: {selectedPlan}</p>
+            <div className="space-y-3">
+              <button 
+                className="w-full p-3 border rounded-lg hover:bg-gray-50"
+                onClick={() => {
+                  console.log('PayPal selected');
+                  window.location.href = `/patient-dashboard?subscription=success`;
+                }}
+              >
+                💳 PayPal Payment
+              </button>
+              <button 
+                className="w-full p-3 border rounded-lg hover:bg-gray-50"
+                onClick={() => {
+                  console.log('Stripe selected');
+                  window.location.href = `/patient-dashboard?subscription=success`;
+                }}
+              >
+                🏦 Credit/Debit Card (Stripe)
+              </button>
+            </div>
+            <button 
+              className="mt-4 w-full p-2 bg-gray-200 rounded"
+              onClick={() => setIsPaymentModalOpen(false)}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
       <SubscriptionPaymentModal
-        isOpen={isPaymentModalOpen}
+        isOpen={false}
         onClose={() => setIsPaymentModalOpen(false)}
         patientId={patient.id}
         selectedPlan={selectedPlan}

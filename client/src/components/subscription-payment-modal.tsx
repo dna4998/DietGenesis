@@ -115,7 +115,10 @@ export default function SubscriptionPaymentModal({
     }
   };
 
-  if (!selectedPlan || !currentPlan) return null;
+  if (!selectedPlan || !currentPlan) {
+    console.log('Modal not rendering - selectedPlan:', selectedPlan, 'currentPlan:', currentPlan);
+    return null;
+  }
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
