@@ -20,6 +20,9 @@ Preferred communication style: Simple, everyday language.
 ✓ **Sample Data** - Pre-loaded test patients for immediate use
 ✓ **External Integrations** - YouTube exercise videos and Thorne supplement links
 ✓ **Fixed TypeScript Issues** - Resolved type compatibility errors in storage layer
+✓ **AI-Powered Nutrition Insights** - Integrated Grok AI for personalized nutrition analysis
+✓ **AI Meal Planning** - Smart meal plan generation with macro targets and shopping lists
+✓ **Provider AI Tools** - Healthcare providers can generate AI insights for patients
 
 ## System Architecture
 

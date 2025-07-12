@@ -4,6 +4,8 @@ import ProgressCard from "@/components/progress-card";
 import DietPlanCard from "@/components/diet-plan-card";
 import ExercisePlanCard from "@/components/exercise-plan-card";
 import SupplementsCard from "@/components/supplements-card";
+import AIInsightsCard from "@/components/ai-insights-card";
+import AIMealPlanner from "@/components/ai-meal-planner";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { Patient } from "@shared/schema";
 
@@ -72,7 +74,7 @@ export default function PatientDashboard({ selectedPatientId }: PatientDashboard
         <ProgressCard patient={patient} />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         <div className="space-y-6">
           <DietPlanCard patient={patient} />
           <SupplementsCard patient={patient} />
@@ -80,6 +82,12 @@ export default function PatientDashboard({ selectedPatientId }: PatientDashboard
         <div>
           <ExercisePlanCard patient={patient} />
         </div>
+      </div>
+
+      {/* AI-Powered Features */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <AIInsightsCard patient={patient} />
+        <AIMealPlanner patient={patient} />
       </div>
     </div>
   );

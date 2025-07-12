@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import ProviderPatientCard from "@/components/provider-patient-card";
 import PlanCreationForm from "@/components/plan-creation-form";
+import ProviderAIInsights from "@/components/provider-ai-insights";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
@@ -10,6 +11,7 @@ import type { Patient } from "@shared/schema";
 
 export default function ProviderDashboard() {
   const [showPlanForm, setShowPlanForm] = useState(false);
+  const [showAIAnalysis, setShowAIAnalysis] = useState(false);
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
   const { toast } = useToast();
 
@@ -56,6 +58,11 @@ export default function ProviderDashboard() {
     setShowPlanForm(true);
   };
 
+  const handleAIAnalysisClick = (patient: Patient) => {
+    setSelectedPatient(patient);
+    setShowAIAnalysis(true);
+  };
+
   const handlePlanSave = (planData: {
     dietPlan: string;
     exercisePlan: string;
@@ -72,6 +79,11 @@ export default function ProviderDashboard() {
 
   const handlePlanCancel = () => {
     setShowPlanForm(false);
+    setSelectedPatient(null);
+  };
+
+  const handleAIAnalysisClose = () => {
+    setShowAIAnalysis(false);
     setSelectedPatient(null);
   };
 
@@ -143,6 +155,7 @@ export default function ProviderDashboard() {
               key={patient.id} 
               patient={patient} 
               onUpdate={handleUpdateClick}
+              onAIAnalysis={handleAIAnalysisClick}
             />
           ))}
         </div>
@@ -158,6 +171,13 @@ export default function ProviderDashboard() {
           patient={selectedPatient}
           onSave={handlePlanSave}
           onCancel={handlePlanCancel}
+        />
+      )}
+
+      {showAIAnalysis && selectedPatient && (
+        <ProviderAIInsights
+          patient={selectedPatient}
+          onClose={handleAIAnalysisClose}
         />
       )}
     </div>

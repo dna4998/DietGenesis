@@ -105,6 +105,9 @@ export class MemStorage implements IStorage {
       exercisePlan: insertPatient.exercisePlan ?? null,
       supplements: insertPatient.supplements ?? null,
       glp1Prescription: insertPatient.glp1Prescription ?? null,
+      weightLoss: insertPatient.weightLoss ?? "0",
+      adherence: insertPatient.adherence ?? 0,
+      bloodSugar: insertPatient.bloodSugar ?? "Normal",
     };
     this.patients.set(id, patient);
     return patient;

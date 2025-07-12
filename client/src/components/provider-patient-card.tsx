@@ -1,13 +1,15 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Brain } from "lucide-react";
 import type { Patient } from "@shared/schema";
 
 interface ProviderPatientCardProps {
   patient: Patient;
   onUpdate: (patient: Patient) => void;
+  onAIAnalysis: (patient: Patient) => void;
 }
 
-export default function ProviderPatientCard({ patient, onUpdate }: ProviderPatientCardProps) {
+export default function ProviderPatientCard({ patient, onUpdate, onAIAnalysis }: ProviderPatientCardProps) {
   return (
     <Card className="bg-white shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
       <CardContent className="p-6">
@@ -48,12 +50,23 @@ export default function ProviderPatientCard({ patient, onUpdate }: ProviderPatie
           </div>
         </div>
 
-        <Button
-          className="w-full bg-medical-blue text-white hover:bg-blue-700"
-          onClick={() => onUpdate(patient)}
-        >
-          Update Plans
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            className="flex-1 bg-medical-blue text-white hover:bg-blue-700"
+            onClick={() => onUpdate(patient)}
+          >
+            Update Plans
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="px-3"
+            onClick={() => onAIAnalysis(patient)}
+            title="AI Analysis"
+          >
+            <Brain className="w-4 h-4" />
+          </Button>
+        </div>
       </CardContent>
     </Card>
   );

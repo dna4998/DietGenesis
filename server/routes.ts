@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertPatientSchema, updatePatientSchema, insertProviderSchema } from "@shared/schema";
+import { generateNutritionInsights, generateMealPlan } from "./ai-insights";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -112,6 +113,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid provider data", errors: error.errors });
       }
       res.status(500).json({ message: "Failed to create provider" });
+    }
+  });
+
+  // Generate AI nutrition insights for a patient
+  app.post("/api/patients/:id/insights", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid patient ID" });
+      }
+
+      const patient = await storage.getPatient(id);
+      if (!patient) {
+        return res.status(404).json({ message: "Patient not found" });
+      }
+
+      const insights = await generateNutritionInsights(patient);
+      res.json(insights);
+    } catch (error) {
+      console.error("Error generating insights:", error);
+      res.status(500).json({ message: "Failed to generate nutrition insights" });
+    }
+  });
+
+  // Generate AI meal plan for a patient
+  app.post("/api/patients/:id/meal-plan", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid patient ID" });
+      }
+
+      const patient = await storage.getPatient(id);
+      if (!patient) {
+        return res.status(404).json({ message: "Patient not found" });
+      }
+
+      const { preferences } = req.body;
+      const mealPlan = await generateMealPlan(patient, preferences);
+      res.json(mealPlan);
+    } catch (error) {
+      console.error("Error generating meal plan:", error);
+      res.status(500).json({ message: "Failed to generate meal plan" });
     }
   });
 
