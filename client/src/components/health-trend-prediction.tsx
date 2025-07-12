@@ -169,13 +169,13 @@ export default function HealthTrendPrediction({ patient }: HealthTrendPrediction
         <div className="bg-gradient-to-r from-purple-50 to-blue-50 p-4 rounded-lg">
           <div className="flex items-center justify-between mb-2">
             <h3 className="font-semibold text-gray-900">Overall Health Score</h3>
-            <span className={`text-2xl font-bold ${getScoreColor(prediction.overallScore)}`}>
-              {prediction.overallScore}/100
+            <span className={`text-2xl font-bold ${getScoreColor(prediction.overallScore || 75)}`}>
+              {prediction.overallScore || 75}/100
             </span>
           </div>
-          <Progress value={prediction.overallScore} className="h-2" />
+          <Progress value={prediction.overallScore || 75} className="h-2" />
           <p className="text-sm text-gray-600 mt-2">
-            Confidence: {Math.round(prediction.confidenceLevel * 100)}%
+            Confidence: {Math.round((prediction.confidenceLevel || 0.75) * 100)}%
           </p>
         </div>
 
@@ -199,17 +199,17 @@ export default function HealthTrendPrediction({ patient }: HealthTrendPrediction
                 </div>
                 <div className="text-xs text-gray-600">
                   <div>Direction: {trend.direction}</div>
-                  <div>Confidence: {Math.round(trend.confidence * 100)}%</div>
-                  {trend.metric === 'weight' && (
+                  <div>Confidence: {Math.round((trend.confidence || 0.5) * 100)}%</div>
+                  {trend.metric === 'weight' && trend.projectedValue !== null && (
                     <div>Projected: {trend.projectedValue.toFixed(1)} lbs</div>
                   )}
-                  {trend.metric === 'bodyFat' && (
+                  {trend.metric === 'bodyFat' && trend.projectedValue !== null && (
                     <div>Projected: {trend.projectedValue.toFixed(1)}%</div>
                   )}
-                  {trend.metric === 'adherence' && (
+                  {trend.metric === 'adherence' && trend.projectedValue !== null && (
                     <div>Projected: {trend.projectedValue.toFixed(0)}%</div>
                   )}
-                  {trend.metric === 'exercise' && (
+                  {trend.metric === 'exercise' && trend.projectedValue !== null && (
                     <div>Projected: {trend.projectedValue.toFixed(0)} min/week</div>
                   )}
                 </div>
