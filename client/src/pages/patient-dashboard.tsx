@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import HealthMetricsCard from "@/components/health-metrics-card";
 import MessagingCard from "@/components/messaging-card";
 import SubscriptionCard from "@/components/subscription-card";
+import HealthTipsWidget from "@/components/health-tips-widget";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { Patient } from "@shared/schema";
 
@@ -63,6 +64,11 @@ export default function PatientDashboard({ selectedPatientId }: PatientDashboard
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900">Welcome back, {patient.name}</h1>
         <p className="mt-2 text-gray-600">Last visit: {patient.lastVisit}</p>
+      </div>
+
+      {/* Daily Health Tip */}
+      <div className="mb-6">
+        <HealthTipsWidget patient={patient} />
       </div>
 
       {/* Simplified Patient View - Demographics and Messages Only */}

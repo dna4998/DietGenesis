@@ -11,6 +11,7 @@ import { generateDemoInsights, generateDemoMealPlan, generateDemoExercisePlan } 
 import { processVoiceCommand, getVoiceCommandSuggestions } from "./voice-commands";
 import { createPaypalOrder, capturePaypalOrder, loadPaypalDefault, createSubscriptionPlan, createSubscription } from "./paypal";
 import { analyzeLabResults, analyzeGutBiome, generateComprehensivePlan } from "./ai-plan-generator";
+import { getDailyHealthTip } from "./health-tips";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -256,6 +257,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error getting voice command suggestions:", error);
       res.status(500).json({ message: "Failed to get suggestions" });
+    }
+  });
+
+  // Get daily health tip for a patient
+  app.get("/api/patients/:id/daily-tip", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid patient ID" });
+      }
+
+      const patient = await storage.getPatient(id);
+      if (!patient) {
+        return res.status(404).json({ message: "Patient not found" });
+      }
+
+      const dailyTip = getDailyHealthTip(patient);
+      res.json(dailyTip);
+    } catch (error) {
+      console.error("Error fetching daily tip:", error);
+      res.status(500).json({ message: "Failed to fetch daily tip" });
     }
   });
 
