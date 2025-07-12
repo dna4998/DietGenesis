@@ -106,7 +106,7 @@ export default function SubscriptionCard({ patient }: SubscriptionCardProps) {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        {subscriptionStatus?.isActive ? (
+        {subscriptionStatus?.isActive === true ? (
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium">Status:</span>
@@ -143,7 +143,7 @@ export default function SubscriptionCard({ patient }: SubscriptionCardProps) {
           <div className="space-y-4">
             <div className="text-center py-4">
               <h3 className="font-medium text-lg mb-2">Choose Your Plan</h3>
-              <p className="text-xs text-gray-500">Debug: isActive = {subscriptionStatus?.isActive ? 'true' : 'false'}</p>
+              <p className="text-xs text-gray-500">Debug: isActive = {subscriptionStatus?.isActive ? 'true' : 'false'}, status = {subscriptionStatus?.subscriptionStatus}</p>
               <p className="text-sm text-gray-600 mb-4">
                 Subscribe to access personalized diet plans, AI insights, and provider consultations
               </p>
