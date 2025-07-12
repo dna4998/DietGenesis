@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import { insertPatientSchema, updatePatientSchema, insertProviderSchema } from "@shared/schema";
 import { generateNutritionInsights, generateMealPlan } from "./ai-insights";
 import { generateDemoInsights, generateDemoMealPlan } from "./demo-insights";
+import { processVoiceCommand, getVoiceCommandSuggestions } from "./voice-commands";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -179,6 +180,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
       } else {
         res.status(500).json({ message: "Failed to generate meal plan" });
       }
+    }
+  });
+
+  // Process voice commands for a patient
+  app.post("/api/patients/:id/voice-command", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid patient ID" });
+      }
+
+      const patient = await storage.getPatient(id);
+      if (!patient) {
+        return res.status(404).json({ message: "Patient not found" });
+      }
+
+      const { command } = req.body;
+      if (!command || typeof command !== 'string') {
+        return res.status(400).json({ message: "Voice command is required" });
+      }
+
+      const response = processVoiceCommand(command, patient);
+      res.json(response);
+    } catch (error) {
+      console.error("Error processing voice command:", error);
+      res.status(500).json({ message: "Failed to process voice command" });
+    }
+  });
+
+  // Get voice command suggestions
+  app.get("/api/voice-commands/suggestions", async (req, res) => {
+    try {
+      const suggestions = getVoiceCommandSuggestions();
+      res.json({ suggestions });
+    } catch (error) {
+      console.error("Error getting voice command suggestions:", error);
+      res.status(500).json({ message: "Failed to get suggestions" });
     }
   });
 
