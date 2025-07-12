@@ -5,6 +5,7 @@ import PlanCreationForm from "@/components/plan-creation-form";
 import AIPlanGenerator from "@/components/ai-plan-generator";
 import HealthTrendPrediction from "@/components/health-trend-prediction";
 import DexcomProviderCard from "@/components/dexcom-provider-card";
+import DexcomProviderManagement from "@/components/dexcom-provider-management";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
@@ -160,6 +161,11 @@ export default function ProviderDashboard() {
             <div className="text-gray-600">Plans Updated This Week</div>
           </div>
         </div>
+      </div>
+
+      {/* Dexcom Management Panel */}
+      <div className="mb-8">
+        <DexcomProviderManagement />
       </div>
 
       {patients && patients.length > 0 ? (

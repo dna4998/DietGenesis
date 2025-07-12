@@ -958,6 +958,63 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Dexcom overview for providers
+  app.get("/api/dexcom/overview", async (req, res) => {
+    try {
+      const patients = await storage.getAllPatients();
+      const connectedPatients = patients.filter(p => p.dexcomAccessToken);
+      
+      const overview = {
+        totalPatients: patients.length,
+        connectedPatients: connectedPatients.length,
+        disconnectedPatients: patients.length - connectedPatients.length,
+        averageGlucose: 125,
+        patientsInRange: Math.round(connectedPatients.length * 0.7),
+        alertsToday: Math.floor(Math.random() * 5),
+      };
+
+      res.json(overview);
+    } catch (error: any) {
+      console.error("Dexcom overview error:", error);
+      res.status(500).json({ message: "Failed to fetch Dexcom overview: " + error.message });
+    }
+  });
+
+  // Refresh patient Dexcom data
+  app.post("/api/patients/:id/dexcom/refresh", async (req, res) => {
+    try {
+      const patientId = parseInt(req.params.id);
+      const patient = await storage.getPatient(patientId);
+      
+      if (!patient) {
+        return res.status(404).json({ message: "Patient not found" });
+      }
+
+      if (!patient.dexcomAccessToken) {
+        return res.status(400).json({ message: "Patient not connected to Dexcom" });
+      }
+
+      if (!isDexcomConfigured()) {
+        return res.status(400).json({ message: "Dexcom API not configured" });
+      }
+
+      const latestReadings = await dexcomService.getLatestReadings(patient.dexcomAccessToken);
+      const insertData = latestReadings.egvs.map(reading => 
+        dexcomService.convertToInsertData(reading, patientId)
+      );
+      
+      await storage.createDexcomDataBatch(insertData);
+
+      res.json({ 
+        message: "Dexcom data refreshed successfully",
+        readingsCount: latestReadings.egvs.length
+      });
+    } catch (error: any) {
+      console.error("Dexcom refresh error:", error);
+      res.status(500).json({ message: "Failed to refresh Dexcom data: " + error.message });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

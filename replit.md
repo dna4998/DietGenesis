@@ -124,6 +124,8 @@ Preferred communication style: Simple, everyday language.
 - `GET /api/patients/:id/dexcom/status` - Check Dexcom connection status for patient
 - `GET /api/patients/:id/dexcom/data` - Retrieve continuous glucose monitoring data and statistics
 - `DELETE /api/patients/:id/dexcom/disconnect` - Disconnect patient from Dexcom CGM
+- `GET /api/dexcom/overview` - Provider dashboard overview of all patient Dexcom connections
+- `POST /api/patients/:id/dexcom/refresh` - Manually refresh patient glucose data from Dexcom API
 
 ## Data Flow
 
