@@ -781,6 +781,58 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.redirect(`/patient-dashboard?subscription=cancelled`);
   });
 
+  // Create Stripe subscription for patient
+  app.post("/api/patients/:id/subscription/stripe", async (req, res) => {
+    try {
+      const patientId = parseInt(req.params.id);
+      if (isNaN(patientId)) {
+        return res.status(400).json({ message: "Invalid patient ID" });
+      }
+
+      const patient = await storage.getPatient(patientId);
+      if (!patient) {
+        return res.status(404).json({ message: "Patient not found" });
+      }
+
+      const { plan } = req.body;
+      if (!plan || !['monthly', 'yearly'].includes(plan)) {
+        return res.status(400).json({ message: "Invalid subscription plan" });
+      }
+
+      // Check if Stripe is configured
+      if (!process.env.STRIPE_SECRET_KEY) {
+        // Demo mode - simulate Stripe checkout
+        await storage.updatePatientSubscription(patientId, {
+          subscriptionStatus: 'active',
+          subscriptionPlan: plan,
+          subscriptionStartDate: new Date(),
+          subscriptionEndDate: new Date(Date.now() + (plan === 'monthly' ? 30 : 365) * 24 * 60 * 60 * 1000)
+        });
+
+        res.json({ 
+          subscriptionId: 'demo_stripe_subscription_' + Date.now(),
+          plan: plan,
+          message: 'Demo Stripe subscription created - redirecting to success page'
+        });
+        return;
+      }
+
+      // Real Stripe implementation would go here
+      // For now, return demo mode response
+      res.json({ 
+        subscriptionId: 'demo_stripe_subscription_' + Date.now(),
+        plan: plan,
+        message: 'Stripe integration in development'
+      });
+    } catch (error: any) {
+      console.error('Stripe subscription error:', error);
+      res.status(500).json({ 
+        error: 'Failed to create Stripe subscription',
+        message: error.message 
+      });
+    }
+  });
+
   // Get subscription status for patient
   app.get("/api/patients/:id/subscription/status", async (req, res) => {
     try {

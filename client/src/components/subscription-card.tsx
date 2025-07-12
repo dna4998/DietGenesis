@@ -1,10 +1,12 @@
+import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { CreditCard, Clock, CheckCircle, XCircle } from "lucide-react";
+import { CreditCard, Clock, CheckCircle, XCircle, Crown } from "lucide-react";
+import SubscriptionPaymentModal from "./subscription-payment-modal";
 import type { Patient } from "@shared/schema";
 
 interface SubscriptionStatus {
@@ -22,6 +24,8 @@ interface SubscriptionCardProps {
 export default function SubscriptionCard({ patient }: SubscriptionCardProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState<'monthly' | 'yearly' | null>(null);
 
   const { data: subscriptionStatus, isLoading } = useQuery<SubscriptionStatus>({
     queryKey: ['/api/patients', patient.id, 'subscription', 'status'],
@@ -31,33 +35,10 @@ export default function SubscriptionCard({ patient }: SubscriptionCardProps) {
     },
   });
 
-  const createSubscriptionMutation = useMutation({
-    mutationFn: async (plan: 'monthly' | 'yearly') => {
-      const response = await apiRequest("POST", `/api/patients/${patient.id}/subscription`, {
-        plan
-      });
-      return response.json();
-    },
-    onSuccess: (data) => {
-      if (data.approvalUrl) {
-        // Redirect to PayPal for approval
-        window.location.href = data.approvalUrl;
-      } else {
-        toast({
-          title: "Demo Mode",
-          description: `${data.plan === 'monthly' ? 'Monthly' : 'Yearly'} subscription created (Demo mode - add PayPal credentials to enable real payments)`,
-        });
-        queryClient.invalidateQueries({ queryKey: ['/api/patients', patient.id, 'subscription', 'status'] });
-      }
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Subscription Error",
-        description: error.message || "Failed to create subscription",
-        variant: "destructive",
-      });
-    },
-  });
+  const handleSubscribeClick = (plan: 'monthly' | 'yearly') => {
+    setSelectedPlan(plan);
+    setIsPaymentModalOpen(true);
+  };
 
   const handleSubscribe = (plan: 'monthly' | 'yearly') => {
     createSubscriptionMutation.mutate(plan);
@@ -180,11 +161,11 @@ export default function SubscriptionCard({ patient }: SubscriptionCardProps) {
                   <li>• Progress tracking & analytics</li>
                 </ul>
                 <Button 
-                  onClick={() => handleSubscribe('monthly')}
-                  disabled={createSubscriptionMutation.isPending}
+                  onClick={() => handleSubscribeClick('monthly')}
                   className="w-full"
                 >
-                  {createSubscriptionMutation.isPending ? 'Processing...' : 'Subscribe Monthly'}
+                  <Crown className="w-4 h-4 mr-2" />
+                  Subscribe Monthly
                 </Button>
               </div>
 
@@ -206,12 +187,12 @@ export default function SubscriptionCard({ patient }: SubscriptionCardProps) {
                   <li>• Early access to new features</li>
                 </ul>
                 <Button 
-                  onClick={() => handleSubscribe('yearly')}
-                  disabled={createSubscriptionMutation.isPending}
+                  onClick={() => handleSubscribeClick('yearly')}
                   className="w-full"
                   variant="default"
                 >
-                  {createSubscriptionMutation.isPending ? 'Processing...' : 'Subscribe Yearly'}
+                  <Crown className="w-4 h-4 mr-2" />
+                  Subscribe Yearly
                 </Button>
               </div>
             </div>
@@ -226,6 +207,13 @@ export default function SubscriptionCard({ patient }: SubscriptionCardProps) {
           </div>
         )}
       </CardContent>
+      
+      <SubscriptionPaymentModal
+        isOpen={isPaymentModalOpen}
+        onClose={() => setIsPaymentModalOpen(false)}
+        patientId={patient.id}
+        selectedPlan={selectedPlan}
+      />
     </Card>
   );
 }
