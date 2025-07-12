@@ -296,7 +296,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Generate health prediction using ML-based analysis
-      const prediction = generateDemoHealthPrediction(patient);
+      const prediction = await generateDemoHealthPrediction(patient);
       res.json(prediction);
     } catch (error) {
       console.error("Error generating health prediction:", error);

@@ -36,6 +36,13 @@ export interface HealthPrediction {
     factors: string[];
     recommendations: string[];
   };
+  cancerRisk: {
+    score: number; // 0-100 (0 = very low, 100 = very high)
+    category: 'very_low' | 'low' | 'moderate' | 'high' | 'very_high';
+    factors: string[];
+    recommendations: string[];
+    aiAnalysis: string;
+  };
 }
 
 class HealthPredictor {
@@ -513,7 +520,145 @@ class HealthPredictor {
     };
   }
 
-  public predictHealthTrends(patient: Patient): HealthPrediction {
+  private async calculateCancerRisk(patient: Patient): Promise<{
+    score: number;
+    category: 'very_low' | 'low' | 'moderate' | 'high' | 'very_high';
+    factors: string[];
+    recommendations: string[];
+    aiAnalysis: string;
+  }> {
+    // Import Grok AI at the top level would be better, but for now we'll use it here
+    const OpenAI = require('openai');
+    
+    let riskScore = 0;
+    const factors = [];
+    const recommendations = [];
+
+    // Age-based risk factors
+    if (patient.age >= 65) {
+      riskScore += 20;
+      factors.push("Age 65 or older - increased cancer risk");
+    } else if (patient.age >= 50) {
+      riskScore += 15;
+      factors.push("Age 50-64 - moderate cancer risk increase");
+    } else if (patient.age >= 40) {
+      riskScore += 10;
+      factors.push("Age 40-49 - slight cancer risk increase");
+    }
+
+    // Lifestyle and health factors
+    if (patient.weight) {
+      const weight = parseFloat(patient.weight);
+      if (weight > 250) {
+        riskScore += 15;
+        factors.push("Severe obesity - increased cancer risk");
+      } else if (weight > 220) {
+        riskScore += 10;
+        factors.push("Obesity - moderate cancer risk increase");
+      }
+    }
+
+    if (patient.bodyFat) {
+      const bodyFat = parseFloat(patient.bodyFat);
+      if (bodyFat > 35) {
+        riskScore += 8;
+        factors.push("High body fat percentage - cancer risk factor");
+      }
+    }
+
+    // Metabolic factors
+    if (patient.insulinResistance) {
+      riskScore += 12;
+      factors.push("Insulin resistance/Type 2 diabetes - cancer risk factor");
+    }
+
+    // Lifestyle factors
+    if (patient.adherence && patient.adherence < 50) {
+      riskScore += 8;
+      factors.push("Poor lifestyle adherence - increased cancer risk");
+    }
+
+    // Exercise as protective factor
+    if (patient.adherence && patient.adherence > 80) {
+      riskScore -= 5;
+      factors.push("Good adherence to healthy lifestyle - protective factor");
+    }
+
+    // Determine risk category
+    let category: 'very_low' | 'low' | 'moderate' | 'high' | 'very_high';
+    if (riskScore >= 70) {
+      category = 'very_high';
+    } else if (riskScore >= 50) {
+      category = 'high';
+    } else if (riskScore >= 30) {
+      category = 'moderate';
+    } else if (riskScore >= 15) {
+      category = 'low';
+    } else {
+      category = 'very_low';
+    }
+
+    // Generate AI analysis using Grok
+    let aiAnalysis = "Cancer risk assessment based on demographic and lifestyle factors.";
+    
+    try {
+      if (process.env.XAI_API_KEY) {
+        const openai = new OpenAI({ 
+          baseURL: "https://api.x.ai/v1", 
+          apiKey: process.env.XAI_API_KEY 
+        });
+
+        const prompt = `As a medical AI assistant, analyze the cancer risk for this patient profile:
+        - Age: ${patient.age}
+        - Weight: ${patient.weight} lbs
+        - Body Fat: ${patient.bodyFat}%
+        - Insulin Resistance: ${patient.insulinResistance ? 'Yes' : 'No'}
+        - Blood Pressure: ${patient.bloodPressure}
+        - Treatment Adherence: ${patient.adherence}%
+        - Current risk factors: ${factors.join(', ')}
+        
+        Provide a brief, professional analysis of their cancer risk profile focusing on modifiable risk factors and preventive measures. Keep response under 150 words.`;
+
+        const response = await openai.chat.completions.create({
+          model: "grok-2-1212",
+          messages: [{ role: "user", content: prompt }],
+          max_tokens: 200,
+        });
+
+        aiAnalysis = response.choices[0].message.content || aiAnalysis;
+      }
+    } catch (error) {
+      console.log("AI analysis unavailable, using default assessment");
+    }
+
+    // Generate recommendations based on risk level
+    if (riskScore >= 50) {
+      recommendations.push("Schedule comprehensive cancer screening");
+      recommendations.push("Consult oncology specialist for risk assessment");
+    }
+    if (riskScore >= 30) {
+      recommendations.push("Follow age-appropriate cancer screening guidelines");
+      recommendations.push("Consider genetic counseling if family history present");
+    }
+    
+    // Universal recommendations
+    recommendations.push("Maintain healthy weight through diet and exercise");
+    recommendations.push("Avoid tobacco and limit alcohol consumption");
+    recommendations.push("Eat a diet rich in fruits, vegetables, and whole grains");
+    recommendations.push("Stay physically active with regular exercise");
+    recommendations.push("Protect skin from excessive sun exposure");
+    recommendations.push("Stay up-to-date with recommended vaccinations");
+
+    return {
+      score: Math.min(100, Math.max(0, riskScore)),
+      category,
+      factors,
+      recommendations,
+      aiAnalysis
+    };
+  }
+
+  public async predictHealthTrends(patient: Patient): Promise<HealthPrediction> {
     const dataPoints = this.generateSyntheticHealthHistory(patient);
     
     const trends: HealthTrend[] = [];
@@ -534,6 +679,7 @@ class HealthPredictor {
     const riskFactors = this.identifyRiskFactors(trends);
     const interventions = this.generateInterventions(trends, riskFactors);
     const heartAttackRisk = this.calculateHeartAttackRisk(patient);
+    const cancerRisk = await this.calculateCancerRisk(patient);
     
     // Calculate overall confidence based on trend confidences
     const validConfidences = trends.filter(t => t.confidence !== null).map(t => t.confidence);
@@ -549,7 +695,8 @@ class HealthPredictor {
       riskFactors,
       interventions,
       confidenceLevel: avgConfidence,
-      heartAttackRisk
+      heartAttackRisk,
+      cancerRisk
     };
   }
 }
@@ -557,7 +704,7 @@ class HealthPredictor {
 export const healthPredictor = new HealthPredictor();
 
 // Demo prediction function for when ML models aren't available
-export function generateDemoHealthPrediction(patient: Patient): HealthPrediction & { isDemo: boolean; demoMessage: string } {
+export async function generateDemoHealthPrediction(patient: Patient): Promise<HealthPrediction & { isDemo: boolean; demoMessage: string }> {
   // Generate demo trends with proper values
   const demoTrends: HealthTrend[] = [
     {
@@ -633,6 +780,26 @@ export function generateDemoHealthPrediction(patient: Patient): HealthPrediction
     ]
   };
 
+  // Calculate cancer risk for demo
+  const cancerRisk = {
+    score: 28,
+    category: 'low' as const,
+    factors: [
+      "Age 40-49 - slight cancer risk increase",
+      "Overweight (BMI likely >30)",
+      "Insulin resistance/Type 2 diabetes - cancer risk factor"
+    ],
+    recommendations: [
+      "Follow age-appropriate cancer screening guidelines",
+      "Maintain healthy weight through diet and exercise",
+      "Avoid tobacco and limit alcohol consumption",
+      "Eat a diet rich in fruits, vegetables, and whole grains",
+      "Stay physically active with regular exercise",
+      "Protect skin from excessive sun exposure"
+    ],
+    aiAnalysis: "Based on your current health profile, your cancer risk is in the low-moderate range. Key modifiable factors include weight management and maintaining good glycemic control. Your active lifestyle and adherence to health recommendations are protective factors. Continue regular screening as recommended for your age group, focus on maintaining a healthy weight, and ensure adequate physical activity. The combination of insulin resistance and excess weight slightly elevates risk, but these are manageable through lifestyle modifications."
+  };
+
   return {
     patientId: patient.id,
     generatedAt: new Date(),
@@ -649,6 +816,7 @@ export function generateDemoHealthPrediction(patient: Patient): HealthPrediction
     ],
     confidenceLevel: 0.8,
     heartAttackRisk,
+    cancerRisk,
     isDemo: true,
     demoMessage: "Demo prediction based on statistical analysis. Real ML predictions require health data history."
   };

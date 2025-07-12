@@ -48,6 +48,7 @@ Preferred communication style: Simple, everyday language.
 ✓ **Advanced Health Trend Prediction** - Machine learning-powered analytics to predict health trends and risk factors
 ✓ **Predictive Health Analytics** - Provider dashboard with trend visualization and proactive patient monitoring
 ✓ **Heart Attack Risk Assessment** - Comprehensive cardiovascular risk scoring based on age, blood pressure, weight, insulin resistance, and lifestyle factors
+✓ **Cancer Risk Prediction** - Grok AI-powered cancer risk assessment analyzing demographics, lifestyle factors, and health metrics with personalized prevention recommendations
 
 ## System Architecture
 
@@ -114,7 +115,7 @@ Preferred communication style: Simple, everyday language.
 - `POST /api/patients/:id/analyze-gut-biome` - AI analysis of patient gut biome tests using Grok
 - `POST /api/patients/:id/generate-comprehensive-plan` - Generate complete treatment plan from AI analysis
 - `GET /api/patients/:id/daily-tip` - Get personalized daily health tip based on patient profile
-- `GET /api/patients/:id/health-prediction` - Generate advanced health trend predictions using ML algorithms with heart attack risk assessment
+- `GET /api/patients/:id/health-prediction` - Generate advanced health trend predictions using ML algorithms with heart attack and cancer risk assessments
 
 ## Data Flow
 

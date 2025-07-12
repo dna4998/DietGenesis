@@ -16,7 +16,8 @@ import {
   Activity,
   Target,
   Calendar,
-  BarChart3
+  BarChart3,
+  Shield
 } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import type { Patient } from "@shared/schema";
@@ -44,6 +45,13 @@ interface HealthPrediction {
     category: 'very_low' | 'low' | 'moderate' | 'high' | 'very_high';
     factors: string[];
     recommendations: string[];
+  };
+  cancerRisk: {
+    score: number;
+    category: 'very_low' | 'low' | 'moderate' | 'high' | 'very_high';
+    factors: string[];
+    recommendations: string[];
+    aiAnalysis: string;
   };
   isDemo?: boolean;
   demoMessage?: string;
@@ -127,6 +135,28 @@ const formatMetricName = (metric: string) => {
       return 'Exercise (min/week)';
     default:
       return metric;
+  }
+};
+
+const getCancerRiskColor = (category: string) => {
+  switch (category) {
+    case 'very_low': return 'bg-green-100 text-green-800 border-green-200'
+    case 'low': return 'bg-blue-100 text-blue-800 border-blue-200'
+    case 'moderate': return 'bg-purple-100 text-purple-800 border-purple-200'
+    case 'high': return 'bg-orange-100 text-orange-800 border-orange-200'
+    case 'very_high': return 'bg-red-100 text-red-800 border-red-200'
+    default: return 'bg-gray-100 text-gray-800 border-gray-200'
+  }
+};
+
+const getCancerRiskLabel = (category: string) => {
+  switch (category) {
+    case 'very_low': return 'Very Low Risk'
+    case 'low': return 'Low Risk'
+    case 'moderate': return 'Moderate Risk'
+    case 'high': return 'High Risk'
+    case 'very_high': return 'Very High Risk'
+    default: return 'Unknown Risk'
   }
 };
 
@@ -257,6 +287,51 @@ export default function HealthTrendPrediction({ patient }: HealthTrendPrediction
           )}
         </div>
 
+        {/* Cancer Risk Assessment */}
+        <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-4 rounded-lg border-2 border-purple-100">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+              <Shield className="w-5 h-5 text-purple-600" />
+              Cancer Risk Assessment
+            </h3>
+            <Badge className={`${getCancerRiskColor(prediction.cancerRisk?.category || 'low')} px-3 py-1`}>
+              {getCancerRiskLabel(prediction.cancerRisk?.category || 'low')}
+            </Badge>
+          </div>
+          
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-sm text-gray-600">Risk Score</span>
+            <span className="text-2xl font-bold text-purple-600">
+              {prediction.cancerRisk?.score || 28}/100
+            </span>
+          </div>
+          
+          <Progress 
+            value={prediction.cancerRisk?.score || 28} 
+            className="h-2 mb-3"
+          />
+          
+          {prediction.cancerRisk?.factors && prediction.cancerRisk.factors.length > 0 && (
+            <div className="space-y-2">
+              <p className="text-sm font-medium text-gray-700">Risk Factors:</p>
+              <div className="flex flex-wrap gap-2">
+                {prediction.cancerRisk.factors.map((factor, index) => (
+                  <Badge key={index} variant="outline" className="text-xs bg-purple-50 text-purple-700 border-purple-200">
+                    {factor}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          )}
+          
+          {prediction.cancerRisk?.aiAnalysis && (
+            <div className="mt-3 p-3 bg-white rounded-lg border border-purple-200">
+              <h4 className="text-sm font-medium text-purple-900 mb-2">AI Analysis:</h4>
+              <p className="text-sm text-gray-700">{prediction.cancerRisk.aiAnalysis}</p>
+            </div>
+          )}
+        </div>
+
         {/* Health Trends Summary */}
         <div>
           <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
@@ -348,6 +423,26 @@ export default function HealthTrendPrediction({ patient }: HealthTrendPrediction
                 <Alert key={index} className="border-red-200 bg-red-50">
                   <Activity className="h-4 w-4 text-red-600" />
                   <AlertDescription className="text-sm text-red-800">
+                    {recommendation}
+                  </AlertDescription>
+                </Alert>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Cancer Risk Recommendations */}
+        {prediction.cancerRisk?.recommendations && prediction.cancerRisk.recommendations.length > 0 && (
+          <div>
+            <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+              <Shield className="w-4 h-4 text-purple-600" />
+              Cancer Prevention Recommendations
+            </h3>
+            <div className="space-y-2">
+              {prediction.cancerRisk.recommendations.map((recommendation, index) => (
+                <Alert key={index} className="border-purple-200 bg-purple-50">
+                  <Shield className="h-4 w-4 text-purple-600" />
+                  <AlertDescription className="text-sm text-purple-800">
                     {recommendation}
                   </AlertDescription>
                 </Alert>
