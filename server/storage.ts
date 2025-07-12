@@ -100,6 +100,11 @@ export class MemStorage implements IStorage {
       id,
       createdAt: new Date(),
       updatedAt: new Date(),
+      insulinResistance: insertPatient.insulinResistance ?? false,
+      dietPlan: insertPatient.dietPlan ?? null,
+      exercisePlan: insertPatient.exercisePlan ?? null,
+      supplements: insertPatient.supplements ?? null,
+      glp1Prescription: insertPatient.glp1Prescription ?? null,
     };
     this.patients.set(id, patient);
     return patient;
@@ -144,6 +149,7 @@ export class MemStorage implements IStorage {
       ...insertProvider,
       id,
       createdAt: new Date(),
+      specialty: insertProvider.specialty ?? null,
     };
     this.providers.set(id, provider);
     return provider;
