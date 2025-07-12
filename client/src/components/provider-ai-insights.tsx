@@ -15,12 +15,16 @@ interface NutritionInsight {
   warnings: string[];
   metabolicAnalysis: string;
   supplementSuggestions: string[];
+  isDemo?: boolean;
+  demoMessage?: string;
 }
 
 interface MealPlan {
   mealPlan: string;
   macroBreakdown: string;
   shoppingList: string[];
+  isDemo?: boolean;
+  demoMessage?: string;
 }
 
 interface ProviderAIInsightsProps {
@@ -42,27 +46,17 @@ export default function ProviderAIInsights({ patient, onClose }: ProviderAIInsig
     onSuccess: (data: NutritionInsight) => {
       setInsights(data);
       toast({
-        title: "AI Insights Generated",
-        description: `Nutrition insights for ${patient.name} are ready!`,
+        title: data.isDemo ? "Demo Insights Generated" : "AI Insights Generated",
+        description: data.isDemo ? `Demo insights for ${patient.name}. Add credits for AI analysis.` : `Nutrition insights for ${patient.name} are ready!`,
       });
     },
     onError: (error: any) => {
       console.error("Error generating insights:", error);
-      
-      // Check if it's a credits issue
-      if (error?.response?.status === 402) {
-        toast({
-          title: "AI Credits Needed",
-          description: "Please add credits to your xAI account at console.x.ai to use AI insights.",
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Error",
-          description: "Failed to generate nutrition insights.",
-          variant: "destructive",
-        });
-      }
+      toast({
+        title: "Error",
+        description: "Failed to generate nutrition insights.",
+        variant: "destructive",
+      });
     },
   });
 
@@ -76,27 +70,17 @@ export default function ProviderAIInsights({ patient, onClose }: ProviderAIInsig
     onSuccess: (data: MealPlan) => {
       setMealPlan(data);
       toast({
-        title: "Meal Plan Generated",
-        description: `7-day meal plan for ${patient.name} is ready!`,
+        title: data.isDemo ? "Demo Meal Plan Generated" : "Meal Plan Generated",
+        description: data.isDemo ? `Demo meal plan for ${patient.name}. Add credits for AI planning.` : `7-day meal plan for ${patient.name} is ready!`,
       });
     },
     onError: (error: any) => {
       console.error("Error generating meal plan:", error);
-      
-      // Check if it's a credits issue
-      if (error?.response?.status === 402) {
-        toast({
-          title: "AI Credits Needed",
-          description: "Please add credits to your xAI account at console.x.ai to use AI meal planning.",
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Error",
-          description: "Failed to generate meal plan.",
-          variant: "destructive",
-        });
-      }
+      toast({
+        title: "Error",
+        description: "Failed to generate meal plan.",
+        variant: "destructive",
+      });
     },
   });
 
@@ -192,9 +176,15 @@ export default function ProviderAIInsights({ patient, onClose }: ProviderAIInsig
 
               {insights && (
                 <div className="space-y-6">
+                  {insights.isDemo && (
+                    <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
+                      <p className="text-orange-800 text-sm font-medium">{insights.demoMessage}</p>
+                    </div>
+                  )}
+                  
                   <div className="flex justify-between items-center">
-                    <Badge className="bg-gradient-to-r from-purple-100 to-blue-100 text-purple-800">
-                      Powered by Grok AI
+                    <Badge className={`${insights.isDemo ? 'bg-orange-100 text-orange-800' : 'bg-gradient-to-r from-purple-100 to-blue-100 text-purple-800'}`}>
+                      {insights.isDemo ? 'Demo Mode' : 'Powered by Grok AI'}
                     </Badge>
                     <Button
                       onClick={() => generateInsightsMutation.mutate()}
@@ -312,9 +302,15 @@ export default function ProviderAIInsights({ patient, onClose }: ProviderAIInsig
 
               {mealPlan && (
                 <div className="space-y-6">
+                  {mealPlan.isDemo && (
+                    <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
+                      <p className="text-orange-800 text-sm font-medium">{mealPlan.demoMessage}</p>
+                    </div>
+                  )}
+                  
                   <div className="flex justify-between items-center">
-                    <Badge className="bg-gradient-to-r from-orange-100 to-red-100 text-orange-800">
-                      Powered by Grok AI
+                    <Badge className={`${mealPlan.isDemo ? 'bg-orange-100 text-orange-800' : 'bg-gradient-to-r from-orange-100 to-red-100 text-orange-800'}`}>
+                      {mealPlan.isDemo ? 'Demo Mode' : 'Powered by Grok AI'}
                     </Badge>
                     <Button
                       onClick={() => generateMealPlanMutation.mutate()}

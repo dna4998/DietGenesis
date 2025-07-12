@@ -15,6 +15,8 @@ interface NutritionInsight {
   warnings: string[];
   metabolicAnalysis: string;
   supplementSuggestions: string[];
+  isDemo?: boolean;
+  demoMessage?: string;
 }
 
 interface AIInsightsCardProps {
@@ -33,27 +35,17 @@ export default function AIInsightsCard({ patient }: AIInsightsCardProps) {
     onSuccess: (data: NutritionInsight) => {
       setInsights(data);
       toast({
-        title: "AI Insights Generated",
-        description: "Personalized nutrition insights are ready!",
+        title: data.isDemo ? "Demo Insights Generated" : "AI Insights Generated",
+        description: data.isDemo ? "Demo insights shown. Add credits for AI analysis." : "Personalized nutrition insights are ready!",
       });
     },
     onError: (error: any) => {
       console.error("Error generating insights:", error);
-      
-      // Check if it's a credits issue
-      if (error?.response?.status === 402) {
-        toast({
-          title: "AI Credits Needed",
-          description: "Please add credits to your xAI account at console.x.ai to use AI insights.",
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Error",
-          description: "Failed to generate nutrition insights. Please try again.",
-          variant: "destructive",
-        });
-      }
+      toast({
+        title: "Error",
+        description: "Failed to generate nutrition insights. Please try again.",
+        variant: "destructive",
+      });
     },
   });
 
@@ -69,8 +61,8 @@ export default function AIInsightsCard({ patient }: AIInsightsCardProps) {
             <Brain className="w-5 h-5 text-purple-600" />
             AI Nutrition Insights
           </CardTitle>
-          <Badge className="bg-gradient-to-r from-purple-100 to-blue-100 text-purple-800 text-xs font-medium">
-            Powered by Grok AI
+          <Badge className={`text-xs font-medium ${insights?.isDemo ? 'bg-orange-100 text-orange-800' : 'bg-gradient-to-r from-purple-100 to-blue-100 text-purple-800'}`}>
+            {insights?.isDemo ? 'Demo Mode' : 'Powered by Grok AI'}
           </Badge>
         </div>
       </CardHeader>
@@ -104,6 +96,11 @@ export default function AIInsightsCard({ patient }: AIInsightsCardProps) {
 
         {insights && (
           <div className="space-y-6">
+            {insights.isDemo && (
+              <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
+                <p className="text-orange-800 text-sm font-medium">{insights.demoMessage}</p>
+              </div>
+            )}
             {/* Summary */}
             <div className="bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-lg p-4">
               <h4 className="font-medium text-purple-900 mb-2 flex items-center gap-2">

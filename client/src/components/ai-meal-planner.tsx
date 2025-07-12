@@ -15,6 +15,8 @@ interface MealPlan {
   mealPlan: string;
   macroBreakdown: string;
   shoppingList: string[];
+  isDemo?: boolean;
+  demoMessage?: string;
 }
 
 interface AIMealPlannerProps {
@@ -36,27 +38,17 @@ export default function AIMealPlanner({ patient }: AIMealPlannerProps) {
     onSuccess: (data: MealPlan) => {
       setMealPlan(data);
       toast({
-        title: "Meal Plan Generated",
-        description: "Your personalized 7-day meal plan is ready!",
+        title: data.isDemo ? "Demo Meal Plan Generated" : "Meal Plan Generated",
+        description: data.isDemo ? "Demo meal plan shown. Add credits for AI planning." : "Your personalized 7-day meal plan is ready!",
       });
     },
     onError: (error: any) => {
       console.error("Error generating meal plan:", error);
-      
-      // Check if it's a credits issue
-      if (error?.response?.status === 402) {
-        toast({
-          title: "AI Credits Needed",
-          description: "Please add credits to your xAI account at console.x.ai to use AI meal planning.",
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Error", 
-          description: "Failed to generate meal plan. Please try again.",
-          variant: "destructive",
-        });
-      }
+      toast({
+        title: "Error", 
+        description: "Failed to generate meal plan. Please try again.",
+        variant: "destructive",
+      });
     },
   });
 
@@ -72,8 +64,8 @@ export default function AIMealPlanner({ patient }: AIMealPlannerProps) {
             <ChefHat className="w-5 h-5 text-orange-600" />
             AI Meal Planner
           </CardTitle>
-          <Badge className="bg-gradient-to-r from-orange-100 to-red-100 text-orange-800 text-xs font-medium">
-            Powered by Grok AI
+          <Badge className={`text-xs font-medium ${mealPlan?.isDemo ? 'bg-orange-100 text-orange-800' : 'bg-gradient-to-r from-orange-100 to-red-100 text-orange-800'}`}>
+            {mealPlan?.isDemo ? 'Demo Mode' : 'Powered by Grok AI'}
           </Badge>
         </div>
       </CardHeader>
@@ -123,6 +115,11 @@ export default function AIMealPlanner({ patient }: AIMealPlannerProps) {
 
         {mealPlan && (
           <div className="space-y-6">
+            {mealPlan.isDemo && (
+              <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
+                <p className="text-orange-800 text-sm font-medium">{mealPlan.demoMessage}</p>
+              </div>
+            )}
             {/* Macro Breakdown */}
             <div className="bg-gradient-to-r from-orange-50 to-yellow-50 border border-orange-200 rounded-lg p-4">
               <h4 className="font-medium text-orange-900 mb-2 flex items-center gap-2">

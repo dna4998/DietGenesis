@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertPatientSchema, updatePatientSchema, insertProviderSchema } from "@shared/schema";
 import { generateNutritionInsights, generateMealPlan } from "./ai-insights";
+import { generateDemoInsights, generateDemoMealPlan } from "./demo-insights";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -135,9 +136,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error("Error generating insights:", error);
       
       if (error.message === "AI_CREDITS_NEEDED") {
-        res.status(402).json({ 
-          message: "AI credits needed", 
-          details: "Please add credits to your xAI account at console.x.ai to use AI insights." 
+        // Return demo insights when credits are needed
+        const demoInsights = generateDemoInsights(patient);
+        res.json({
+          ...demoInsights,
+          isDemo: true,
+          demoMessage: "Demo insights shown. Add credits at console.x.ai for AI-powered analysis."
         });
       } else {
         res.status(500).json({ message: "Failed to generate nutrition insights" });
@@ -165,9 +169,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error("Error generating meal plan:", error);
       
       if (error.message === "AI_CREDITS_NEEDED") {
-        res.status(402).json({ 
-          message: "AI credits needed", 
-          details: "Please add credits to your xAI account at console.x.ai to use AI meal planning." 
+        // Return demo meal plan when credits are needed
+        const demoMealPlan = generateDemoMealPlan(patient);
+        res.json({
+          ...demoMealPlan,
+          isDemo: true,
+          demoMessage: "Demo meal plan shown. Add credits at console.x.ai for AI-powered planning."
         });
       } else {
         res.status(500).json({ message: "Failed to generate meal plan" });
