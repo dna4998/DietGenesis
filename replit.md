@@ -24,6 +24,8 @@ Preferred communication style: Simple, everyday language.
 ✓ **AI Meal Planning** - Smart meal plan generation with macro targets and shopping lists
 ✓ **Provider AI Tools** - Healthcare providers can generate AI insights for patients
 ✓ **Text-Based Health Assistant** - Smart health questions with text-to-speech responses and quick commands
+✓ **AI Exercise Planning** - Complete Grok AI exercise plan generation for patients and providers
+✓ **Full Provider AI Suite** - All AI features (insights, meal plans, exercise plans) available on provider dashboard
 
 ## System Architecture
 
