@@ -35,6 +35,10 @@ Preferred communication style: Simple, everyday language.
 ✓ **Subscription Management** - Patient dashboard shows subscription status and plan management
 ✓ **Demo Mode Support** - Payment system works in demo mode without credentials
 ✓ **Subscription API** - Complete backend API for subscription creation, status tracking, and PayPal integration
+✓ **Lab Results Upload** - Providers can upload patient lab results with specialized interface and categorization
+✓ **Gut Biome Test Upload** - Dedicated upload system for microbiome analysis and gut health test results
+✓ **Enhanced Messaging Types** - Extended messaging system with lab_results and gut_biome_test message types
+✓ **Medical Document Management** - Specialized UI for different medical document types with color-coded categories
 
 ## System Architecture
 
@@ -95,6 +99,8 @@ Preferred communication style: Simple, everyday language.
 - `GET /api/patients/:id/subscription/status` - Get patient subscription status
 - `GET /api/patients/:id/subscription/success` - Handle successful subscription
 - `GET /api/patients/:id/subscription/cancel` - Handle cancelled subscription
+- `POST /api/patients/:id/messages/lab-results` - Upload lab results PDF for patient
+- `POST /api/patients/:id/messages/gut-biome` - Upload gut biome test PDF for patient
 
 ## Data Flow
 

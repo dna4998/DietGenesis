@@ -348,6 +348,98 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Upload lab results and send message
+  app.post("/api/patients/:id/messages/lab-results", upload.single('pdf'), async (req, res) => {
+    try {
+      const patientId = parseInt(req.params.id);
+      if (isNaN(patientId)) {
+        return res.status(400).json({ message: "Invalid patient ID" });
+      }
+
+      // Verify patient exists
+      const patient = await storage.getPatient(patientId);
+      if (!patient) {
+        return res.status(404).json({ message: "Patient not found" });
+      }
+
+      if (!req.file) {
+        return res.status(400).json({ message: "Lab results PDF file is required" });
+      }
+
+      const { content, providerId } = req.body;
+      if (!providerId) {
+        return res.status(400).json({ message: "Provider ID is required" });
+      }
+
+      const fileUrl = `/uploads/${req.file.filename}`;
+      const messageData = {
+        patientId,
+        providerId: parseInt(providerId),
+        content: content || `Lab Results: ${req.file.originalname}`,
+        messageType: 'lab_results' as const,
+        fileUrl,
+        fileName: req.file.originalname,
+        isRead: false,
+      };
+
+      const validatedData = insertMessageSchema.parse(messageData);
+      const message = await storage.createMessage(validatedData);
+      res.status(201).json(message);
+    } catch (error) {
+      console.error("Error uploading lab results:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid message data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to upload lab results" });
+    }
+  });
+
+  // Upload gut biome test results and send message
+  app.post("/api/patients/:id/messages/gut-biome", upload.single('pdf'), async (req, res) => {
+    try {
+      const patientId = parseInt(req.params.id);
+      if (isNaN(patientId)) {
+        return res.status(400).json({ message: "Invalid patient ID" });
+      }
+
+      // Verify patient exists
+      const patient = await storage.getPatient(patientId);
+      if (!patient) {
+        return res.status(404).json({ message: "Patient not found" });
+      }
+
+      if (!req.file) {
+        return res.status(400).json({ message: "Gut biome test PDF file is required" });
+      }
+
+      const { content, providerId } = req.body;
+      if (!providerId) {
+        return res.status(400).json({ message: "Provider ID is required" });
+      }
+
+      const fileUrl = `/uploads/${req.file.filename}`;
+      const messageData = {
+        patientId,
+        providerId: parseInt(providerId),
+        content: content || `Gut Biome Test Results: ${req.file.originalname}`,
+        messageType: 'gut_biome_test' as const,
+        fileUrl,
+        fileName: req.file.originalname,
+        isRead: false,
+      };
+
+      const validatedData = insertMessageSchema.parse(messageData);
+      const message = await storage.createMessage(validatedData);
+      res.status(201).json(message);
+    } catch (error) {
+      console.error("Error uploading gut biome test:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid message data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to upload gut biome test" });
+    }
+  });
+
   // Upload PDF file and send message
   app.post("/api/patients/:id/messages/pdf", upload.single('pdf'), async (req, res) => {
     try {

@@ -10,7 +10,9 @@ import {
   Video, 
   ExternalLink,
   Download,
-  Clock 
+  Clock,
+  FlaskConical,
+  Activity
 } from "lucide-react";
 import type { Patient, Message } from "@shared/schema";
 import { format } from "date-fns";
@@ -28,10 +30,14 @@ export default function MessagingCard({ patient }: MessagingCardProps) {
     switch (messageType) {
       case 'pdf':
         return <FileText className="h-4 w-4 text-red-600" />;
+      case 'lab_results':
+        return <FlaskConical className="h-4 w-4 text-blue-600" />;
+      case 'gut_biome_test':
+        return <Activity className="h-4 w-4 text-green-600" />;
       case 'video_link':
-        return <Video className="h-4 w-4 text-blue-600" />;
+        return <Video className="h-4 w-4 text-purple-600" />;
       case 'pdf_link':
-        return <ExternalLink className="h-4 w-4 text-green-600" />;
+        return <ExternalLink className="h-4 w-4 text-orange-600" />;
       default:
         return <MessageCircle className="h-4 w-4 text-gray-600" />;
     }
@@ -97,6 +103,8 @@ export default function MessagingCard({ patient }: MessagingCardProps) {
                     {getMessageIcon(message.messageType)}
                     <span className="text-sm font-medium">
                       {message.messageType === 'pdf' && 'PDF Document'}
+                      {message.messageType === 'lab_results' && 'Lab Results'}
+                      {message.messageType === 'gut_biome_test' && 'Gut Biome Test'}
                       {message.messageType === 'video_link' && 'Video Resource'}
                       {message.messageType === 'pdf_link' && 'PDF Link'}
                       {message.messageType === 'text' && 'Message'}
@@ -121,7 +129,7 @@ export default function MessagingCard({ patient }: MessagingCardProps) {
                       onClick={() => handleFileClick(message)}
                       className="flex items-center gap-2"
                     >
-                      {message.messageType === 'pdf' ? (
+                      {(message.messageType === 'pdf' || message.messageType === 'lab_results' || message.messageType === 'gut_biome_test') ? (
                         <>
                           <Download className="h-4 w-4" />
                           View PDF

@@ -43,7 +43,7 @@ export const messages = pgTable("messages", {
   patientId: integer("patient_id").notNull().references(() => patients.id),
   providerId: integer("provider_id").notNull().references(() => providers.id),
   content: text("content").notNull(),
-  messageType: text("message_type").notNull(), // 'text', 'pdf', 'video_link', 'pdf_link'
+  messageType: text("message_type").notNull(), // 'text', 'pdf', 'video_link', 'pdf_link', 'lab_results', 'gut_biome_test'
   fileUrl: text("file_url"), // For uploaded files or external links
   fileName: text("file_name"), // Original filename for uploads
   isRead: boolean("is_read").default(false).notNull(),

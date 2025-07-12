@@ -131,6 +131,24 @@ export class MemStorage implements IStorage {
         fileUrl: null,
         fileName: null,
         isRead: true,
+      },
+      {
+        patientId: 1,
+        providerId: 1,
+        content: "Your latest lab results show significant improvement in metabolic markers. Insulin sensitivity has increased and inflammation markers are down.",
+        messageType: "lab_results",
+        fileUrl: "/uploads/john_doe_lab_results_2024.pdf",
+        fileName: "Lab_Results_Jan_2024.pdf",
+        isRead: false,
+      },
+      {
+        patientId: 1,
+        providerId: 1,
+        content: "Gut biome analysis shows excellent diversity improvement since starting the prebiotic protocol. Continue current supplementation.",
+        messageType: "gut_biome_test",
+        fileUrl: "/uploads/john_doe_gut_biome_2024.pdf", 
+        fileName: "Gut_Biome_Analysis_Jan_2024.pdf",
+        isRead: false,
       }
     ];
 

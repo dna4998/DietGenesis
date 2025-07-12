@@ -29,7 +29,9 @@ import {
   Video, 
   ExternalLink,
   Upload,
-  Send 
+  Send,
+  FlaskConical,
+  Activity
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
@@ -75,6 +77,16 @@ export default function SendMessageModal({ patient, providerId, trigger }: SendM
   });
 
   const pdfForm = useForm({
+    resolver: zodResolver(pdfMessageSchema),
+    defaultValues: { content: "", file: null },
+  });
+
+  const labResultsForm = useForm({
+    resolver: zodResolver(pdfMessageSchema),
+    defaultValues: { content: "", file: null },
+  });
+
+  const gutBiomeForm = useForm({
     resolver: zodResolver(pdfMessageSchema),
     defaultValues: { content: "", file: null },
   });
@@ -146,6 +158,68 @@ export default function SendMessageModal({ patient, providerId, trigger }: SendM
     },
   });
 
+  const sendLabResultsMutation = useMutation({
+    mutationFn: async (data: { content?: string; file: File }) => {
+      const formData = new FormData();
+      formData.append("pdf", data.file);
+      formData.append("providerId", providerId.toString());
+      if (data.content) {
+        formData.append("content", data.content);
+      }
+
+      const response = await fetch(`/api/patients/${patient.id}/messages/lab-results`, {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to upload lab results");
+      }
+
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({ title: "Lab results uploaded successfully" });
+      labResultsForm.reset();
+      setOpen(false);
+      queryClient.invalidateQueries({ queryKey: ['/api/patients', patient.id, 'messages'] });
+    },
+    onError: () => {
+      toast({ title: "Failed to upload lab results", variant: "destructive" });
+    },
+  });
+
+  const sendGutBiomeMutation = useMutation({
+    mutationFn: async (data: { content?: string; file: File }) => {
+      const formData = new FormData();
+      formData.append("pdf", data.file);
+      formData.append("providerId", providerId.toString());
+      if (data.content) {
+        formData.append("content", data.content);
+      }
+
+      const response = await fetch(`/api/patients/${patient.id}/messages/gut-biome`, {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to upload gut biome test");
+      }
+
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({ title: "Gut biome test uploaded successfully" });
+      gutBiomeForm.reset();
+      setOpen(false);
+      queryClient.invalidateQueries({ queryKey: ['/api/patients', patient.id, 'messages'] });
+    },
+    onError: () => {
+      toast({ title: "Failed to upload gut biome test", variant: "destructive" });
+    },
+  });
+
   const onTextSubmit = (data: { content: string }) => {
     sendTextMutation.mutate(data);
   };
@@ -156,6 +230,14 @@ export default function SendMessageModal({ patient, providerId, trigger }: SendM
 
   const onPdfSubmit = (data: { content?: string; file: File }) => {
     sendPdfMutation.mutate(data);
+  };
+
+  const onLabResultsSubmit = (data: { content?: string; file: File }) => {
+    sendLabResultsMutation.mutate(data);
+  };
+
+  const onGutBiomeSubmit = (data: { content?: string; file: File }) => {
+    sendGutBiomeMutation.mutate(data);
   };
 
   return (
@@ -177,7 +259,7 @@ export default function SendMessageModal({ patient, providerId, trigger }: SendM
         </DialogHeader>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="text" className="flex items-center gap-1">
               <MessageCircle className="h-4 w-4" />
               Text
@@ -189,6 +271,14 @@ export default function SendMessageModal({ patient, providerId, trigger }: SendM
             <TabsTrigger value="pdf" className="flex items-center gap-1">
               <FileText className="h-4 w-4" />
               PDF
+            </TabsTrigger>
+            <TabsTrigger value="lab-results" className="flex items-center gap-1">
+              <FlaskConical className="h-4 w-4" />
+              Labs
+            </TabsTrigger>
+            <TabsTrigger value="gut-biome" className="flex items-center gap-1">
+              <Activity className="h-4 w-4" />
+              Gut
             </TabsTrigger>
           </TabsList>
 
@@ -370,6 +460,154 @@ export default function SendMessageModal({ patient, providerId, trigger }: SendM
                   disabled={sendPdfMutation.isPending}
                 >
                   {sendPdfMutation.isPending ? "Uploading..." : "Upload PDF"}
+                </Button>
+              </form>
+            </Form>
+          </TabsContent>
+
+          <TabsContent value="lab-results">
+            <Form {...labResultsForm}>
+              <form onSubmit={labResultsForm.handleSubmit(onLabResultsSubmit)} className="space-y-4">
+                <FormField
+                  control={labResultsForm.control}
+                  name="file"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Lab Results PDF</FormLabel>
+                      <FormControl>
+                        <div className="border-2 border-dashed border-blue-300 rounded-lg p-4 text-center bg-blue-50">
+                          <Input
+                            type="file"
+                            accept=".pdf"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                field.onChange(file);
+                              }
+                            }}
+                            className="hidden"
+                            id="lab-results-upload"
+                          />
+                          <label htmlFor="lab-results-upload" className="cursor-pointer">
+                            <FlaskConical className="h-8 w-8 mx-auto text-blue-500 mb-2" />
+                            <p className="text-sm text-blue-700 font-medium">
+                              Upload Lab Results
+                            </p>
+                            <p className="text-xs text-blue-600">
+                              Blood work, metabolic panels, lipid profiles, etc.
+                            </p>
+                            <p className="text-xs text-gray-400 mt-1">
+                              Max size: 5MB
+                            </p>
+                          </label>
+                          {field.value && (
+                            <Badge variant="secondary" className="mt-2 bg-blue-100 text-blue-800">
+                              {field.value.name}
+                            </Badge>
+                          )}
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={labResultsForm.control}
+                  name="content"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Notes (Optional)</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          placeholder="Add notes about these lab results..."
+                          rows={3}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <Button 
+                  type="submit" 
+                  className="w-full bg-blue-600 hover:bg-blue-700"
+                  disabled={sendLabResultsMutation.isPending}
+                >
+                  {sendLabResultsMutation.isPending ? "Uploading..." : "Upload Lab Results"}
+                </Button>
+              </form>
+            </Form>
+          </TabsContent>
+
+          <TabsContent value="gut-biome">
+            <Form {...gutBiomeForm}>
+              <form onSubmit={gutBiomeForm.handleSubmit(onGutBiomeSubmit)} className="space-y-4">
+                <FormField
+                  control={gutBiomeForm.control}
+                  name="file"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Gut Biome Test PDF</FormLabel>
+                      <FormControl>
+                        <div className="border-2 border-dashed border-green-300 rounded-lg p-4 text-center bg-green-50">
+                          <Input
+                            type="file"
+                            accept=".pdf"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                field.onChange(file);
+                              }
+                            }}
+                            className="hidden"
+                            id="gut-biome-upload"
+                          />
+                          <label htmlFor="gut-biome-upload" className="cursor-pointer">
+                            <Activity className="h-8 w-8 mx-auto text-green-500 mb-2" />
+                            <p className="text-sm text-green-700 font-medium">
+                              Upload Gut Biome Test
+                            </p>
+                            <p className="text-xs text-green-600">
+                              Microbiome analysis, SIBO tests, food sensitivity
+                            </p>
+                            <p className="text-xs text-gray-400 mt-1">
+                              Max size: 5MB
+                            </p>
+                          </label>
+                          {field.value && (
+                            <Badge variant="secondary" className="mt-2 bg-green-100 text-green-800">
+                              {field.value.name}
+                            </Badge>
+                          )}
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={gutBiomeForm.control}
+                  name="content"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Analysis Notes (Optional)</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          placeholder="Add notes about these gut biome test results..."
+                          rows={3}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <Button 
+                  type="submit" 
+                  className="w-full bg-green-600 hover:bg-green-700"
+                  disabled={sendGutBiomeMutation.isPending}
+                >
+                  {sendGutBiomeMutation.isPending ? "Uploading..." : "Upload Gut Biome Test"}
                 </Button>
               </form>
             </Form>
