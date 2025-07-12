@@ -116,7 +116,7 @@ export default function PatientDashboard({ selectedPatientId }: PatientDashboard
             // In a real app, this would update the theme configuration
             console.log('Selected color scheme:', scheme.name);
           }}
-          currentScheme="Medical Professional"
+          currentScheme="Modern Minimalist"
         />
       </div>
 

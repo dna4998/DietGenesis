@@ -108,26 +108,26 @@ function calculateHealthScore(metrics: HealthMetrics): number {
 function getThemeForScore(score: number): AdaptiveTheme {
   if (score >= 90) {
     return {
-      primary: 'hsl(142, 76%, 36%)', // Rich green
-      secondary: 'hsl(142, 76%, 46%)',
-      accent: 'hsl(160, 84%, 39%)',
-      background: 'hsl(143, 64%, 98%)',
-      card: 'hsl(143, 64%, 96%)',
-      border: 'hsl(142, 29%, 85%)',
-      text: 'hsl(142, 13%, 15%)',
-      muted: 'hsl(142, 13%, 45%)',
+      primary: 'hsl(156, 73%, 44%)', // Modern sophisticated green
+      secondary: 'hsl(156, 73%, 54%)',
+      accent: 'hsl(156, 73%, 34%)',
+      background: 'hsl(156, 30%, 98%)',
+      card: 'hsl(156, 30%, 96%)',
+      border: 'hsl(156, 20%, 85%)',
+      text: 'hsl(156, 13%, 15%)',
+      muted: 'hsl(156, 13%, 45%)',
       healthScore: score,
       statusColor: 'excellent',
       statusMessage: 'Excellent health metrics - keep up the great work!'
     };
   } else if (score >= 75) {
     return {
-      primary: 'hsl(213, 94%, 68%)', // Bright blue
+      primary: 'hsl(213, 94%, 68%)', // Modern clean blue
       secondary: 'hsl(213, 94%, 78%)',
-      accent: 'hsl(204, 94%, 68%)',
-      background: 'hsl(213, 100%, 98%)',
-      card: 'hsl(213, 100%, 96%)',
-      border: 'hsl(213, 27%, 84%)',
+      accent: 'hsl(213, 94%, 58%)',
+      background: 'hsl(213, 50%, 98%)',
+      card: 'hsl(213, 50%, 96%)',
+      border: 'hsl(213, 20%, 84%)',
       text: 'hsl(213, 13%, 15%)',
       muted: 'hsl(213, 13%, 45%)',
       healthScore: score,
@@ -136,40 +136,40 @@ function getThemeForScore(score: number): AdaptiveTheme {
     };
   } else if (score >= 60) {
     return {
-      primary: 'hsl(45, 93%, 47%)', // Amber/gold
-      secondary: 'hsl(45, 93%, 57%)',
-      accent: 'hsl(38, 92%, 50%)',
-      background: 'hsl(45, 100%, 98%)',
-      card: 'hsl(45, 100%, 96%)',
-      border: 'hsl(45, 34%, 78%)',
-      text: 'hsl(45, 13%, 15%)',
-      muted: 'hsl(45, 13%, 45%)',
+      primary: 'hsl(47, 100%, 68%)', // Modern clean yellow
+      secondary: 'hsl(47, 100%, 78%)',
+      accent: 'hsl(47, 100%, 58%)',
+      background: 'hsl(47, 40%, 98%)',
+      card: 'hsl(47, 40%, 96%)',
+      border: 'hsl(47, 20%, 78%)',
+      text: 'hsl(47, 13%, 15%)',
+      muted: 'hsl(47, 13%, 45%)',
       healthScore: score,
       statusColor: 'fair',
       statusMessage: 'Fair health metrics - some areas need attention.'
     };
   } else if (score >= 40) {
     return {
-      primary: 'hsl(24, 95%, 53%)', // Orange
-      secondary: 'hsl(24, 95%, 63%)',
-      accent: 'hsl(20, 91%, 48%)',
-      background: 'hsl(24, 100%, 98%)',
-      card: 'hsl(24, 100%, 96%)',
-      border: 'hsl(24, 34%, 78%)',
-      text: 'hsl(24, 13%, 15%)',
-      muted: 'hsl(24, 13%, 45%)',
+      primary: 'hsl(22, 93%, 67%)', // Modern refined orange
+      secondary: 'hsl(22, 93%, 77%)',
+      accent: 'hsl(22, 93%, 57%)',
+      background: 'hsl(22, 40%, 98%)',
+      card: 'hsl(22, 40%, 96%)',
+      border: 'hsl(22, 20%, 78%)',
+      text: 'hsl(22, 13%, 15%)',
+      muted: 'hsl(22, 13%, 45%)',
       healthScore: score,
       statusColor: 'needs-attention',
       statusMessage: 'Health metrics need attention - let\'s work together on improvements.'
     };
   } else {
     return {
-      primary: 'hsl(0, 84%, 60%)', // Red
-      secondary: 'hsl(0, 84%, 70%)',
-      accent: 'hsl(0, 72%, 51%)',
-      background: 'hsl(0, 100%, 98%)',
-      card: 'hsl(0, 100%, 96%)',
-      border: 'hsl(0, 34%, 78%)',
+      primary: 'hsl(0, 72%, 65%)', // Modern elegant red
+      secondary: 'hsl(0, 72%, 75%)',
+      accent: 'hsl(0, 72%, 55%)',
+      background: 'hsl(0, 30%, 98%)',
+      card: 'hsl(0, 30%, 96%)',
+      border: 'hsl(0, 20%, 78%)',
       text: 'hsl(0, 13%, 15%)',
       muted: 'hsl(0, 13%, 45%)',
       healthScore: score,
