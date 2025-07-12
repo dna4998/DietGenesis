@@ -77,7 +77,7 @@ export default function ProviderPatientCard({ patient, onUpdate, onAIAnalysis }:
             size="sm"
             className="px-3"
             onClick={() => onAIAnalysis(patient)}
-            title="AI Analysis"
+            title="AI Plan Generator"
           >
             <Brain className="w-4 h-4" />
           </Button>

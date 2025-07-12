@@ -39,6 +39,10 @@ Preferred communication style: Simple, everyday language.
 ✓ **Gut Biome Test Upload** - Dedicated upload system for microbiome analysis and gut health test results
 ✓ **Enhanced Messaging Types** - Extended messaging system with lab_results and gut_biome_test message types
 ✓ **Medical Document Management** - Specialized UI for different medical document types with color-coded categories
+✓ **AI Plan Generator** - Comprehensive Grok AI system that analyzes lab results and gut biome tests to generate personalized treatment plans
+✓ **Provider-Only AI Workflow** - AI functionality restricted to providers for professional medical decision-making
+✓ **Simplified Patient Dashboard** - Patient view streamlined to show only demographics and messages from providers
+✓ **Automated Plan Distribution** - AI-generated plans automatically sent to patients via messaging system
 
 ## System Architecture
 
@@ -101,6 +105,9 @@ Preferred communication style: Simple, everyday language.
 - `GET /api/patients/:id/subscription/cancel` - Handle cancelled subscription
 - `POST /api/patients/:id/messages/lab-results` - Upload lab results PDF for patient
 - `POST /api/patients/:id/messages/gut-biome` - Upload gut biome test PDF for patient
+- `POST /api/patients/:id/analyze-labs` - AI analysis of patient lab results using Grok
+- `POST /api/patients/:id/analyze-gut-biome` - AI analysis of patient gut biome tests using Grok
+- `POST /api/patients/:id/generate-comprehensive-plan` - Generate complete treatment plan from AI analysis
 
 ## Data Flow
 

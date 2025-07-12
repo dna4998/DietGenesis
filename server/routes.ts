@@ -10,6 +10,7 @@ import { generateNutritionInsights, generateMealPlan, generateExercisePlan } fro
 import { generateDemoInsights, generateDemoMealPlan, generateDemoExercisePlan } from "./demo-insights";
 import { processVoiceCommand, getVoiceCommandSuggestions } from "./voice-commands";
 import { createPaypalOrder, capturePaypalOrder, loadPaypalDefault, createSubscriptionPlan, createSubscription } from "./paypal";
+import { analyzeLabResults, analyzeGutBiome, generateComprehensivePlan } from "./ai-plan-generator";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -255,6 +256,92 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error getting voice command suggestions:", error);
       res.status(500).json({ message: "Failed to get suggestions" });
+    }
+  });
+
+  // Analyze lab results for a patient
+  app.post("/api/patients/:id/analyze-labs", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid patient ID" });
+      }
+
+      const patient = await storage.getPatient(id);
+      if (!patient) {
+        return res.status(404).json({ message: "Patient not found" });
+      }
+
+      // Get the latest lab results message for this patient
+      const messages = await storage.getMessagesForPatient(id);
+      const labResultsMessage = messages
+        .filter(m => m.messageType === 'lab_results')
+        .sort((a, b) => new Date(b.createdAt!).getTime() - new Date(a.createdAt!).getTime())[0];
+
+      if (!labResultsMessage) {
+        return res.status(404).json({ message: "No lab results found for this patient" });
+      }
+
+      // For demo purposes, use the message content. In production, you'd extract text from the PDF
+      const labAnalysis = await analyzeLabResults(patient, labResultsMessage.content || "Sample lab data");
+      res.json(labAnalysis);
+    } catch (error) {
+      console.error("Error analyzing lab results:", error);
+      res.status(500).json({ message: "Failed to analyze lab results" });
+    }
+  });
+
+  // Analyze gut biome for a patient
+  app.post("/api/patients/:id/analyze-gut-biome", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid patient ID" });
+      }
+
+      const patient = await storage.getPatient(id);
+      if (!patient) {
+        return res.status(404).json({ message: "Patient not found" });
+      }
+
+      // Get the latest gut biome test message for this patient
+      const messages = await storage.getMessagesForPatient(id);
+      const gutBiomeMessage = messages
+        .filter(m => m.messageType === 'gut_biome_test')
+        .sort((a, b) => new Date(b.createdAt!).getTime() - new Date(a.createdAt!).getTime())[0];
+
+      if (!gutBiomeMessage) {
+        return res.status(404).json({ message: "No gut biome test found for this patient" });
+      }
+
+      // For demo purposes, use the message content. In production, you'd extract text from the PDF
+      const gutBiomeAnalysis = await analyzeGutBiome(patient, gutBiomeMessage.content || "Sample gut biome data");
+      res.json(gutBiomeAnalysis);
+    } catch (error) {
+      console.error("Error analyzing gut biome:", error);
+      res.status(500).json({ message: "Failed to analyze gut biome" });
+    }
+  });
+
+  // Generate comprehensive treatment plan
+  app.post("/api/patients/:id/generate-comprehensive-plan", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid patient ID" });
+      }
+
+      const patient = await storage.getPatient(id);
+      if (!patient) {
+        return res.status(404).json({ message: "Patient not found" });
+      }
+
+      const { labAnalysis, gutBiomeAnalysis } = req.body;
+      const comprehensivePlan = await generateComprehensivePlan(patient, labAnalysis, gutBiomeAnalysis);
+      res.json(comprehensivePlan);
+    } catch (error) {
+      console.error("Error generating comprehensive plan:", error);
+      res.status(500).json({ message: "Failed to generate comprehensive plan" });
     }
   });
 

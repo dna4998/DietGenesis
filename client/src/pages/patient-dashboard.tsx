@@ -1,13 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
 import HealthMetricsCard from "@/components/health-metrics-card";
-import ProgressCard from "@/components/progress-card";
-import DietPlanCard from "@/components/diet-plan-card";
-import ExercisePlanCard from "@/components/exercise-plan-card";
-import SupplementsCard from "@/components/supplements-card";
-import AIInsightsCard from "@/components/ai-insights-card";
-import AIMealPlanner from "@/components/ai-meal-planner";
-import AIExercisePlanner from "@/components/ai-exercise-planner";
-import VoiceAssistant from "@/components/voice-assistant";
 import MessagingCard from "@/components/messaging-card";
 import SubscriptionCard from "@/components/subscription-card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -73,32 +65,19 @@ export default function PatientDashboard({ selectedPatientId }: PatientDashboard
         <p className="mt-2 text-gray-600">Last visit: {patient.lastVisit}</p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-        <HealthMetricsCard patient={patient} />
-        <ProgressCard patient={patient} />
-        <SubscriptionCard patient={patient} />
-      </div>
-
+      {/* Simplified Patient View - Demographics and Messages Only */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        {/* Patient Demographics and Health Info */}
         <div className="space-y-6">
-          <DietPlanCard patient={patient} />
-          <SupplementsCard patient={patient} />
+          <HealthMetricsCard patient={patient} />
+          <SubscriptionCard patient={patient} />
         </div>
+        
+        {/* Messages from Provider */}
         <div className="space-y-6">
-          <ExercisePlanCard patient={patient} />
           <MessagingCard patient={patient} />
         </div>
       </div>
-
-      {/* AI-Powered Features */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 mb-8">
-        <AIInsightsCard patient={patient} />
-        <AIMealPlanner patient={patient} />
-        <AIExercisePlanner patient={patient} />
-      </div>
-
-      {/* Voice Assistant */}
-      <VoiceAssistant patient={patient} />
     </div>
   );
 }

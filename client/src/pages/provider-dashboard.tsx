@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import ProviderPatientCard from "@/components/provider-patient-card";
 import PlanCreationForm from "@/components/plan-creation-form";
-import ProviderAIInsights from "@/components/provider-ai-insights";
+import AIPlanGenerator from "@/components/ai-plan-generator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
@@ -175,10 +175,12 @@ export default function ProviderDashboard() {
       )}
 
       {showAIAnalysis && selectedPatient && (
-        <ProviderAIInsights
-          patient={selectedPatient}
-          onClose={handleAIAnalysisClose}
-        />
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <AIPlanGenerator
+            patient={selectedPatient}
+            onClose={handleAIAnalysisClose}
+          />
+        </div>
       )}
     </div>
   );
