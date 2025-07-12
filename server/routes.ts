@@ -1015,6 +1015,55 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Dexcom diagnostics for troubleshooting
+  app.get("/api/dexcom/diagnostics", async (req, res) => {
+    try {
+      const diagnostics = {
+        apiConfigured: isDexcomConfigured(),
+        environmentMode: process.env.NODE_ENV === 'production' ? 'production' : 'sandbox',
+        clientIdPresent: !!process.env.DEXCOM_CLIENT_ID,
+        clientSecretPresent: !!process.env.DEXCOM_CLIENT_SECRET,
+        redirectUri: process.env.DEXCOM_REDIRECT_URI || 'http://localhost:5000/api/dexcom/callback',
+        baseUrl: process.env.NODE_ENV === 'production' ? 'https://api.dexcom.com' : 'https://sandbox-api.dexcom.com',
+      };
+
+      res.json(diagnostics);
+    } catch (error: any) {
+      console.error("Dexcom diagnostics error:", error);
+      res.status(500).json({ message: "Failed to fetch diagnostics: " + error.message });
+    }
+  });
+
+  // Test Dexcom connection
+  app.post("/api/dexcom/test-connection", async (req, res) => {
+    try {
+      if (!isDexcomConfigured()) {
+        return res.status(400).json({ 
+          success: false, 
+          message: "Dexcom API not configured",
+          statusCode: 400
+        });
+      }
+
+      // Test connection to Dexcom API
+      const baseUrl = process.env.NODE_ENV === 'production' ? 'https://api.dexcom.com' : 'https://sandbox-api.dexcom.com';
+      const testResponse = await fetch(`${baseUrl}/v2/oauth2/login`);
+      
+      res.json({
+        success: testResponse.ok,
+        statusCode: testResponse.status,
+        message: testResponse.ok ? 'Dexcom API is accessible' : 'Dexcom API connection failed'
+      });
+    } catch (error: any) {
+      console.error("Dexcom connection test error:", error);
+      res.status(500).json({ 
+        success: false,
+        message: "Connection test failed: " + error.message,
+        statusCode: 500
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

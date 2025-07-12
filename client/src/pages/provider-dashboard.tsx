@@ -6,6 +6,7 @@ import AIPlanGenerator from "@/components/ai-plan-generator";
 import HealthTrendPrediction from "@/components/health-trend-prediction";
 import DexcomProviderCard from "@/components/dexcom-provider-card";
 import DexcomProviderManagement from "@/components/dexcom-provider-management";
+import DexcomTroubleshooting from "@/components/dexcom-troubleshooting";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
@@ -164,7 +165,8 @@ export default function ProviderDashboard() {
       </div>
 
       {/* Dexcom Management Panel */}
-      <div className="mb-8">
+      <div className="mb-8 space-y-6">
+        <DexcomTroubleshooting />
         <DexcomProviderManagement />
       </div>
 

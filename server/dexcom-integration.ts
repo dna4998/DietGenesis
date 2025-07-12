@@ -42,6 +42,9 @@ class DexcomService {
   constructor() {
     if (!this.clientId || !this.clientSecret) {
       console.warn('Dexcom credentials not configured - running in demo mode');
+    } else {
+      console.log('Dexcom API configured with Client ID:', this.clientId?.substring(0, 8) + '...');
+      console.log('Using Dexcom environment:', process.env.NODE_ENV === 'production' ? 'Production' : 'Sandbox');
     }
   }
 
