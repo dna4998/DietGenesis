@@ -40,9 +40,7 @@ export default function SubscriptionCard({ patient }: SubscriptionCardProps) {
     setIsPaymentModalOpen(true);
   };
 
-  const handleSubscribe = (plan: 'monthly' | 'yearly') => {
-    createSubscriptionMutation.mutate(plan);
-  };
+
 
   const getStatusIcon = () => {
     if (!subscriptionStatus) return <Clock className="h-4 w-4" />;
