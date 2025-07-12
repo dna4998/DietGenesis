@@ -68,6 +68,32 @@
 }
 
 @layer utilities {
+  /* Adaptive theme transitions */
+  html {
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  /* Status-specific styling overrides */
+  [data-health-status="excellent"] {
+    --ring: hsl(142, 76%, 36%);
+  }
+
+  [data-health-status="good"] {
+    --ring: hsl(213, 94%, 68%);
+  }
+
+  [data-health-status="fair"] {
+    --ring: hsl(45, 93%, 47%);
+  }
+
+  [data-health-status="needs-attention"] {
+    --ring: hsl(24, 95%, 53%);
+  }
+
+  [data-health-status="critical"] {
+    --ring: hsl(0, 84%, 60%);
+  }
+
   .text-medical-blue {
     color: var(--medical-blue);
   }

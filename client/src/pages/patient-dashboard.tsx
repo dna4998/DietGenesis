@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import HealthMetricsCard from "@/components/health-metrics-card";
@@ -6,6 +6,8 @@ import MessagingCard from "@/components/messaging-card";
 import SimpleSubscriptionCard from "@/components/simple-subscription-card";
 import HealthTipsWidget from "@/components/health-tips-widget";
 import DexcomIntegration from "@/components/dexcom-integration";
+import HealthStatusIndicator from "@/components/health-status-indicator";
+import ThemeDemoControls from "@/components/theme-demo-controls";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { Patient } from "@shared/schema";
 
@@ -15,6 +17,7 @@ interface PatientDashboardProps {
 
 export default function PatientDashboard({ selectedPatientId }: PatientDashboardProps) {
   const { toast } = useToast();
+  const [localPatient, setLocalPatient] = useState<Patient | null>(null);
 
   // Check for subscription status in URL parameters
   useEffect(() => {
@@ -42,6 +45,16 @@ export default function PatientDashboard({ selectedPatientId }: PatientDashboard
   const { data: patient, isLoading, error } = useQuery<Patient>({
     queryKey: ["/api/patients", selectedPatientId],
   });
+
+  // Update local patient when data changes
+  useEffect(() => {
+    if (patient) {
+      setLocalPatient(patient);
+    }
+  }, [patient]);
+
+  // Use local patient for demo purposes, fall back to fetched patient
+  const displayPatient = localPatient || patient;
 
   if (isLoading) {
     return (
@@ -76,7 +89,7 @@ export default function PatientDashboard({ selectedPatientId }: PatientDashboard
     );
   }
 
-  if (!patient) {
+  if (!displayPatient) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="text-center">
@@ -90,27 +103,38 @@ export default function PatientDashboard({ selectedPatientId }: PatientDashboard
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Welcome back, {patient.name}</h1>
-        <p className="mt-2 text-gray-600">Last visit: {patient.lastVisit}</p>
+        <h1 className="text-3xl font-bold text-foreground">Welcome back, {displayPatient.name}</h1>
+        <p className="mt-2 text-muted-foreground">Last visit: {displayPatient.lastVisit}</p>
+      </div>
+
+      {/* Theme Demo Controls - allows users to see adaptive theming in action */}
+      <ThemeDemoControls 
+        patient={displayPatient} 
+        onPatientUpdate={(updates) => setLocalPatient(prev => prev ? { ...prev, ...updates } : null)}
+      />
+
+      {/* Health Status Overview - Shows adaptive theme */}
+      <div className="mb-6">
+        <HealthStatusIndicator patient={displayPatient} showRecommendations={true} />
       </div>
 
       {/* Daily Health Tip */}
       <div className="mb-6">
-        <HealthTipsWidget patient={patient} />
+        <HealthTipsWidget patient={displayPatient} />
       </div>
 
       {/* Simplified Patient View - Demographics and Messages Only */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         {/* Patient Demographics and Health Info */}
         <div className="space-y-6">
-          <HealthMetricsCard patient={patient} />
-          <SimpleSubscriptionCard patient={patient} />
+          <HealthMetricsCard patient={displayPatient} />
+          <SimpleSubscriptionCard patient={displayPatient} />
         </div>
         
         {/* Messages from Provider */}
         <div className="space-y-6">
-          <MessagingCard patient={patient} />
-          <DexcomIntegration patientId={patient.id} />
+          <MessagingCard patient={displayPatient} />
+          <DexcomIntegration patientId={displayPatient.id} />
         </div>
       </div>
     </div>
