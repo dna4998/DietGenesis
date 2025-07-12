@@ -8,6 +8,7 @@ import HealthTipsWidget from "@/components/health-tips-widget";
 import DexcomIntegration from "@/components/dexcom-integration";
 import HealthStatusIndicator from "@/components/health-status-indicator";
 import ThemeDemoControls from "@/components/theme-demo-controls";
+import MobilePreview from "@/components/mobile-optimizations";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { Patient } from "@shared/schema";
 
@@ -105,6 +106,11 @@ export default function PatientDashboard({ selectedPatientId }: PatientDashboard
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-foreground">Welcome back, {displayPatient.name}</h1>
         <p className="mt-2 text-muted-foreground">Last visit: {displayPatient.lastVisit}</p>
+      </div>
+
+      {/* Mobile Preview - shows how the app looks on mobile devices */}
+      <div className="mb-6 hidden md:block">
+        <MobilePreview patient={displayPatient} />
       </div>
 
       {/* Theme Demo Controls - allows users to see adaptive theming in action */}
