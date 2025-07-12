@@ -4,6 +4,7 @@ import ProviderPatientCard from "@/components/provider-patient-card";
 import PlanCreationForm from "@/components/plan-creation-form";
 import AIPlanGenerator from "@/components/ai-plan-generator";
 import HealthTrendPrediction from "@/components/health-trend-prediction";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
