@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DNA Diet Club App</title>
+  <script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+    const { useState } = React;
+
+    // Mock patient data (replace with Firebase or API data)
+    const initialPatients = [
+      { id: 1, name: "John Doe", weight: 200, bodyFat: 30, insulinResistance: true, dietPlan: "Low-carb, high-protein", exercisePlan: "Strength + HIIT", supplements: ["Metabolic Health", "Super EPA"] },
+    ];
+
+    // Main App Component
+    const App = () => {
+      const [userRole, setUserRole] = useState("patient"); // Toggle between patient/provider
+      const [patients, setPatients] = useState(initialPatients);
+      const [newPlan, setNewPlan] = useState({ diet: "", exercise: "", supplements: [] });
+
+      // Handle plan submission (provider side)
+      const handlePlanSubmit = (patientId) => {
+        setPatients(patients.map(p => 
+          p.id === patientId ? { ...p, dietPlan: newPlan.diet, exercisePlan: newPlan.exercise, supplements: newPlan.supplements } : p
+        ));
+        setNewPlan({ diet: "", exercise: "", supplements: [] });
+      };
+
+      // Patient Dashboard
+      const PatientDashboard = () => {
+        const patient = patients[0]; // Mock first patient
+        return (
+          <div className="p-6">
+            <h1 className="text-2xl font-bold mb-4">Welcome, {patient.name}</h1>
+            <div className="bg-gray-100 p-4 rounded mb-4">
+              <h2 className="text-xl font-semibold">Your Health Data</h2>
+              <p>Weight: {patient.weight} lbs</p>
+              <p>Body Fat: {patient.bodyFat}%</p>
+              <p>Insulin Resistance: {patient.insulinResistance ? "Yes" : "No"}</p>
+            </div>
+            <div className="bg-gray-100 p-4 rounded mb-4">
+              <h2 className="text-xl font-semibold">Diet Plan</h2>
+              <p>{patient.dietPlan || "No plan assigned"}</p>
+            </div>
+            <div className="bg-gray-100 p-4 rounded mb-4">
+              <h2 className="text-xl font-semibold">Exercise Plan</h2>
+              <p>{patient.exercisePlan || "No plan assigned"}</p>
+              <div>
+                <h3 className="text-lg font-semibold mt-2">Exercise Videos</h3>
+                {/* Placeholder for YouTube API integration */}
+                <a href="https://www.youtube.com/watch?v=example" target="_blank" className="text-blue-600">Watch Strength Training Video</a>
+              </div>
+            </div>
+            <div className="bg-gray-100 p-4 rounded">
+              <h2 className="text-xl font-semibold">Supplements</h2>
+              <ul>
+                {patient.supplements.map((supp, idx) => (
+                  <li key={idx}>
+                    <a href={`https://www.thorne.com/search?q=${supp}`} target="_blank" className="text-blue-600">{supp}</a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        );
+      };
+
+      // Provider Dashboard
+      const ProviderDashboard = () => {
+        return (
+          <div className="p-6">
+            <h1 className="text-2xl font-bold mb-4">Provider Dashboard</h1>
+            {patients.map(patient => (
+              <div key={patient.id} className="bg-gray-100 p-4 rounded mb-4">
+                <h2 className="text-xl font-semibold">{patient.name}</h2>
+                <p>Weight: {patient.weight} lbs | Body Fat: {patient.bodyFat}%</p>
+                <div className="mt-4">
+                  <h3 className="text-lg font-semibold">Update Plans</h3>
+                  <input
+                    type="text"
+                    placeholder="Diet Plan"
+                    className="border p-2 mr-2"
+                    value={newPlan.diet}
+                    onChange={(e) => setNewPlan({ ...newPlan, diet: e.target.value })}
+                  />
+                  <input
+                    type="text"
+                    placeholder="Exercise Plan"
+                    className="border p-2 mr-2"
+                    value={newPlan.exercise}
+                    onChange={(e) => setNewPlan({ ...newPlan, exercise: e.target.value })}
+                  />
+                  <input
+                    type="text"
+                    placeholder="Supplements (comma-separated)"
+                    className="border p-2 mr-2"
+                    value={newPlan.supplements.join(",")}
+                    onChange={(e) => setNewPlan({ ...newPlan, supplements: e.target.value.split(",") })}
+                  />
+                  <button
+                    className="bg-blue-500 text-white p-2 rounded"
+                    onClick={() => handlePlanSubmit(patient.id)}
+                  >
+                    Save Plans
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        );
+      };
+
+      return (
+        <div className="container mx-auto">
+          <div className="flex justify-center space-x-4 mb-4">
+            <button
+              className={`p-2 ${userRole === "patient" ? "bg-blue-500 text-white" : "bg-gray-200"}`}
+              onClick={() => setUserRole("patient")}
+            >
+              Patient View
+            </button>
+            <button
+              className={`p-2 ${userRole === "provider" ? "bg-blue-500 text-white" : "bg-gray-200"}`}
+              onClick={() => setUserRole("provider")}
+            >
+              Provider View
+            </button>
+          </div>
+          {userRole === "patient" ? <PatientDashboard /> : <ProviderDashboard />}
+        </div>
+      );
+    };
+
+    // Render the app
+    ReactDOM.render(<App />, document.getElementById("root"));
+  </script>
+</body>
+</html>
