@@ -5,8 +5,6 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Mic, MicOff, Volume2, VolumeX, Brain, MessageCircle, Settings, Send, Keyboard } from 'lucide-react';
 import VoiceSettings from '@/components/voice-settings';
-import VoiceVisualization from '@/components/voice-visualization';
-import { useVoiceRecognition } from '@/hooks/use-voice-recognition';
 import { useTextToSpeech } from '@/hooks/use-text-to-speech';
 import { useToast } from '@/hooks/use-toast';
 import type { Patient } from '@shared/schema';
@@ -25,14 +23,12 @@ export default function VoiceAssistant({ patient }: VoiceAssistantProps) {
   const [isActive, setIsActive] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [textInput, setTextInput] = useState('');
-  const [useTextMode, setUseTextMode] = useState(false);
   const [conversationHistory, setConversationHistory] = useState<Array<{
     type: 'user' | 'assistant';
     text: string;
     timestamp: Date;
   }>>([]);
   
-  const voiceRecognition = useVoiceRecognition();
   const textToSpeech = useTextToSpeech();
   const { toast } = useToast();
 
@@ -151,16 +147,7 @@ export default function VoiceAssistant({ patient }: VoiceAssistantProps) {
     return "I'm sorry, I didn't understand that. Try asking about your weight, progress, diet plan, exercise routine, or say 'help' to see what I can do.";
   };
 
-  // Handle voice input
-  useEffect(() => {
-    if (voiceRecognition.transcript && !voiceRecognition.isListening) {
-      const userMessage = voiceRecognition.transcript;
-      handleUserInput(userMessage);
-      voiceRecognition.resetTranscript();
-    }
-  }, [voiceRecognition.transcript, voiceRecognition.isListening]);
-
-  // Process user input (voice or text)
+  // Process user input (text only for now)
   const handleUserInput = (input: string) => {
     const response = processVoiceCommand(input);
     
@@ -186,45 +173,6 @@ export default function VoiceAssistant({ patient }: VoiceAssistantProps) {
     }
   };
 
-  const handleVoiceToggle = () => {
-    if (!voiceRecognition.isSupported) {
-      toast({
-        title: "Voice Recognition Not Supported",
-        description: "Your browser doesn't support voice recognition. Try using Chrome or Safari.",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    // Check for HTTPS requirement
-    if (!window.isSecureContext) {
-      toast({
-        title: "Secure Connection Required",
-        description: "Voice recognition requires HTTPS. Please access the app via a secure connection.",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    if (voiceRecognition.isListening) {
-      voiceRecognition.stopListening();
-    } else {
-      // Request microphone permission first
-      navigator.mediaDevices?.getUserMedia({ audio: true })
-        .then(() => {
-          voiceRecognition.startListening();
-        })
-        .catch((error) => {
-          console.error('Microphone permission denied:', error);
-          toast({
-            title: "Microphone Access Required",
-            description: "Please allow microphone access to use voice commands.",
-            variant: "destructive"
-          });
-        });
-    }
-  };
-
   const handleSpeechToggle = () => {
     if (textToSpeech.isSpeaking) {
       textToSpeech.cancel();
@@ -238,7 +186,7 @@ export default function VoiceAssistant({ patient }: VoiceAssistantProps) {
   };
 
   const startDemo = () => {
-    const demoMessage = `Hello ${patient.name}! I'm your voice-activated health assistant. You can ask me about your weight, progress, diet plan, exercise routine, supplements, and more. Just click the microphone and start talking!`;
+    const demoMessage = `Hello ${patient.name}! I'm your health assistant. You can ask me about your weight, progress, diet plan, exercise routine, supplements, and more. Just type your questions or use the quick command buttons!`;
     textToSpeech.speak(demoMessage);
     
     setConversationHistory(prev => [
@@ -253,188 +201,91 @@ export default function VoiceAssistant({ patient }: VoiceAssistantProps) {
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
             <MessageCircle className="w-5 h-5 text-blue-600" />
-            Voice Health Assistant
+            Health Assistant
           </CardTitle>
           <div className="flex gap-2">
-            <Badge className={`text-xs font-medium ${voiceRecognition.isSupported ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-              {voiceRecognition.isSupported ? 'Voice Ready' : 'Voice Unsupported'}
+            <Badge className="text-xs font-medium bg-blue-100 text-blue-800">
+              Text Mode
             </Badge>
-            <Badge className={`text-xs font-medium ${textToSpeech.isSupported ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}`}>
+            <Badge className={`text-xs font-medium ${textToSpeech.isSupported ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
               {textToSpeech.isSupported ? 'Speech Ready' : 'Speech Unsupported'}
             </Badge>
           </div>
         </div>
       </CardHeader>
       <CardContent>
-        {/* Input Mode Toggle */}
-        <div className="flex gap-2 mb-4">
+        {/* Text Input */}
+        <form onSubmit={handleTextSubmit} className="mb-6">
+          <div className="flex gap-2">
+            <Input
+              value={textInput}
+              onChange={(e) => setTextInput(e.target.value)}
+              placeholder="Ask me about your health data..."
+              className="flex-1"
+            />
+            <Button type="submit" disabled={!textInput.trim()} className="flex items-center gap-2">
+              <Send className="w-4 h-4" />
+              Ask
+            </Button>
+          </div>
+          <p className="text-xs text-gray-500 mt-1">
+            Try: "How much do I weigh?", "What's my progress?", or "Tell me about my diet plan"
+          </p>
+        </form>
+
+        {/* Control Buttons */}
+        <div className="flex gap-3 mb-6">
           <Button
-            onClick={() => setUseTextMode(false)}
-            variant={!useTextMode ? "default" : "outline"}
-            size="sm"
+            onClick={handleSpeechToggle}
+            disabled={!textToSpeech.isSupported}
+            variant="outline"
             className="flex items-center gap-2"
           >
-            <Mic className="w-4 h-4" />
-            Voice Mode
+            {textToSpeech.isSpeaking ? (
+              <>
+                <VolumeX className="w-4 h-4" />
+                Stop Speaking
+              </>
+            ) : (
+              <>
+                <Volume2 className="w-4 h-4" />
+                Speech Ready
+              </>
+            )}
           </Button>
+
           <Button
-            onClick={() => setUseTextMode(true)}
-            variant={useTextMode ? "default" : "outline"}
-            size="sm"
+            onClick={startDemo}
+            variant="outline"
             className="flex items-center gap-2"
           >
-            <Keyboard className="w-4 h-4" />
-            Text Mode
+            <Brain className="w-4 h-4" />
+            Demo
+          </Button>
+
+          <Button
+            onClick={() => setShowSettings(true)}
+            variant="outline"
+            className="flex items-center gap-2"
+          >
+            <Settings className="w-4 h-4" />
+            Settings
           </Button>
         </div>
 
-        {/* Text Input Mode */}
-        {useTextMode && (
-          <form onSubmit={handleTextSubmit} className="mb-6">
-            <div className="flex gap-2">
-              <Input
-                value={textInput}
-                onChange={(e) => setTextInput(e.target.value)}
-                placeholder="Type your health question here..."
-                className="flex-1"
-              />
-              <Button type="submit" disabled={!textInput.trim()} className="flex items-center gap-2">
-                <Send className="w-4 h-4" />
-                Ask
-              </Button>
-            </div>
-            <p className="text-xs text-gray-500 mt-1">
-              Try: "How much do I weigh?", "What's my progress?", or "Tell me about my diet plan"
-            </p>
-          </form>
-        )}
-
-        {/* Voice Control Buttons */}
-        {!useTextMode && (
-          <div className="flex gap-3 mb-6">
-            <Button
-              onClick={handleVoiceToggle}
-              disabled={!voiceRecognition.isSupported}
-              className={`flex items-center gap-2 ${
-                voiceRecognition.isListening 
-                  ? 'bg-red-600 hover:bg-red-700 text-white' 
-                  : 'bg-blue-600 hover:bg-blue-700 text-white'
-              }`}
-            >
-              {voiceRecognition.isListening ? (
-                <>
-                  <MicOff className="w-4 h-4" />
-                  Stop Listening
-                </>
-              ) : (
-                <>
-                  <Mic className="w-4 h-4" />
-                  Start Listening
-                </>
-              )}
-            </Button>
-            
-            <Button
-              onClick={handleSpeechToggle}
-              disabled={!textToSpeech.isSupported}
-              variant="outline"
-              className="flex items-center gap-2"
-            >
-              {textToSpeech.isSpeaking ? (
-                <>
-                  <VolumeX className="w-4 h-4" />
-                  Stop Speaking
-                </>
-              ) : (
-                <>
-                  <Volume2 className="w-4 h-4" />
-                  Speech Ready
-                </>
-              )}
-            </Button>
-
-            <Button
-              onClick={startDemo}
-              variant="outline"
-              className="flex items-center gap-2"
-            >
-              <Brain className="w-4 h-4" />
-              Demo
-            </Button>
-
-            <Button
-              onClick={() => setShowSettings(true)}
-              variant="outline"
-              className="flex items-center gap-2"
-            >
-              <Settings className="w-4 h-4" />
-              Settings
-            </Button>
-          </div>
-        )}
-
-        {/* Voice Visualization */}
-        {(voiceRecognition.isListening || textToSpeech.isSpeaking) && (
+        {/* Speech Status */}
+        {textToSpeech.isSpeaking && (
           <div className="bg-gradient-to-r from-blue-50 to-green-50 border border-blue-200 rounded-lg p-4 mb-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                {voiceRecognition.isListening && (
-                  <>
-                    <Mic className="w-4 h-4 text-blue-600 animate-pulse" />
-                    <span className="text-sm font-medium text-blue-800">Listening... Speak now!</span>
-                  </>
-                )}
-                {textToSpeech.isSpeaking && (
-                  <>
-                    <Volume2 className="w-4 h-4 text-green-600 animate-pulse" />
-                    <span className="text-sm font-medium text-green-800">Speaking...</span>
-                  </>
-                )}
-              </div>
-              <VoiceVisualization 
-                isListening={voiceRecognition.isListening} 
-                isSpeaking={textToSpeech.isSpeaking} 
-              />
+            <div className="flex items-center gap-2">
+              <Volume2 className="w-4 h-4 text-green-600 animate-pulse" />
+              <span className="text-sm font-medium text-green-800">Speaking...</span>
             </div>
-          </div>
-        )}
-
-        {voiceRecognition.error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
-            <div className="flex items-start gap-2">
-              <div className="text-red-600 mt-0.5">⚠️</div>
-              <div>
-                <p className="text-red-800 text-sm font-medium">Voice Recognition Issue</p>
-                <p className="text-red-700 text-sm">{voiceRecognition.error}</p>
-                {voiceRecognition.error.includes('not-allowed') && (
-                  <p className="text-red-600 text-xs mt-1">
-                    1. Click the microphone icon in your browser's address bar<br/>
-                    2. Allow microphone access<br/>
-                    3. Try again
-                  </p>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Live Transcript */}
-        {voiceRecognition.transcript && (
-          <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 mb-4">
-            <p className="text-sm text-gray-700">
-              <strong>You said:</strong> "{voiceRecognition.transcript}"
-            </p>
-            {voiceRecognition.confidence > 0 && (
-              <p className="text-xs text-gray-500 mt-1">
-                Confidence: {Math.round(voiceRecognition.confidence * 100)}%
-              </p>
-            )}
           </div>
         )}
 
         {/* Conversation History */}
         {conversationHistory.length > 0 && (
-          <div className="space-y-3 max-h-64 overflow-y-auto">
+          <div className="space-y-3 max-h-64 overflow-y-auto mb-4">
             <h4 className="font-medium text-gray-900 text-sm">Conversation History</h4>
             {conversationHistory.slice(-6).map((message, index) => (
               <div
@@ -460,30 +311,6 @@ export default function VoiceAssistant({ patient }: VoiceAssistantProps) {
                 </p>
               </div>
             ))}
-          </div>
-        )}
-
-        {/* Browser Compatibility Info */}
-        {!voiceRecognition.isSupported && (
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
-            <div className="flex items-start gap-2">
-              <div className="text-yellow-600 mt-0.5">ℹ️</div>
-              <div>
-                <p className="text-yellow-800 text-sm font-medium">Voice Recognition Not Available</p>
-                <p className="text-yellow-700 text-sm mb-2">
-                  Voice recognition is only supported in Chrome and Safari browsers.
-                </p>
-                <p className="text-yellow-600 text-xs">
-                  Current browser: {navigator.userAgent.includes('Chrome') ? 'Chrome' : 
-                                   navigator.userAgent.includes('Safari') ? 'Safari' : 
-                                   navigator.userAgent.includes('Firefox') ? 'Firefox' : 
-                                   navigator.userAgent.includes('Edge') ? 'Edge' : 'Unknown'}
-                </p>
-                <p className="text-yellow-600 text-xs mt-1">
-                  Secure context: {window.isSecureContext ? 'Yes' : 'No (HTTPS required)'}
-                </p>
-              </div>
-            </div>
           </div>
         )}
 
