@@ -314,6 +314,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid patient ID" });
       }
 
+      // Verify patient exists
+      const patient = await storage.getPatient(patientId);
+      if (!patient) {
+        return res.status(404).json({ message: "Patient not found" });
+      }
+
       const { content, providerId } = req.body;
       if (!content || !providerId) {
         return res.status(400).json({ message: "Content and provider ID are required" });
@@ -347,6 +353,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const patientId = parseInt(req.params.id);
       if (isNaN(patientId)) {
         return res.status(400).json({ message: "Invalid patient ID" });
+      }
+
+      // Verify patient exists
+      const patient = await storage.getPatient(patientId);
+      if (!patient) {
+        return res.status(404).json({ message: "Patient not found" });
       }
 
       if (!req.file) {
@@ -389,9 +401,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid patient ID" });
       }
 
+      // Verify patient exists
+      const patient = await storage.getPatient(patientId);
+      if (!patient) {
+        return res.status(404).json({ message: "Patient not found" });
+      }
+
       const { content, link, linkType, providerId } = req.body;
       if (!link || !linkType || !providerId) {
         return res.status(400).json({ message: "Link, link type, and provider ID are required" });
+      }
+
+      // Validate URL format
+      try {
+        new URL(link);
+      } catch {
+        return res.status(400).json({ message: "Invalid URL format" });
       }
 
       if (!['video_link', 'pdf_link'].includes(linkType)) {

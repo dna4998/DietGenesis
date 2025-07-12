@@ -26,6 +26,11 @@ Preferred communication style: Simple, everyday language.
 ✓ **Text-Based Health Assistant** - Smart health questions with text-to-speech responses and quick commands
 ✓ **AI Exercise Planning** - Complete Grok AI exercise plan generation for patients and providers
 ✓ **Full Provider AI Suite** - All AI features (insights, meal plans, exercise plans) available on provider dashboard
+✓ **Complete Messaging System** - Providers can upload PDFs and share video/PDF links with patients
+✓ **File Upload Support** - PDF uploads with 5MB limit and validation
+✓ **Link Sharing** - Video and PDF link sharing with URL validation
+✓ **Message Management** - Patient messaging dashboard with read/unread status
+✓ **Provider Send Interface** - Modal with tabs for text, links, and PDF uploads
 
 ## System Architecture
 
@@ -54,6 +59,7 @@ Preferred communication style: Simple, everyday language.
 ### Data Models
 - **Patients**: Complete health profiles including weight, body fat, insulin resistance, blood pressure, and progress tracking
 - **Providers**: Healthcare professional profiles with specialty information
+- **Messages**: Provider-to-patient communication with support for text, PDF uploads, and external links
 - **Health Plans**: Diet plans, exercise routines, supplement protocols, and medication prescriptions
 
 ### User Interface Components
@@ -69,8 +75,15 @@ Preferred communication style: Simple, everyday language.
 - `PATCH /api/patients/:id` - Update patient information
 - `POST /api/patients/:id/insights` - Generate AI nutrition insights
 - `POST /api/patients/:id/meal-plan` - Generate AI meal plans
+- `POST /api/patients/:id/exercise-plan` - Generate AI exercise plans
 - `POST /api/patients/:id/voice-command` - Process text-based health questions
 - `GET /api/voice-commands/suggestions` - Get health command examples
+- `GET /api/patients/:id/messages` - Get messages for a patient
+- `POST /api/patients/:id/messages/text` - Send text message to patient
+- `POST /api/patients/:id/messages/pdf` - Upload PDF file and send to patient
+- `POST /api/patients/:id/messages/link` - Send video or PDF link to patient
+- `PATCH /api/messages/:id/read` - Mark message as read
+- `GET /uploads/:filename` - Serve uploaded PDF files
 
 ## Data Flow
 
