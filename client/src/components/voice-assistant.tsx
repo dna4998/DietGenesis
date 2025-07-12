@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Mic, MicOff, Volume2, VolumeX, Brain, MessageCircle, Settings } from 'lucide-react';
+import { Mic, MicOff, Volume2, VolumeX, Brain, MessageCircle, Settings, Send, Keyboard } from 'lucide-react';
 import VoiceSettings from '@/components/voice-settings';
 import VoiceVisualization from '@/components/voice-visualization';
 import { useVoiceRecognition } from '@/hooks/use-voice-recognition';
@@ -23,6 +24,8 @@ interface VoiceCommand {
 export default function VoiceAssistant({ patient }: VoiceAssistantProps) {
   const [isActive, setIsActive] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [textInput, setTextInput] = useState('');
+  const [useTextMode, setUseTextMode] = useState(false);
   const [conversationHistory, setConversationHistory] = useState<Array<{
     type: 'user' | 'assistant';
     text: string;
@@ -152,22 +155,36 @@ export default function VoiceAssistant({ patient }: VoiceAssistantProps) {
   useEffect(() => {
     if (voiceRecognition.transcript && !voiceRecognition.isListening) {
       const userMessage = voiceRecognition.transcript;
-      const response = processVoiceCommand(userMessage);
-      
-      // Add to conversation history
-      setConversationHistory(prev => [
-        ...prev,
-        { type: 'user', text: userMessage, timestamp: new Date() },
-        { type: 'assistant', text: response, timestamp: new Date() }
-      ]);
-      
-      // Speak the response
-      textToSpeech.speak(response);
-      
-      // Reset transcript
+      handleUserInput(userMessage);
       voiceRecognition.resetTranscript();
     }
-  }, [voiceRecognition.transcript, voiceRecognition.isListening, textToSpeech, patient]);
+  }, [voiceRecognition.transcript, voiceRecognition.isListening]);
+
+  // Process user input (voice or text)
+  const handleUserInput = (input: string) => {
+    const response = processVoiceCommand(input);
+    
+    // Add to conversation history
+    setConversationHistory(prev => [
+      ...prev,
+      { type: 'user', text: input, timestamp: new Date() },
+      { type: 'assistant', text: response, timestamp: new Date() }
+    ]);
+    
+    // Speak the response if text-to-speech is supported
+    if (textToSpeech.isSupported) {
+      textToSpeech.speak(response);
+    }
+  };
+
+  // Handle text input submission
+  const handleTextSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (textInput.trim()) {
+      handleUserInput(textInput.trim());
+      setTextInput('');
+    }
+  };
 
   const handleVoiceToggle = () => {
     if (!voiceRecognition.isSupported) {
@@ -249,67 +266,112 @@ export default function VoiceAssistant({ patient }: VoiceAssistantProps) {
         </div>
       </CardHeader>
       <CardContent>
-        {/* Control Buttons */}
-        <div className="flex gap-3 mb-6">
+        {/* Input Mode Toggle */}
+        <div className="flex gap-2 mb-4">
           <Button
-            onClick={handleVoiceToggle}
-            disabled={!voiceRecognition.isSupported}
-            className={`flex items-center gap-2 ${
-              voiceRecognition.isListening 
-                ? 'bg-red-600 hover:bg-red-700 text-white' 
-                : 'bg-blue-600 hover:bg-blue-700 text-white'
-            }`}
-          >
-            {voiceRecognition.isListening ? (
-              <>
-                <MicOff className="w-4 h-4" />
-                Stop Listening
-              </>
-            ) : (
-              <>
-                <Mic className="w-4 h-4" />
-                Start Listening
-              </>
-            )}
-          </Button>
-          
-          <Button
-            onClick={handleSpeechToggle}
-            disabled={!textToSpeech.isSupported}
-            variant="outline"
+            onClick={() => setUseTextMode(false)}
+            variant={!useTextMode ? "default" : "outline"}
+            size="sm"
             className="flex items-center gap-2"
           >
-            {textToSpeech.isSpeaking ? (
-              <>
-                <VolumeX className="w-4 h-4" />
-                Stop Speaking
-              </>
-            ) : (
-              <>
-                <Volume2 className="w-4 h-4" />
-                Speech Ready
-              </>
-            )}
+            <Mic className="w-4 h-4" />
+            Voice Mode
           </Button>
-
           <Button
-            onClick={startDemo}
-            variant="outline"
+            onClick={() => setUseTextMode(true)}
+            variant={useTextMode ? "default" : "outline"}
+            size="sm"
             className="flex items-center gap-2"
           >
-            <Brain className="w-4 h-4" />
-            Demo
-          </Button>
-
-          <Button
-            onClick={() => setShowSettings(true)}
-            variant="outline"
-            className="flex items-center gap-2"
-          >
-            <Settings className="w-4 h-4" />
-            Settings
+            <Keyboard className="w-4 h-4" />
+            Text Mode
           </Button>
         </div>
+
+        {/* Text Input Mode */}
+        {useTextMode && (
+          <form onSubmit={handleTextSubmit} className="mb-6">
+            <div className="flex gap-2">
+              <Input
+                value={textInput}
+                onChange={(e) => setTextInput(e.target.value)}
+                placeholder="Type your health question here..."
+                className="flex-1"
+              />
+              <Button type="submit" disabled={!textInput.trim()} className="flex items-center gap-2">
+                <Send className="w-4 h-4" />
+                Ask
+              </Button>
+            </div>
+            <p className="text-xs text-gray-500 mt-1">
+              Try: "How much do I weigh?", "What's my progress?", or "Tell me about my diet plan"
+            </p>
+          </form>
+        )}
+
+        {/* Voice Control Buttons */}
+        {!useTextMode && (
+          <div className="flex gap-3 mb-6">
+            <Button
+              onClick={handleVoiceToggle}
+              disabled={!voiceRecognition.isSupported}
+              className={`flex items-center gap-2 ${
+                voiceRecognition.isListening 
+                  ? 'bg-red-600 hover:bg-red-700 text-white' 
+                  : 'bg-blue-600 hover:bg-blue-700 text-white'
+              }`}
+            >
+              {voiceRecognition.isListening ? (
+                <>
+                  <MicOff className="w-4 h-4" />
+                  Stop Listening
+                </>
+              ) : (
+                <>
+                  <Mic className="w-4 h-4" />
+                  Start Listening
+                </>
+              )}
+            </Button>
+            
+            <Button
+              onClick={handleSpeechToggle}
+              disabled={!textToSpeech.isSupported}
+              variant="outline"
+              className="flex items-center gap-2"
+            >
+              {textToSpeech.isSpeaking ? (
+                <>
+                  <VolumeX className="w-4 h-4" />
+                  Stop Speaking
+                </>
+              ) : (
+                <>
+                  <Volume2 className="w-4 h-4" />
+                  Speech Ready
+                </>
+              )}
+            </Button>
+
+            <Button
+              onClick={startDemo}
+              variant="outline"
+              className="flex items-center gap-2"
+            >
+              <Brain className="w-4 h-4" />
+              Demo
+            </Button>
+
+            <Button
+              onClick={() => setShowSettings(true)}
+              variant="outline"
+              className="flex items-center gap-2"
+            >
+              <Settings className="w-4 h-4" />
+              Settings
+            </Button>
+          </div>
+        )}
 
         {/* Voice Visualization */}
         {(voiceRecognition.isListening || textToSpeech.isSpeaking) && (
@@ -425,15 +487,30 @@ export default function VoiceAssistant({ patient }: VoiceAssistantProps) {
           </div>
         )}
 
-        {/* Usage Examples */}
-        {conversationHistory.length === 0 && voiceRecognition.isSupported && (
+        {/* Quick Command Buttons */}
+        {conversationHistory.length === 0 && (
           <div className="mt-4">
-            <h4 className="font-medium text-gray-900 text-sm mb-3">Try asking:</h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
-              {voiceCommands.slice(0, 8).map((command, index) => (
-                <div key={index} className="bg-gray-50 rounded p-2">
-                  <span className="text-gray-600">"{command.description}"</span>
-                </div>
+            <h4 className="font-medium text-gray-900 text-sm mb-3">Quick Commands:</h4>
+            <div className="grid grid-cols-2 gap-2">
+              {[
+                "How much do I weigh?",
+                "What's my progress?", 
+                "Tell me about my diet plan",
+                "What exercises should I do?",
+                "What supplements am I taking?",
+                "How's my blood pressure?",
+                "Motivate me",
+                "Help me"
+              ].map((command, index) => (
+                <Button
+                  key={index}
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleUserInput(command)}
+                  className="text-left justify-start text-xs h-auto py-2 px-3"
+                >
+                  {command}
+                </Button>
               ))}
             </div>
           </div>
