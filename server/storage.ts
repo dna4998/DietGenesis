@@ -1,4 +1,4 @@
-import { patients, providers, type Patient, type Provider, type InsertPatient, type UpdatePatient, type InsertProvider } from "@shared/schema";
+import { patients, providers, messages, type Patient, type Provider, type Message, type InsertPatient, type UpdatePatient, type InsertProvider, type InsertMessage } from "@shared/schema";
 
 export interface IStorage {
   // Patient operations
@@ -14,19 +14,28 @@ export interface IStorage {
   getProviderByEmail(email: string): Promise<Provider | undefined>;
   getAllProviders(): Promise<Provider[]>;
   createProvider(provider: InsertProvider): Promise<Provider>;
+
+  // Message operations
+  getMessagesForPatient(patientId: number): Promise<Message[]>;
+  createMessage(message: InsertMessage): Promise<Message>;
+  markMessageAsRead(messageId: number): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {
   private patients: Map<number, Patient>;
   private providers: Map<number, Provider>;
+  private messages: Map<number, Message>;
   private currentPatientId: number;
   private currentProviderId: number;
+  private currentMessageId: number;
 
   constructor() {
     this.patients = new Map();
     this.providers = new Map();
+    this.messages = new Map();
     this.currentPatientId = 1;
     this.currentProviderId = 1;
+    this.currentMessageId = 1;
 
     // Initialize with sample data
     this.initializeSampleData();
@@ -76,6 +85,48 @@ export class MemStorage implements IStorage {
 
     samplePatients.forEach(patient => {
       this.createPatient(patient);
+    });
+
+    // Add sample provider
+    this.createProvider({
+      name: "Dr. Emily Chen",
+      email: "dr.chen@dnadietclub.com",
+      specialty: "Metabolic Health"
+    });
+
+    // Add sample messages
+    const sampleMessages: InsertMessage[] = [
+      {
+        patientId: 1,
+        providerId: 1,
+        content: "Welcome to your DNA Diet Club journey! I've uploaded your personalized nutrition guide to help you get started.",
+        messageType: "text",
+        fileUrl: null,
+        fileName: null,
+        isRead: false,
+      },
+      {
+        patientId: 1,
+        providerId: 1,
+        content: "Here's a helpful video about meal prep strategies for your metabolic health plan.",
+        messageType: "video_link",
+        fileUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+        fileName: null,
+        isRead: false,
+      },
+      {
+        patientId: 2,
+        providerId: 1,
+        content: "Great progress on your weight loss! Here's your updated exercise routine focused on strength training.",
+        messageType: "text",
+        fileUrl: null,
+        fileName: null,
+        isRead: true,
+      }
+    ];
+
+    sampleMessages.forEach(message => {
+      this.createMessage(message);
     });
   }
 
@@ -156,6 +207,37 @@ export class MemStorage implements IStorage {
     };
     this.providers.set(id, provider);
     return provider;
+  }
+
+  // Message operations
+  async getMessagesForPatient(patientId: number): Promise<Message[]> {
+    return Array.from(this.messages.values()).filter(
+      (message) => message.patientId === patientId
+    ).sort((a, b) => new Date(a.createdAt!).getTime() - new Date(b.createdAt!).getTime());
+  }
+
+  async createMessage(insertMessage: InsertMessage): Promise<Message> {
+    const id = this.currentMessageId++;
+    const message: Message = {
+      ...insertMessage,
+      id,
+      createdAt: new Date(),
+    };
+    this.messages.set(id, message);
+    return message;
+  }
+
+  async markMessageAsRead(messageId: number): Promise<boolean> {
+    const message = this.messages.get(messageId);
+    if (!message) {
+      return false;
+    }
+    const updatedMessage: Message = {
+      ...message,
+      isRead: true,
+    };
+    this.messages.set(messageId, updatedMessage);
+    return true;
   }
 }
 

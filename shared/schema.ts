@@ -33,6 +33,18 @@ export const providers = pgTable("providers", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const messages = pgTable("messages", {
+  id: serial("id").primaryKey(),
+  patientId: integer("patient_id").notNull().references(() => patients.id),
+  providerId: integer("provider_id").notNull().references(() => providers.id),
+  content: text("content").notNull(),
+  messageType: text("message_type").notNull(), // 'text', 'pdf', 'video_link', 'pdf_link'
+  fileUrl: text("file_url"), // For uploaded files or external links
+  fileName: text("file_name"), // Original filename for uploads
+  isRead: boolean("is_read").default(false).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 export const insertPatientSchema = createInsertSchema(patients).omit({
   id: true,
   createdAt: true,
@@ -50,8 +62,15 @@ export const insertProviderSchema = createInsertSchema(providers).omit({
   createdAt: true,
 });
 
+export const insertMessageSchema = createInsertSchema(messages).omit({
+  id: true,
+  createdAt: true,
+});
+
 export type InsertPatient = z.infer<typeof insertPatientSchema>;
 export type UpdatePatient = z.infer<typeof updatePatientSchema>;
 export type Patient = typeof patients.$inferSelect;
 export type Provider = typeof providers.$inferSelect;
 export type InsertProvider = z.infer<typeof insertProviderSchema>;
+export type Message = typeof messages.$inferSelect;
+export type InsertMessage = z.infer<typeof insertMessageSchema>;

@@ -1,7 +1,11 @@
 import type { Express } from "express";
+import express from "express";
 import { createServer, type Server } from "http";
+import multer from "multer";
+import path from "path";
+import fs from "fs";
 import { storage } from "./storage";
-import { insertPatientSchema, updatePatientSchema, insertProviderSchema } from "@shared/schema";
+import { insertPatientSchema, updatePatientSchema, insertProviderSchema, insertMessageSchema } from "@shared/schema";
 import { generateNutritionInsights, generateMealPlan, generateExercisePlan } from "./ai-insights";
 import { generateDemoInsights, generateDemoMealPlan, generateDemoExercisePlan } from "./demo-insights";
 import { processVoiceCommand, getVoiceCommandSuggestions } from "./voice-commands";
@@ -250,6 +254,189 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error getting voice command suggestions:", error);
       res.status(500).json({ message: "Failed to get suggestions" });
+    }
+  });
+
+  // Set up file upload directory
+  const uploadsDir = path.join(process.cwd(), 'uploads');
+  if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+  }
+
+  // Configure multer for file uploads
+  const upload = multer({
+    storage: multer.diskStorage({
+      destination: (req, file, cb) => {
+        cb(null, uploadsDir);
+      },
+      filename: (req, file, cb) => {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
+      }
+    }),
+    fileFilter: (req, file, cb) => {
+      // Only allow PDF files
+      if (file.mimetype === 'application/pdf') {
+        cb(null, true);
+      } else {
+        cb(new Error('Only PDF files are allowed!'), false);
+      }
+    },
+    limits: {
+      fileSize: 5 * 1024 * 1024, // 5MB limit
+    }
+  });
+
+  // Serve uploaded files
+  app.use('/uploads', express.static(uploadsDir));
+
+  // Get messages for a patient
+  app.get("/api/patients/:id/messages", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid patient ID" });
+      }
+
+      const messages = await storage.getMessagesForPatient(id);
+      res.json(messages);
+    } catch (error) {
+      console.error("Error fetching messages:", error);
+      res.status(500).json({ message: "Failed to fetch messages" });
+    }
+  });
+
+  // Send a text message
+  app.post("/api/patients/:id/messages/text", async (req, res) => {
+    try {
+      const patientId = parseInt(req.params.id);
+      if (isNaN(patientId)) {
+        return res.status(400).json({ message: "Invalid patient ID" });
+      }
+
+      const { content, providerId } = req.body;
+      if (!content || !providerId) {
+        return res.status(400).json({ message: "Content and provider ID are required" });
+      }
+
+      const messageData = {
+        patientId,
+        providerId: parseInt(providerId),
+        content,
+        messageType: 'text' as const,
+        fileUrl: null,
+        fileName: null,
+        isRead: false,
+      };
+
+      const validatedData = insertMessageSchema.parse(messageData);
+      const message = await storage.createMessage(validatedData);
+      res.status(201).json(message);
+    } catch (error) {
+      console.error("Error sending message:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid message data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to send message" });
+    }
+  });
+
+  // Upload PDF file and send message
+  app.post("/api/patients/:id/messages/pdf", upload.single('pdf'), async (req, res) => {
+    try {
+      const patientId = parseInt(req.params.id);
+      if (isNaN(patientId)) {
+        return res.status(400).json({ message: "Invalid patient ID" });
+      }
+
+      if (!req.file) {
+        return res.status(400).json({ message: "PDF file is required" });
+      }
+
+      const { content, providerId } = req.body;
+      if (!providerId) {
+        return res.status(400).json({ message: "Provider ID is required" });
+      }
+
+      const fileUrl = `/uploads/${req.file.filename}`;
+      const messageData = {
+        patientId,
+        providerId: parseInt(providerId),
+        content: content || `Sent PDF: ${req.file.originalname}`,
+        messageType: 'pdf' as const,
+        fileUrl,
+        fileName: req.file.originalname,
+        isRead: false,
+      };
+
+      const validatedData = insertMessageSchema.parse(messageData);
+      const message = await storage.createMessage(validatedData);
+      res.status(201).json(message);
+    } catch (error) {
+      console.error("Error uploading PDF:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid message data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to upload PDF" });
+    }
+  });
+
+  // Send video or PDF link
+  app.post("/api/patients/:id/messages/link", async (req, res) => {
+    try {
+      const patientId = parseInt(req.params.id);
+      if (isNaN(patientId)) {
+        return res.status(400).json({ message: "Invalid patient ID" });
+      }
+
+      const { content, link, linkType, providerId } = req.body;
+      if (!link || !linkType || !providerId) {
+        return res.status(400).json({ message: "Link, link type, and provider ID are required" });
+      }
+
+      if (!['video_link', 'pdf_link'].includes(linkType)) {
+        return res.status(400).json({ message: "Link type must be 'video_link' or 'pdf_link'" });
+      }
+
+      const messageData = {
+        patientId,
+        providerId: parseInt(providerId),
+        content: content || `Shared ${linkType === 'video_link' ? 'video' : 'PDF'}: ${link}`,
+        messageType: linkType as 'video_link' | 'pdf_link',
+        fileUrl: link,
+        fileName: null,
+        isRead: false,
+      };
+
+      const validatedData = insertMessageSchema.parse(messageData);
+      const message = await storage.createMessage(validatedData);
+      res.status(201).json(message);
+    } catch (error) {
+      console.error("Error sending link:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid message data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to send link" });
+    }
+  });
+
+  // Mark message as read
+  app.patch("/api/messages/:id/read", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid message ID" });
+      }
+
+      const success = await storage.markMessageAsRead(id);
+      if (!success) {
+        return res.status(404).json({ message: "Message not found" });
+      }
+
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error marking message as read:", error);
+      res.status(500).json({ message: "Failed to mark message as read" });
     }
   });
 

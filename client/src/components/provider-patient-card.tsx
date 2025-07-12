@@ -1,6 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Brain } from "lucide-react";
+import { Brain, Send } from "lucide-react";
+import SendMessageModal from "@/components/send-message-modal";
 import type { Patient } from "@shared/schema";
 
 interface ProviderPatientCardProps {
@@ -57,6 +58,20 @@ export default function ProviderPatientCard({ patient, onUpdate, onAIAnalysis }:
           >
             Update Plans
           </Button>
+          <SendMessageModal 
+            patient={patient} 
+            providerId={1}
+            trigger={
+              <Button
+                variant="outline"
+                size="sm"
+                className="px-3"
+                title="Send Message"
+              >
+                <Send className="w-4 h-4" />
+              </Button>
+            }
+          />
           <Button
             variant="outline"
             size="sm"

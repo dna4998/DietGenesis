@@ -8,6 +8,7 @@ import AIInsightsCard from "@/components/ai-insights-card";
 import AIMealPlanner from "@/components/ai-meal-planner";
 import AIExercisePlanner from "@/components/ai-exercise-planner";
 import VoiceAssistant from "@/components/voice-assistant";
+import MessagingCard from "@/components/messaging-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { Patient } from "@shared/schema";
 
@@ -81,8 +82,9 @@ export default function PatientDashboard({ selectedPatientId }: PatientDashboard
           <DietPlanCard patient={patient} />
           <SupplementsCard patient={patient} />
         </div>
-        <div>
+        <div className="space-y-6">
           <ExercisePlanCard patient={patient} />
+          <MessagingCard patient={patient} />
         </div>
       </div>
 
