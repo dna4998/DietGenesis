@@ -39,6 +39,12 @@ interface HealthPrediction {
   riskFactors: string[];
   interventions: string[];
   confidenceLevel: number;
+  heartAttackRisk: {
+    score: number;
+    category: 'very_low' | 'low' | 'moderate' | 'high' | 'very_high';
+    factors: string[];
+    recommendations: string[];
+  };
   isDemo?: boolean;
   demoMessage?: string;
 }
@@ -73,6 +79,40 @@ const getScoreColor = (score: number) => {
   if (score >= 80) return 'text-green-600';
   if (score >= 60) return 'text-yellow-600';
   return 'text-red-600';
+};
+
+const getHeartRiskColor = (category: string) => {
+  switch (category) {
+    case 'very_high':
+      return 'bg-red-100 text-red-800 border-red-300';
+    case 'high':
+      return 'bg-orange-100 text-orange-800 border-orange-300';
+    case 'moderate':
+      return 'bg-yellow-100 text-yellow-800 border-yellow-300';
+    case 'low':
+      return 'bg-blue-100 text-blue-800 border-blue-300';
+    case 'very_low':
+      return 'bg-green-100 text-green-800 border-green-300';
+    default:
+      return 'bg-gray-100 text-gray-800 border-gray-300';
+  }
+};
+
+const getHeartRiskLabel = (category: string) => {
+  switch (category) {
+    case 'very_high':
+      return 'Very High Risk';
+    case 'high':
+      return 'High Risk';
+    case 'moderate':
+      return 'Moderate Risk';
+    case 'low':
+      return 'Low Risk';
+    case 'very_low':
+      return 'Very Low Risk';
+    default:
+      return 'Unknown Risk';
+  }
 };
 
 const formatMetricName = (metric: string) => {
@@ -179,6 +219,44 @@ export default function HealthTrendPrediction({ patient }: HealthTrendPrediction
           </p>
         </div>
 
+        {/* Heart Attack Risk Assessment */}
+        <div className="bg-gradient-to-r from-red-50 to-orange-50 p-4 rounded-lg border-2 border-red-100">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+              <Activity className="w-5 h-5 text-red-600" />
+              Heart Attack Risk Assessment
+            </h3>
+            <Badge className={`${getHeartRiskColor(prediction.heartAttackRisk?.category || 'moderate')} px-3 py-1`}>
+              {getHeartRiskLabel(prediction.heartAttackRisk?.category || 'moderate')}
+            </Badge>
+          </div>
+          
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-sm text-gray-600">Risk Score</span>
+            <span className="text-2xl font-bold text-red-600">
+              {prediction.heartAttackRisk?.score || 32}/100
+            </span>
+          </div>
+          
+          <Progress 
+            value={prediction.heartAttackRisk?.score || 32} 
+            className="h-2 mb-3"
+          />
+          
+          {prediction.heartAttackRisk?.factors && prediction.heartAttackRisk.factors.length > 0 && (
+            <div className="space-y-2">
+              <p className="text-sm font-medium text-gray-700">Risk Factors:</p>
+              <div className="flex flex-wrap gap-2">
+                {prediction.heartAttackRisk.factors.map((factor, index) => (
+                  <Badge key={index} variant="outline" className="text-xs bg-red-50 text-red-700 border-red-200">
+                    {factor}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
         {/* Health Trends Summary */}
         <div>
           <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
@@ -251,6 +329,26 @@ export default function HealthTrendPrediction({ patient }: HealthTrendPrediction
                   <CheckCircle className="h-4 w-4 text-blue-600" />
                   <AlertDescription className="text-sm text-blue-800">
                     {intervention}
+                  </AlertDescription>
+                </Alert>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Heart Attack Risk Recommendations */}
+        {prediction.heartAttackRisk?.recommendations && prediction.heartAttackRisk.recommendations.length > 0 && (
+          <div>
+            <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+              <Activity className="w-4 h-4 text-red-600" />
+              Heart Attack Prevention Recommendations
+            </h3>
+            <div className="space-y-2">
+              {prediction.heartAttackRisk.recommendations.map((recommendation, index) => (
+                <Alert key={index} className="border-red-200 bg-red-50">
+                  <Activity className="h-4 w-4 text-red-600" />
+                  <AlertDescription className="text-sm text-red-800">
+                    {recommendation}
                   </AlertDescription>
                 </Alert>
               ))}

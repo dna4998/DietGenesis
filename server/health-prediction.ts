@@ -30,6 +30,12 @@ export interface HealthPrediction {
   riskFactors: string[];
   interventions: string[];
   confidenceLevel: number;
+  heartAttackRisk: {
+    score: number; // 0-100 (0 = very low, 100 = very high)
+    category: 'very_low' | 'low' | 'moderate' | 'high' | 'very_high';
+    factors: string[];
+    recommendations: string[];
+  };
 }
 
 class HealthPredictor {
@@ -393,6 +399,120 @@ class HealthPredictor {
     return interventions;
   }
 
+  private calculateHeartAttackRisk(patient: Patient): {
+    score: number;
+    category: 'very_low' | 'low' | 'moderate' | 'high' | 'very_high';
+    factors: string[];
+    recommendations: string[];
+  } {
+    let riskScore = 0;
+    const factors = [];
+    const recommendations = [];
+
+    // Age risk factor
+    if (patient.age >= 65) {
+      riskScore += 25;
+      factors.push("Age 65 or older");
+    } else if (patient.age >= 55) {
+      riskScore += 15;
+      factors.push("Age 55-64");
+    } else if (patient.age >= 45) {
+      riskScore += 10;
+      factors.push("Age 45-54");
+    }
+
+    // Blood pressure risk
+    if (patient.bloodPressure) {
+      const [systolic, diastolic] = patient.bloodPressure.split('/').map(Number);
+      if (systolic >= 180 || diastolic >= 110) {
+        riskScore += 30;
+        factors.push("Very high blood pressure (>180/110)");
+        recommendations.push("Immediate medical attention for blood pressure control");
+      } else if (systolic >= 160 || diastolic >= 100) {
+        riskScore += 25;
+        factors.push("High blood pressure (>160/100)");
+        recommendations.push("Medication review and lifestyle modifications");
+      } else if (systolic >= 140 || diastolic >= 90) {
+        riskScore += 15;
+        factors.push("Elevated blood pressure (>140/90)");
+        recommendations.push("Regular monitoring and dietary changes");
+      }
+    }
+
+    // Weight and BMI risk (approximated from weight)
+    if (patient.weight) {
+      const weight = parseFloat(patient.weight);
+      if (weight > 250) {
+        riskScore += 20;
+        factors.push("Obesity (BMI likely >35)");
+        recommendations.push("Weight management program with medical supervision");
+      } else if (weight > 220) {
+        riskScore += 15;
+        factors.push("Overweight (BMI likely >30)");
+        recommendations.push("Structured weight loss plan");
+      }
+    }
+
+    // Insulin resistance and metabolic factors
+    if (patient.insulinResistance) {
+      riskScore += 15;
+      factors.push("Insulin resistance/Type 2 diabetes");
+      recommendations.push("Strict glucose control and cardiovascular monitoring");
+    }
+
+    // Exercise and lifestyle factors
+    if (patient.adherence && patient.adherence < 50) {
+      riskScore += 10;
+      factors.push("Poor treatment adherence");
+      recommendations.push("Behavioral counseling and support systems");
+    }
+
+    // Body fat percentage
+    if (patient.bodyFat) {
+      const bodyFat = parseFloat(patient.bodyFat);
+      if (bodyFat > 35) {
+        riskScore += 10;
+        factors.push("High body fat percentage");
+        recommendations.push("Body composition improvement through exercise");
+      }
+    }
+
+    // Determine risk category
+    let category: 'very_low' | 'low' | 'moderate' | 'high' | 'very_high';
+    if (riskScore >= 80) {
+      category = 'very_high';
+    } else if (riskScore >= 60) {
+      category = 'high';
+    } else if (riskScore >= 40) {
+      category = 'moderate';
+    } else if (riskScore >= 20) {
+      category = 'low';
+    } else {
+      category = 'very_low';
+    }
+
+    // Add general recommendations
+    if (riskScore > 40) {
+      recommendations.push("Regular cardiology consultation");
+      recommendations.push("Consider cardiac stress testing");
+    }
+    if (riskScore > 20) {
+      recommendations.push("Daily aspirin therapy (consult physician)");
+      recommendations.push("Lipid profile monitoring");
+    }
+    
+    recommendations.push("Mediterranean diet with omega-3 fatty acids");
+    recommendations.push("Regular moderate exercise (150 min/week)");
+    recommendations.push("Stress management techniques");
+
+    return {
+      score: Math.min(100, riskScore),
+      category,
+      factors,
+      recommendations
+    };
+  }
+
   public predictHealthTrends(patient: Patient): HealthPrediction {
     const dataPoints = this.generateSyntheticHealthHistory(patient);
     
@@ -413,6 +533,7 @@ class HealthPredictor {
     const overallScore = this.calculateOverallScore(trends);
     const riskFactors = this.identifyRiskFactors(trends);
     const interventions = this.generateInterventions(trends, riskFactors);
+    const heartAttackRisk = this.calculateHeartAttackRisk(patient);
     
     // Calculate overall confidence based on trend confidences
     const validConfidences = trends.filter(t => t.confidence !== null).map(t => t.confidence);
@@ -427,7 +548,8 @@ class HealthPredictor {
       overallScore: overallScore || 75,
       riskFactors,
       interventions,
-      confidenceLevel: avgConfidence
+      confidenceLevel: avgConfidence,
+      heartAttackRisk
     };
   }
 }
@@ -491,6 +613,26 @@ export function generateDemoHealthPrediction(patient: Patient): HealthPrediction
     }
   ];
 
+  // Calculate heart attack risk for demo
+  const heartAttackRisk = {
+    score: 32,
+    category: 'moderate' as const,
+    factors: [
+      "Age 45-54",
+      "Elevated blood pressure (>140/90)",
+      "Insulin resistance/Type 2 diabetes",
+      "Overweight (BMI likely >30)"
+    ],
+    recommendations: [
+      "Regular cardiology consultation",
+      "Daily aspirin therapy (consult physician)",
+      "Lipid profile monitoring",
+      "Mediterranean diet with omega-3 fatty acids",
+      "Regular moderate exercise (150 min/week)",
+      "Stress management techniques"
+    ]
+  };
+
   return {
     patientId: patient.id,
     generatedAt: new Date(),
@@ -506,6 +648,7 @@ export function generateDemoHealthPrediction(patient: Patient): HealthPrediction
       "Consider meal timing optimization"
     ],
     confidenceLevel: 0.8,
+    heartAttackRisk,
     isDemo: true,
     demoMessage: "Demo prediction based on statistical analysis. Real ML predictions require health data history."
   };
