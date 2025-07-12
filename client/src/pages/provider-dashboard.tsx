@@ -3,6 +3,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import ProviderPatientCard from "@/components/provider-patient-card";
 import PlanCreationForm from "@/components/plan-creation-form";
 import AIPlanGenerator from "@/components/ai-plan-generator";
+import HealthTrendPrediction from "@/components/health-trend-prediction";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
@@ -12,6 +13,7 @@ import type { Patient } from "@shared/schema";
 export default function ProviderDashboard() {
   const [showPlanForm, setShowPlanForm] = useState(false);
   const [showAIAnalysis, setShowAIAnalysis] = useState(false);
+  const [showHealthPrediction, setShowHealthPrediction] = useState(false);
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
   const { toast } = useToast();
 
@@ -87,6 +89,16 @@ export default function ProviderDashboard() {
     setSelectedPatient(null);
   };
 
+  const handleHealthPredictionClick = (patient: Patient) => {
+    setSelectedPatient(patient);
+    setShowHealthPrediction(true);
+  };
+
+  const handleHealthPredictionClose = () => {
+    setShowHealthPrediction(false);
+    setSelectedPatient(null);
+  };
+
   if (isLoading) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -156,6 +168,7 @@ export default function ProviderDashboard() {
               patient={patient} 
               onUpdate={handleUpdateClick}
               onAIAnalysis={handleAIAnalysisClick}
+              onHealthPrediction={handleHealthPredictionClick}
             />
           ))}
         </div>
@@ -180,6 +193,25 @@ export default function ProviderDashboard() {
             patient={selectedPatient}
             onClose={handleAIAnalysisClose}
           />
+        </div>
+      )}
+
+      {showHealthPrediction && selectedPatient && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+            <HealthTrendPrediction
+              patient={selectedPatient}
+            />
+            <div className="mt-4 flex justify-end">
+              <Button
+                variant="outline"
+                onClick={handleHealthPredictionClose}
+                className="bg-white"
+              >
+                Close
+              </Button>
+            </div>
+          </div>
         </div>
       )}
     </div>

@@ -45,6 +45,8 @@ Preferred communication style: Simple, everyday language.
 ✓ **Automated Plan Distribution** - AI-generated plans automatically sent to patients via messaging system
 ✓ **Personalized Health Tips Widget** - Daily engaging health content with smart personalization based on patient conditions
 ✓ **Enhanced Workout Tips** - Comprehensive exercise tips including HIIT, strength training, flexibility, and functional fitness
+✓ **Advanced Health Trend Prediction** - Machine learning-powered analytics to predict health trends and risk factors
+✓ **Predictive Health Analytics** - Provider dashboard with trend visualization and proactive patient monitoring
 
 ## System Architecture
 
@@ -111,6 +113,7 @@ Preferred communication style: Simple, everyday language.
 - `POST /api/patients/:id/analyze-gut-biome` - AI analysis of patient gut biome tests using Grok
 - `POST /api/patients/:id/generate-comprehensive-plan` - Generate complete treatment plan from AI analysis
 - `GET /api/patients/:id/daily-tip` - Get personalized daily health tip based on patient profile
+- `GET /api/patients/:id/health-prediction` - Generate advanced health trend predictions using ML algorithms
 
 ## Data Flow
 

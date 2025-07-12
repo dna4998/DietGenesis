@@ -1,6 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Brain, Send } from "lucide-react";
+import { Brain, Send, TrendingUp } from "lucide-react";
 import SendMessageModal from "@/components/send-message-modal";
 import type { Patient } from "@shared/schema";
 
@@ -8,9 +8,10 @@ interface ProviderPatientCardProps {
   patient: Patient;
   onUpdate: (patient: Patient) => void;
   onAIAnalysis: (patient: Patient) => void;
+  onHealthPrediction: (patient: Patient) => void;
 }
 
-export default function ProviderPatientCard({ patient, onUpdate, onAIAnalysis }: ProviderPatientCardProps) {
+export default function ProviderPatientCard({ patient, onUpdate, onAIAnalysis, onHealthPrediction }: ProviderPatientCardProps) {
   return (
     <Card className="bg-white shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
       <CardContent className="p-6">
@@ -80,6 +81,15 @@ export default function ProviderPatientCard({ patient, onUpdate, onAIAnalysis }:
             title="AI Plan Generator"
           >
             <Brain className="w-4 h-4" />
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="px-3"
+            onClick={() => onHealthPrediction(patient)}
+            title="Health Trend Prediction"
+          >
+            <TrendingUp className="w-4 h-4" />
           </Button>
         </div>
       </CardContent>

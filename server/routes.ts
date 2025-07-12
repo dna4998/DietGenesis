@@ -12,6 +12,7 @@ import { processVoiceCommand, getVoiceCommandSuggestions } from "./voice-command
 import { createPaypalOrder, capturePaypalOrder, loadPaypalDefault, createSubscriptionPlan, createSubscription } from "./paypal";
 import { analyzeLabResults, analyzeGutBiome, generateComprehensivePlan } from "./ai-plan-generator";
 import { getDailyHealthTip } from "./health-tips";
+import { generateDemoHealthPrediction } from "./health-prediction";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -278,6 +279,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching daily tip:", error);
       res.status(500).json({ message: "Failed to fetch daily tip" });
+    }
+  });
+
+  // Get health trend prediction for a patient
+  app.get("/api/patients/:id/health-prediction", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid patient ID" });
+      }
+
+      const patient = await storage.getPatient(id);
+      if (!patient) {
+        return res.status(404).json({ message: "Patient not found" });
+      }
+
+      // Generate health prediction using ML-based analysis
+      const prediction = generateDemoHealthPrediction(patient);
+      res.json(prediction);
+    } catch (error) {
+      console.error("Error generating health prediction:", error);
+      res.status(500).json({ message: "Failed to generate health prediction" });
     }
   });
 
