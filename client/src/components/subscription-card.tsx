@@ -36,8 +36,10 @@ export default function SubscriptionCard({ patient }: SubscriptionCardProps) {
   });
 
   const handleSubscribeClick = (plan: 'monthly' | 'yearly') => {
+    console.log('Subscribe button clicked:', plan);
     setSelectedPlan(plan);
     setIsPaymentModalOpen(true);
+    console.log('Modal should be open now');
   };
 
 

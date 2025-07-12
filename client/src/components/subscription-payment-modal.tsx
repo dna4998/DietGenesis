@@ -34,6 +34,8 @@ export default function SubscriptionPaymentModal({
   const [isProcessing, setIsProcessing] = useState(false);
   const { toast } = useToast();
 
+  console.log('SubscriptionPaymentModal render:', { isOpen, selectedPlan });
+
   const planDetails = {
     monthly: { price: 4.99, period: 'month', savings: null },
     yearly: { price: 50, period: 'year', savings: '17%' }
