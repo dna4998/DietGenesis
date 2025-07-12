@@ -131,9 +131,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const insights = await generateNutritionInsights(patient);
       res.json(insights);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error generating insights:", error);
-      res.status(500).json({ message: "Failed to generate nutrition insights" });
+      
+      if (error.message === "AI_CREDITS_NEEDED") {
+        res.status(402).json({ 
+          message: "AI credits needed", 
+          details: "Please add credits to your xAI account at console.x.ai to use AI insights." 
+        });
+      } else {
+        res.status(500).json({ message: "Failed to generate nutrition insights" });
+      }
     }
   });
 
@@ -153,9 +161,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { preferences } = req.body;
       const mealPlan = await generateMealPlan(patient, preferences);
       res.json(mealPlan);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error generating meal plan:", error);
-      res.status(500).json({ message: "Failed to generate meal plan" });
+      
+      if (error.message === "AI_CREDITS_NEEDED") {
+        res.status(402).json({ 
+          message: "AI credits needed", 
+          details: "Please add credits to your xAI account at console.x.ai to use AI meal planning." 
+        });
+      } else {
+        res.status(500).json({ message: "Failed to generate meal plan" });
+      }
     }
   });
 

@@ -77,8 +77,14 @@ Focus on:
       supplementSuggestions: Array.isArray(result.supplementSuggestions) ? result.supplementSuggestions : []
     };
 
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error generating nutrition insights:", error);
+    
+    // Check for credits issue
+    if (error?.status === 403 && error?.error?.includes('credits')) {
+      throw new Error("AI_CREDITS_NEEDED");
+    }
+    
     throw new Error("Failed to generate nutrition insights");
   }
 }
@@ -130,8 +136,14 @@ Provide a detailed meal plan in JSON format:
       shoppingList: Array.isArray(result.shoppingList) ? result.shoppingList : []
     };
 
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error generating meal plan:", error);
+    
+    // Check for credits issue
+    if (error?.status === 403 && error?.error?.includes('credits')) {
+      throw new Error("AI_CREDITS_NEEDED");
+    }
+    
     throw new Error("Failed to generate meal plan");
   }
 }

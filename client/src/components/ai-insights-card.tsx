@@ -37,13 +37,23 @@ export default function AIInsightsCard({ patient }: AIInsightsCardProps) {
         description: "Personalized nutrition insights are ready!",
       });
     },
-    onError: (error) => {
+    onError: (error: any) => {
       console.error("Error generating insights:", error);
-      toast({
-        title: "Error",
-        description: "Failed to generate nutrition insights. Please try again.",
-        variant: "destructive",
-      });
+      
+      // Check if it's a credits issue
+      if (error?.response?.status === 402) {
+        toast({
+          title: "AI Credits Needed",
+          description: "Please add credits to your xAI account at console.x.ai to use AI insights.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to generate nutrition insights. Please try again.",
+          variant: "destructive",
+        });
+      }
     },
   });
 

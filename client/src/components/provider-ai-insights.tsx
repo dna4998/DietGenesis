@@ -46,13 +46,23 @@ export default function ProviderAIInsights({ patient, onClose }: ProviderAIInsig
         description: `Nutrition insights for ${patient.name} are ready!`,
       });
     },
-    onError: (error) => {
+    onError: (error: any) => {
       console.error("Error generating insights:", error);
-      toast({
-        title: "Error",
-        description: "Failed to generate nutrition insights.",
-        variant: "destructive",
-      });
+      
+      // Check if it's a credits issue
+      if (error?.response?.status === 402) {
+        toast({
+          title: "AI Credits Needed",
+          description: "Please add credits to your xAI account at console.x.ai to use AI insights.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to generate nutrition insights.",
+          variant: "destructive",
+        });
+      }
     },
   });
 
@@ -70,13 +80,23 @@ export default function ProviderAIInsights({ patient, onClose }: ProviderAIInsig
         description: `7-day meal plan for ${patient.name} is ready!`,
       });
     },
-    onError: (error) => {
+    onError: (error: any) => {
       console.error("Error generating meal plan:", error);
-      toast({
-        title: "Error",
-        description: "Failed to generate meal plan.",
-        variant: "destructive",
-      });
+      
+      // Check if it's a credits issue
+      if (error?.response?.status === 402) {
+        toast({
+          title: "AI Credits Needed",
+          description: "Please add credits to your xAI account at console.x.ai to use AI meal planning.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to generate meal plan.",
+          variant: "destructive",
+        });
+      }
     },
   });
 

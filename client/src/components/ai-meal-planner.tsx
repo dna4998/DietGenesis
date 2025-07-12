@@ -40,13 +40,23 @@ export default function AIMealPlanner({ patient }: AIMealPlannerProps) {
         description: "Your personalized 7-day meal plan is ready!",
       });
     },
-    onError: (error) => {
+    onError: (error: any) => {
       console.error("Error generating meal plan:", error);
-      toast({
-        title: "Error", 
-        description: "Failed to generate meal plan. Please try again.",
-        variant: "destructive",
-      });
+      
+      // Check if it's a credits issue
+      if (error?.response?.status === 402) {
+        toast({
+          title: "AI Credits Needed",
+          description: "Please add credits to your xAI account at console.x.ai to use AI meal planning.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Error", 
+          description: "Failed to generate meal plan. Please try again.",
+          variant: "destructive",
+        });
+      }
     },
   });
 
