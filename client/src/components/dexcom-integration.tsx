@@ -21,6 +21,7 @@ import {
   Unlink
 } from "lucide-react";
 import { Line, LineChart, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import DexcomConnectionWizard from "./dexcom-connection-wizard";
 import type { DexcomData } from "@shared/schema";
 
 interface DexcomStatus {
@@ -186,6 +187,18 @@ export default function DexcomIntegration({ patientId }: DexcomIntegrationProps)
     );
   }
 
+  // If not connected, show the connection wizard
+  if (!status?.connected) {
+    return (
+      <DexcomConnectionWizard 
+        patientId={patientId}
+        onConnectionComplete={() => {
+          queryClient.invalidateQueries({ queryKey: ['/api/patients', patientId, 'dexcom'] });
+        }}
+      />
+    );
+  }
+
   return (
     <Card>
       <CardHeader>
@@ -199,44 +212,22 @@ export default function DexcomIntegration({ patientId }: DexcomIntegrationProps)
           {/* Connection Status */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              {status?.connected ? (
-                <>
-                  <CheckCircle className="w-5 h-5 text-green-600" />
-                  <span className="text-sm font-medium">Connected</span>
-                </>
-              ) : (
-                <>
-                  <XCircle className="w-5 h-5 text-red-600" />
-                  <span className="text-sm font-medium">Not Connected</span>
-                </>
-              )}
+              <CheckCircle className="w-5 h-5 text-green-600" />
+              <span className="text-sm font-medium">Connected</span>
               {status?.demo && (
                 <Badge variant="secondary">Demo Mode</Badge>
               )}
             </div>
             
-            <div className="flex gap-2">
-              {status?.connected ? (
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={handleDisconnect}
-                  disabled={disconnectMutation.isPending}
-                >
-                  <Unlink className="w-4 h-4 mr-2" />
-                  Disconnect
-                </Button>
-              ) : (
-                <Button 
-                  size="sm"
-                  onClick={handleConnect}
-                  disabled={isConnecting || connectMutation.isPending}
-                >
-                  <Link className="w-4 h-4 mr-2" />
-                  {isConnecting ? 'Connecting...' : 'Connect Dexcom'}
-                </Button>
-              )}
-            </div>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={handleDisconnect}
+              disabled={disconnectMutation.isPending}
+            >
+              <Unlink className="w-4 h-4 mr-2" />
+              Disconnect
+            </Button>
           </div>
 
           {/* Demo Mode Alert */}
