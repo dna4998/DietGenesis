@@ -23,7 +23,7 @@ Preferred communication style: Simple, everyday language.
 ✓ **AI-Powered Nutrition Insights** - Integrated Grok AI for personalized nutrition analysis
 ✓ **AI Meal Planning** - Smart meal plan generation with macro targets and shopping lists
 ✓ **Provider AI Tools** - Healthcare providers can generate AI insights for patients
-✓ **Voice-Activated Health Assistant** - Complete voice interface with speech recognition and text-to-speech
+✓ **Text-Based Health Assistant** - Smart health questions with text-to-speech responses and quick commands
 
 ## System Architecture
 
@@ -67,8 +67,8 @@ Preferred communication style: Simple, everyday language.
 - `PATCH /api/patients/:id` - Update patient information
 - `POST /api/patients/:id/insights` - Generate AI nutrition insights
 - `POST /api/patients/:id/meal-plan` - Generate AI meal plans
-- `POST /api/patients/:id/voice-command` - Process voice commands
-- `GET /api/voice-commands/suggestions` - Get voice command examples
+- `POST /api/patients/:id/voice-command` - Process text-based health questions
+- `GET /api/voice-commands/suggestions` - Get health command examples
 
 ## Data Flow
 
