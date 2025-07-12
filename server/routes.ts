@@ -9,6 +9,7 @@ import { insertPatientSchema, updatePatientSchema, insertProviderSchema, insertM
 import { generateNutritionInsights, generateMealPlan, generateExercisePlan } from "./ai-insights";
 import { generateDemoInsights, generateDemoMealPlan, generateDemoExercisePlan } from "./demo-insights";
 import { processVoiceCommand, getVoiceCommandSuggestions } from "./voice-commands";
+import { createPaypalOrder, capturePaypalOrder, loadPaypalDefault, createSubscriptionPlan, createSubscription } from "./paypal";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -462,6 +463,124 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error marking message as read:", error);
       res.status(500).json({ message: "Failed to mark message as read" });
+    }
+  });
+
+  // PayPal subscription routes
+  app.get("/api/paypal/setup", async (req, res) => {
+    await loadPaypalDefault(req, res);
+  });
+
+  app.post("/api/paypal/order", async (req, res) => {
+    // Request body should contain: { intent, amount, currency }
+    await createPaypalOrder(req, res);
+  });
+
+  app.post("/api/paypal/order/:orderID/capture", async (req, res) => {
+    await capturePaypalOrder(req, res);
+  });
+
+  // Create subscription for patient
+  app.post("/api/patients/:id/subscription", async (req, res) => {
+    try {
+      const patientId = parseInt(req.params.id);
+      if (isNaN(patientId)) {
+        return res.status(400).json({ message: "Invalid patient ID" });
+      }
+
+      const patient = await storage.getPatient(patientId);
+      if (!patient) {
+        return res.status(404).json({ message: "Patient not found" });
+      }
+
+      const { plan } = req.body; // 'monthly' or 'yearly'
+      if (!plan || !['monthly', 'yearly'].includes(plan)) {
+        return res.status(400).json({ message: "Invalid subscription plan. Must be 'monthly' or 'yearly'" });
+      }
+
+      // Create subscription plan
+      const subscriptionPlan = await createSubscriptionPlan(plan);
+      
+      // Create subscription
+      const subscription = await createSubscription(
+        subscriptionPlan.id,
+        `${req.protocol}://${req.get('host')}/api/patients/${patientId}/subscription/success`,
+        `${req.protocol}://${req.get('host')}/api/patients/${patientId}/subscription/cancel`
+      );
+
+      res.json({
+        subscriptionId: subscription.id,
+        approvalUrl: subscription.links?.find(link => link.rel === 'approve')?.href,
+        plan: plan,
+        amount: plan === 'monthly' ? 4.99 : 50
+      });
+    } catch (error) {
+      console.error("Error creating subscription:", error);
+      res.status(500).json({ message: "Failed to create subscription" });
+    }
+  });
+
+  // Handle subscription success
+  app.get("/api/patients/:id/subscription/success", async (req, res) => {
+    try {
+      const patientId = parseInt(req.params.id);
+      const { subscription_id } = req.query;
+
+      if (!subscription_id) {
+        return res.status(400).json({ message: "Missing subscription ID" });
+      }
+
+      // Update patient subscription status
+      const subscriptionEndDate = new Date();
+      subscriptionEndDate.setMonth(subscriptionEndDate.getMonth() + 1); // Default to monthly
+
+      await storage.updatePatientSubscription(patientId, {
+        subscriptionStatus: 'active',
+        subscriptionPlan: 'monthly', // You could determine this from the subscription_id
+        paypalSubscriptionId: subscription_id as string,
+        subscriptionStartDate: new Date(),
+        subscriptionEndDate
+      });
+
+      // Redirect to patient dashboard with success message
+      res.redirect(`/patient-dashboard?subscription=success`);
+    } catch (error) {
+      console.error("Error handling subscription success:", error);
+      res.status(500).json({ message: "Failed to process subscription" });
+    }
+  });
+
+  // Handle subscription cancellation
+  app.get("/api/patients/:id/subscription/cancel", async (req, res) => {
+    // Redirect to patient dashboard with cancellation message
+    res.redirect(`/patient-dashboard?subscription=cancelled`);
+  });
+
+  // Get subscription status for patient
+  app.get("/api/patients/:id/subscription/status", async (req, res) => {
+    try {
+      const patientId = parseInt(req.params.id);
+      if (isNaN(patientId)) {
+        return res.status(400).json({ message: "Invalid patient ID" });
+      }
+
+      const patient = await storage.getPatient(patientId);
+      if (!patient) {
+        return res.status(404).json({ message: "Patient not found" });
+      }
+
+      res.json({
+        subscriptionStatus: patient.subscriptionStatus,
+        subscriptionPlan: patient.subscriptionPlan,
+        subscriptionStartDate: patient.subscriptionStartDate,
+        subscriptionEndDate: patient.subscriptionEndDate,
+        isActive: patient.subscriptionStatus === 'active' && 
+                 patient.subscriptionEndDate && 
+                 new Date(patient.subscriptionEndDate) > new Date()
+      });
+    } catch (error) {
+      console.error("Error fetching subscription status:", error);
+      res.status(500).json({ message: "Failed to fetch subscription status" });
     }
   });
 

@@ -9,6 +9,7 @@ import AIMealPlanner from "@/components/ai-meal-planner";
 import AIExercisePlanner from "@/components/ai-exercise-planner";
 import VoiceAssistant from "@/components/voice-assistant";
 import MessagingCard from "@/components/messaging-card";
+import SubscriptionCard from "@/components/subscription-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { Patient } from "@shared/schema";
 
@@ -72,9 +73,10 @@ export default function PatientDashboard({ selectedPatientId }: PatientDashboard
         <p className="mt-2 text-gray-600">Last visit: {patient.lastVisit}</p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
         <HealthMetricsCard patient={patient} />
         <ProgressCard patient={patient} />
+        <SubscriptionCard patient={patient} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">

@@ -31,6 +31,10 @@ Preferred communication style: Simple, everyday language.
 ✓ **Link Sharing** - Video and PDF link sharing with URL validation
 ✓ **Message Management** - Patient messaging dashboard with read/unread status
 ✓ **Provider Send Interface** - Modal with tabs for text, links, and PDF uploads
+✓ **PayPal Subscription System** - Monthly ($4.99) and yearly ($50) subscription plans implemented
+✓ **Subscription Management** - Patient dashboard shows subscription status and plan management
+✓ **Demo Mode Support** - Payment system works in demo mode without credentials
+✓ **Subscription API** - Complete backend API for subscription creation, status tracking, and PayPal integration
 
 ## System Architecture
 
@@ -84,6 +88,13 @@ Preferred communication style: Simple, everyday language.
 - `POST /api/patients/:id/messages/link` - Send video or PDF link to patient
 - `PATCH /api/messages/:id/read` - Mark message as read
 - `GET /uploads/:filename` - Serve uploaded PDF files
+- `GET /api/paypal/setup` - Get PayPal client token for payments
+- `POST /api/paypal/order` - Create PayPal payment order
+- `POST /api/paypal/order/:orderID/capture` - Capture PayPal payment
+- `POST /api/patients/:id/subscription` - Create subscription for patient
+- `GET /api/patients/:id/subscription/status` - Get patient subscription status
+- `GET /api/patients/:id/subscription/success` - Handle successful subscription
+- `GET /api/patients/:id/subscription/cancel` - Handle cancelled subscription
 
 ## Data Flow
 

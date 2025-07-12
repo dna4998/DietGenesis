@@ -19,6 +19,15 @@ export interface IStorage {
   getMessagesForPatient(patientId: number): Promise<Message[]>;
   createMessage(message: InsertMessage): Promise<Message>;
   markMessageAsRead(messageId: number): Promise<boolean>;
+
+  // Subscription operations
+  updatePatientSubscription(id: number, subscriptionData: {
+    subscriptionStatus: string;
+    subscriptionPlan?: string;
+    paypalSubscriptionId?: string;
+    subscriptionStartDate?: Date;
+    subscriptionEndDate?: Date;
+  }): Promise<Patient | undefined>;
 }
 
 export class MemStorage implements IStorage {
@@ -238,6 +247,27 @@ export class MemStorage implements IStorage {
     };
     this.messages.set(messageId, updatedMessage);
     return true;
+  }
+
+  async updatePatientSubscription(id: number, subscriptionData: {
+    subscriptionStatus: string;
+    subscriptionPlan?: string;
+    paypalSubscriptionId?: string;
+    subscriptionStartDate?: Date;
+    subscriptionEndDate?: Date;
+  }): Promise<Patient | undefined> {
+    const existingPatient = this.patients.get(id);
+    if (!existingPatient) {
+      return undefined;
+    }
+
+    const updatedPatient: Patient = {
+      ...existingPatient,
+      ...subscriptionData,
+      updatedAt: new Date(),
+    };
+    this.patients.set(id, updatedPatient);
+    return updatedPatient;
   }
 }
 

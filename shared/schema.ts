@@ -21,6 +21,11 @@ export const patients = pgTable("patients", {
   weightLoss: decimal("weight_loss", { precision: 5, scale: 2 }).notNull().default('0'),
   adherence: integer("adherence").notNull().default(0),
   bloodSugar: text("blood_sugar").notNull().default('Normal'),
+  subscriptionStatus: text("subscription_status").notNull().default('inactive'), // 'active', 'inactive', 'cancelled'
+  subscriptionPlan: text("subscription_plan"), // 'monthly', 'yearly'
+  paypalSubscriptionId: text("paypal_subscription_id"),
+  subscriptionStartDate: timestamp("subscription_start_date"),
+  subscriptionEndDate: timestamp("subscription_end_date"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -55,6 +60,11 @@ export const updatePatientSchema = createInsertSchema(patients).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
+  subscriptionStatus: true,
+  subscriptionPlan: true,
+  paypalSubscriptionId: true,
+  subscriptionStartDate: true,
+  subscriptionEndDate: true,
 }).partial();
 
 export const insertProviderSchema = createInsertSchema(providers).omit({
