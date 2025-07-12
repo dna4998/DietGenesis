@@ -1,4 +1,4 @@
-import { DNA } from "lucide-react";
+import { Dna } from "lucide-react";
 
 interface AppLogoProps {
   logoUrl?: string;
@@ -42,7 +42,7 @@ export default function AppLogo({
       ) : null}
       
       {/* Fallback DNA icon */}
-      <DNA 
+      <Dna 
         className={`${sizeClasses[size]} text-blue-600 ${logoUrl ? 'hidden' : 'block'}`} 
       />
       
