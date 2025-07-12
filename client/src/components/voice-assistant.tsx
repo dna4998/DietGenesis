@@ -173,7 +173,17 @@ export default function VoiceAssistant({ patient }: VoiceAssistantProps) {
     if (!voiceRecognition.isSupported) {
       toast({
         title: "Voice Recognition Not Supported",
-        description: "Your browser doesn't support voice recognition. Try using Chrome or Edge.",
+        description: "Your browser doesn't support voice recognition. Try using Chrome or Safari.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Check for HTTPS requirement
+    if (!window.isSecureContext) {
+      toast({
+        title: "Secure Connection Required",
+        description: "Voice recognition requires HTTPS. Please access the app via a secure connection.",
         variant: "destructive"
       });
       return;
@@ -182,7 +192,19 @@ export default function VoiceAssistant({ patient }: VoiceAssistantProps) {
     if (voiceRecognition.isListening) {
       voiceRecognition.stopListening();
     } else {
-      voiceRecognition.startListening();
+      // Request microphone permission first
+      navigator.mediaDevices?.getUserMedia({ audio: true })
+        .then(() => {
+          voiceRecognition.startListening();
+        })
+        .catch((error) => {
+          console.error('Microphone permission denied:', error);
+          toast({
+            title: "Microphone Access Required",
+            description: "Please allow microphone access to use voice commands.",
+            variant: "destructive"
+          });
+        });
     }
   };
 
@@ -317,7 +339,20 @@ export default function VoiceAssistant({ patient }: VoiceAssistantProps) {
 
         {voiceRecognition.error && (
           <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
-            <p className="text-red-800 text-sm">{voiceRecognition.error}</p>
+            <div className="flex items-start gap-2">
+              <div className="text-red-600 mt-0.5">⚠️</div>
+              <div>
+                <p className="text-red-800 text-sm font-medium">Voice Recognition Issue</p>
+                <p className="text-red-700 text-sm">{voiceRecognition.error}</p>
+                {voiceRecognition.error.includes('not-allowed') && (
+                  <p className="text-red-600 text-xs mt-1">
+                    1. Click the microphone icon in your browser's address bar<br/>
+                    2. Allow microphone access<br/>
+                    3. Try again
+                  </p>
+                )}
+              </div>
+            </div>
           </div>
         )}
 
@@ -366,8 +401,32 @@ export default function VoiceAssistant({ patient }: VoiceAssistantProps) {
           </div>
         )}
 
+        {/* Browser Compatibility Info */}
+        {!voiceRecognition.isSupported && (
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+            <div className="flex items-start gap-2">
+              <div className="text-yellow-600 mt-0.5">ℹ️</div>
+              <div>
+                <p className="text-yellow-800 text-sm font-medium">Voice Recognition Not Available</p>
+                <p className="text-yellow-700 text-sm mb-2">
+                  Voice recognition is only supported in Chrome and Safari browsers.
+                </p>
+                <p className="text-yellow-600 text-xs">
+                  Current browser: {navigator.userAgent.includes('Chrome') ? 'Chrome' : 
+                                   navigator.userAgent.includes('Safari') ? 'Safari' : 
+                                   navigator.userAgent.includes('Firefox') ? 'Firefox' : 
+                                   navigator.userAgent.includes('Edge') ? 'Edge' : 'Unknown'}
+                </p>
+                <p className="text-yellow-600 text-xs mt-1">
+                  Secure context: {window.isSecureContext ? 'Yes' : 'No (HTTPS required)'}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Usage Examples */}
-        {conversationHistory.length === 0 && (
+        {conversationHistory.length === 0 && voiceRecognition.isSupported && (
           <div className="mt-4">
             <h4 className="font-medium text-gray-900 text-sm mb-3">Try asking:</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">

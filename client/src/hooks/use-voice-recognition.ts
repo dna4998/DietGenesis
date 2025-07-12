@@ -24,6 +24,12 @@ export function useVoiceRecognition(): VoiceRecognitionHook {
     // Check if SpeechRecognition is supported
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     
+    console.log('Speech Recognition check:', {
+      SpeechRecognition: !!SpeechRecognition,
+      userAgent: navigator.userAgent,
+      isSecureContext: window.isSecureContext
+    });
+    
     if (SpeechRecognition) {
       setIsSupported(true);
       recognitionRef.current = new SpeechRecognition();
@@ -35,6 +41,7 @@ export function useVoiceRecognition(): VoiceRecognitionHook {
       recognition.maxAlternatives = 1;
 
       recognition.onstart = () => {
+        console.log('Speech recognition started');
         setIsListening(true);
         setError(null);
       };
@@ -58,7 +65,18 @@ export function useVoiceRecognition(): VoiceRecognitionHook {
       };
 
       recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
-        setError(`Speech recognition error: ${event.error}`);
+        console.error('Speech recognition error:', event.error, event);
+        let errorMessage = `Speech recognition error: ${event.error}`;
+        
+        if (event.error === 'not-allowed') {
+          errorMessage = 'Microphone access denied. Please allow microphone access and try again.';
+        } else if (event.error === 'no-speech') {
+          errorMessage = 'No speech detected. Please try speaking louder or closer to the microphone.';
+        } else if (event.error === 'network') {
+          errorMessage = 'Network error. Please check your internet connection.';
+        }
+        
+        setError(errorMessage);
         setIsListening(false);
       };
 
@@ -82,7 +100,14 @@ export function useVoiceRecognition(): VoiceRecognitionHook {
       setTranscript('');
       setConfidence(0);
       setError(null);
-      recognitionRef.current.start();
+      
+      try {
+        console.log('Attempting to start speech recognition...');
+        recognitionRef.current.start();
+      } catch (error) {
+        console.error('Error starting speech recognition:', error);
+        setError(`Failed to start speech recognition: ${error}`);
+      }
     }
   }, [isListening]);
 
