@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 60" width="200" height="60">
+  <!-- Background -->
+  <rect width="200" height="60" fill="#ffffff" rx="4"/>
+  
+  <!-- DNA Helix -->
+  <g transform="translate(10, 10)">
+    <!-- Left strand -->
+    <path d="M0,5 Q10,0 20,5 Q30,10 40,5" stroke="#2563eb" stroke-width="2" fill="none"/>
+    <path d="M0,15 Q10,10 20,15 Q30,20 40,15" stroke="#2563eb" stroke-width="2" fill="none"/>
+    <path d="M0,25 Q10,20 20,25 Q30,30 40,25" stroke="#2563eb" stroke-width="2" fill="none"/>
+    <path d="M0,35 Q10,30 20,35 Q30,40 40,35" stroke="#2563eb" stroke-width="2" fill="none"/>
+    
+    <!-- Right strand -->
+    <path d="M0,35 Q10,40 20,35 Q30,30 40,35" stroke="#10b981" stroke-width="2" fill="none"/>
+    <path d="M0,25 Q10,30 20,25 Q30,20 40,25" stroke="#10b981" stroke-width="2" fill="none"/>
+    <path d="M0,15 Q10,20 20,15 Q30,10 40,15" stroke="#10b981" stroke-width="2" fill="none"/>
+    <path d="M0,5 Q10,10 20,5 Q30,0 40,5" stroke="#10b981" stroke-width="2" fill="none"/>
+    
+    <!-- Connection lines -->
+    <line x1="10" y1="5" x2="10" y2="35" stroke="#6b7280" stroke-width="1"/>
+    <line x1="30" y1="5" x2="30" y2="35" stroke="#6b7280" stroke-width="1"/>
+  </g>
+  
+  <!-- Text -->
+  <text x="65" y="25" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="#1f2937">DNA Diet Club</text>
+  <text x="65" y="40" font-family="Arial, sans-serif" font-size="10" fill="#6b7280">Personalized Health Platform</text>
+</svg>

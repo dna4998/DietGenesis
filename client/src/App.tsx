@@ -13,9 +13,19 @@ function Router() {
   const [userRole, setUserRole] = useState<"patient" | "provider">("patient");
   const [selectedPatientId, setSelectedPatientId] = useState(1);
 
+  // To use your own logo, uncomment and modify the line below:
+  // const logoUrl = "/your-logo.png"; // Place your logo file in the public folder
+  // const logoUrl = "/sample-logo.svg"; // Try the sample logo
+  const logoUrl = undefined; // Currently using default DNA icon
+
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header userRole={userRole} onRoleChange={setUserRole} />
+      <Header 
+        userRole={userRole} 
+        onRoleChange={setUserRole}
+        logoUrl={logoUrl}
+        title="DNA Diet Club"
+      />
       <Switch>
         <Route path="/">
           {userRole === "patient" ? (
