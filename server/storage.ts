@@ -200,6 +200,16 @@ export class MemStorage implements IStorage {
       weightLoss: insertPatient.weightLoss ?? "0",
       adherence: insertPatient.adherence ?? 0,
       bloodSugar: insertPatient.bloodSugar ?? "Normal",
+      // Initialize subscription fields
+      subscriptionStatus: "inactive",
+      subscriptionPlan: null,
+      paypalSubscriptionId: null,
+      subscriptionStartDate: null,
+      subscriptionEndDate: null,
+      // Initialize Dexcom fields
+      dexcomAccessToken: null,
+      dexcomRefreshToken: null,
+      dexcomTokenExpiry: null,
     };
     this.patients.set(id, patient);
     return patient;
