@@ -143,6 +143,7 @@ export default function SubscriptionCard({ patient }: SubscriptionCardProps) {
           <div className="space-y-4">
             <div className="text-center py-4">
               <h3 className="font-medium text-lg mb-2">Choose Your Plan</h3>
+              <p className="text-xs text-gray-500">Debug: isActive = {subscriptionStatus?.isActive ? 'true' : 'false'}</p>
               <p className="text-sm text-gray-600 mb-4">
                 Subscribe to access personalized diet plans, AI insights, and provider consultations
               </p>
@@ -161,8 +162,12 @@ export default function SubscriptionCard({ patient }: SubscriptionCardProps) {
                   <li>• Progress tracking & analytics</li>
                 </ul>
                 <Button 
-                  onClick={() => handleSubscribeClick('monthly')}
-                  className="w-full"
+                  onClick={(e) => {
+                    console.log('Monthly button clicked', e);
+                    handleSubscribeClick('monthly');
+                  }}
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                  variant="default"
                 >
                   <Crown className="w-4 h-4 mr-2" />
                   Subscribe Monthly
@@ -187,8 +192,11 @@ export default function SubscriptionCard({ patient }: SubscriptionCardProps) {
                   <li>• Early access to new features</li>
                 </ul>
                 <Button 
-                  onClick={() => handleSubscribeClick('yearly')}
-                  className="w-full"
+                  onClick={(e) => {
+                    console.log('Yearly button clicked', e);
+                    handleSubscribeClick('yearly');
+                  }}
+                  className="w-full bg-green-600 hover:bg-green-700 text-white"
                   variant="default"
                 >
                   <Crown className="w-4 h-4 mr-2" />
