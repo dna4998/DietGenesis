@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Brain, Lightbulb, AlertTriangle, Activity, Pill, ChefHat } from "lucide-react";
+import { Brain, Lightbulb, AlertTriangle, Activity, Pill, ChefHat, Dumbbell } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -27,6 +27,16 @@ interface MealPlan {
   demoMessage?: string;
 }
 
+interface ExercisePlan {
+  weeklyPlan: string;
+  exerciseDetails: string;
+  progressionPlan: string;
+  equipmentNeeded: string[];
+  safetyTips: string[];
+  isDemo?: boolean;
+  demoMessage?: string;
+}
+
 interface ProviderAIInsightsProps {
   patient: Patient;
   onClose: () => void;
@@ -35,7 +45,8 @@ interface ProviderAIInsightsProps {
 export default function ProviderAIInsights({ patient, onClose }: ProviderAIInsightsProps) {
   const [insights, setInsights] = useState<NutritionInsight | null>(null);
   const [mealPlan, setMealPlan] = useState<MealPlan | null>(null);
-  const [activeTab, setActiveTab] = useState<"insights" | "mealplan">("insights");
+  const [exercisePlan, setExercisePlan] = useState<ExercisePlan | null>(null);
+  const [activeTab, setActiveTab] = useState<"insights" | "mealplan" | "exercise">("insights");
   const { toast } = useToast();
 
   const generateInsightsMutation = useMutation({
@@ -84,6 +95,30 @@ export default function ProviderAIInsights({ patient, onClose }: ProviderAIInsig
     },
   });
 
+  const generateExercisePlanMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest("POST", `/api/patients/${patient.id}/exercise-plan`, {
+        preferences: "Medical professional recommendation"
+      });
+      return response.json();
+    },
+    onSuccess: (data: ExercisePlan) => {
+      setExercisePlan(data);
+      toast({
+        title: data.isDemo ? "Demo Exercise Plan Generated" : "Exercise Plan Generated",
+        description: data.isDemo ? `Demo exercise plan for ${patient.name}. Add credits for AI planning.` : `Exercise plan for ${patient.name} is ready!`,
+      });
+    },
+    onError: (error: any) => {
+      console.error("Error generating exercise plan:", error);
+      toast({
+        title: "Error",
+        description: "Failed to generate exercise plan.",
+        variant: "destructive",
+      });
+    },
+  });
+
   return (
     <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center p-4 z-50">
       <Card className="max-w-4xl w-full max-h-[90vh] overflow-y-auto">
@@ -114,6 +149,15 @@ export default function ProviderAIInsights({ patient, onClose }: ProviderAIInsig
             >
               <ChefHat className="w-4 h-4" />
               Meal Planning
+            </Button>
+            <Button
+              variant={activeTab === "exercise" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setActiveTab("exercise")}
+              className="flex items-center gap-2"
+            >
+              <Dumbbell className="w-4 h-4" />
+              Exercise Planning
             </Button>
           </div>
         </CardHeader>
@@ -352,6 +396,114 @@ export default function ProviderAIInsights({ patient, onClose }: ProviderAIInsig
                             </div>
                           ))}
                         </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
+          {activeTab === "exercise" && (
+            <div className="space-y-6">
+              {!exercisePlan && !generateExercisePlanMutation.isPending && (
+                <div className="text-center py-8">
+                  <Dumbbell className="w-16 h-16 text-blue-300 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">Generate Exercise Plan</h3>
+                  <p className="text-gray-600 mb-4">
+                    Create a personalized exercise plan for {patient.name} based on their health profile
+                  </p>
+                  <Button 
+                    onClick={() => generateExercisePlanMutation.mutate()}
+                    className="flex items-center gap-2"
+                  >
+                    <Dumbbell className="w-4 h-4" />
+                    Generate Exercise Plan
+                  </Button>
+                </div>
+              )}
+
+              {generateExercisePlanMutation.isPending && (
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                    <span className="text-sm text-gray-600">Generating exercise plan...</span>
+                  </div>
+                  <Skeleton className="h-32" />
+                  <Skeleton className="h-24" />
+                  <Skeleton className="h-20" />
+                </div>
+              )}
+
+              {exercisePlan && (
+                <div className="space-y-6">
+                  {exercisePlan.isDemo && (
+                    <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                      <p className="text-amber-800 text-sm">{exercisePlan.demoMessage}</p>
+                    </div>
+                  )}
+
+                  {/* Weekly Plan */}
+                  <div className="space-y-3">
+                    <h3 className="font-semibold text-lg flex items-center gap-2">
+                      <Activity className="w-5 h-5 text-blue-600" />
+                      Weekly Exercise Plan
+                    </h3>
+                    <div className="bg-blue-50 p-4 rounded-lg">
+                      <pre className="whitespace-pre-wrap text-sm leading-relaxed">
+                        {exercisePlan.weeklyPlan}
+                      </pre>
+                    </div>
+                  </div>
+
+                  {/* Exercise Details */}
+                  <div className="space-y-3">
+                    <h3 className="font-semibold text-lg">Exercise Details</h3>
+                    <div className="bg-green-50 p-4 rounded-lg">
+                      <pre className="whitespace-pre-wrap text-sm leading-relaxed">
+                        {exercisePlan.exerciseDetails}
+                      </pre>
+                    </div>
+                  </div>
+
+                  {/* Progression Plan */}
+                  <div className="space-y-3">
+                    <h3 className="font-semibold text-lg">Progression Plan</h3>
+                    <div className="bg-purple-50 p-4 rounded-lg">
+                      <pre className="whitespace-pre-wrap text-sm leading-relaxed">
+                        {exercisePlan.progressionPlan}
+                      </pre>
+                    </div>
+                  </div>
+
+                  {/* Equipment Needed */}
+                  {exercisePlan.equipmentNeeded.length > 0 && (
+                    <div className="space-y-3">
+                      <h3 className="font-semibold text-lg">Equipment Needed</h3>
+                      <div className="flex flex-wrap gap-2">
+                        {exercisePlan.equipmentNeeded.map((equipment, index) => (
+                          <Badge key={index} variant="secondary" className="text-sm">
+                            {equipment}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Safety Tips */}
+                  {exercisePlan.safetyTips.length > 0 && (
+                    <div className="space-y-3">
+                      <h3 className="font-semibold text-lg flex items-center gap-2">
+                        <AlertTriangle className="w-5 h-5 text-red-600" />
+                        Safety Tips
+                      </h3>
+                      <div className="space-y-2">
+                        {exercisePlan.safetyTips.map((tip, index) => (
+                          <div key={index} className="flex items-start gap-2 p-3 bg-red-50 rounded-lg">
+                            <AlertTriangle className="w-4 h-4 text-red-600 mt-0.5 flex-shrink-0" />
+                            <span className="text-sm">{tip}</span>
+                          </div>
+                        ))}
                       </div>
                     </div>
                   )}

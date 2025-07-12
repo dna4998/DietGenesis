@@ -1,5 +1,5 @@
 import type { Patient } from "@shared/schema";
-import type { NutritionInsight } from "./ai-insights";
+import type { NutritionInsight, ExercisePlan } from "./ai-insights";
 
 export function generateDemoInsights(patient: Patient): NutritionInsight {
   const hasInsulinResistance = patient.insulinResistance;
@@ -165,5 +165,103 @@ MEAL PREP TIPS:
       "Whole grain tortillas",
       "Canned tomatoes (for marinara)"
     ]
+  };
+}
+
+export function generateDemoExercisePlan(patient: Patient): ExercisePlan & { isDemo: boolean; demoMessage: string } {
+  return {
+    weeklyPlan: `**7-Day Exercise Plan for ${patient.name}**
+
+**Monday - Upper Body Strength**
+- Warm-up: 5-10 minutes light cardio
+- Push-ups: 3 sets x 8-12 reps
+- Dumbbell rows: 3 sets x 10-12 reps
+- Shoulder press: 3 sets x 8-10 reps
+- Cool-down: 10 minutes stretching
+
+**Tuesday - Cardio & Core**
+- Cardio: 20-30 minutes moderate intensity
+- Plank: 3 sets x 30-45 seconds
+- Russian twists: 3 sets x 20 reps
+- Mountain climbers: 3 sets x 30 seconds
+
+**Wednesday - Lower Body Strength**
+- Bodyweight squats: 3 sets x 12-15 reps
+- Lunges: 3 sets x 10 per leg
+- Glute bridges: 3 sets x 15 reps
+- Calf raises: 3 sets x 15 reps
+
+**Thursday - Active Recovery**
+- Light walking: 20-30 minutes
+- Gentle yoga or stretching: 15 minutes
+
+**Friday - Full Body Circuit**
+- Circuit training: 3 rounds
+- Burpees, squats, push-ups, jumping jacks
+- 45 seconds work, 15 seconds rest
+
+**Saturday - Cardio Choice**
+- Choose preferred cardio: walking, cycling, swimming
+- Duration: 30-45 minutes moderate intensity
+
+**Sunday - Rest Day**
+- Complete rest or gentle stretching`,
+
+    exerciseDetails: `**Exercise Specifications**
+
+**Strength Training:**
+- Target: 2-3 sets of 8-12 repetitions
+- Rest: 60-90 seconds between sets
+- Progressive overload: Increase reps or resistance weekly
+
+**Cardio Training:**
+- Intensity: 60-70% max heart rate
+- Duration: 20-45 minutes
+- Frequency: 3-4 times per week
+
+**Form Focus:**
+- Control the movement, don't rush
+- Full range of motion
+- Breathe properly (exhale on exertion)
+- Quality over quantity`,
+
+    progressionPlan: `**4-Week Progression Plan**
+
+**Week 1-2: Foundation Phase**
+- Focus on form and technique
+- Lower intensity and volume
+- Build movement patterns
+
+**Week 3-4: Development Phase**
+- Increase intensity by 10-15%
+- Add 1-2 reps per exercise
+- Extend cardio duration by 5 minutes
+
+**Week 5-8: Advancement Phase**
+- Increase resistance/weights
+- Add new exercise variations
+- Monitor progress and adjust`,
+
+    equipmentNeeded: [
+      "Set of dumbbells (5-15 lbs)",
+      "Exercise mat",
+      "Resistance bands",
+      "Water bottle",
+      "Comfortable workout shoes",
+      "Timer or fitness app"
+    ],
+
+    safetyTips: [
+      "Always warm up before exercising and cool down afterward",
+      "Start with lighter weights and progress gradually",
+      "Stop immediately if you feel pain or dizziness",
+      "Stay hydrated throughout your workout",
+      "Consult your doctor before starting any new exercise program",
+      "Listen to your body and rest when needed",
+      "Maintain proper form to prevent injury"
+    ],
+
+    isDemo: true,
+    demoMessage: "This is a demo exercise plan. For personalized AI-generated plans, please set up your xAI account with sufficient credits."
   };
 }

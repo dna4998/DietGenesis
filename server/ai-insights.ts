@@ -147,3 +147,81 @@ Provide a detailed meal plan in JSON format:
     throw new Error("Failed to generate meal plan");
   }
 }
+
+export interface ExercisePlan {
+  weeklyPlan: string;
+  exerciseDetails: string;
+  progressionPlan: string;
+  equipmentNeeded: string[];
+  safetyTips: string[];
+}
+
+export async function generateExercisePlan(patient: Patient, preferences?: string): Promise<ExercisePlan> {
+  try {
+    const prompt = `Create a personalized exercise plan for this patient:
+
+Patient Profile:
+- Current Weight: ${patient.weight} lbs
+- Weight Goal: ${patient.weightGoal} lbs
+- Height: ${patient.height}
+- Body Fat: ${patient.bodyFat}%
+- Body Fat Goal: ${patient.bodyFatGoal}%
+- Blood Pressure: ${patient.bloodPressure}
+- Insulin Resistance: ${patient.insulinResistance ? 'Yes' : 'No'}
+- Current Exercise Plan: ${patient.exercisePlan || 'None'}
+- Exercise Preferences: ${preferences || 'Standard'}
+
+Consider their health conditions and create a safe, effective exercise program. Provide a comprehensive exercise plan in JSON format:
+{
+  "weeklyPlan": "Detailed 7-day exercise schedule with specific workouts for each day",
+  "exerciseDetails": "Detailed descriptions of exercises, sets, reps, duration, and intensity",
+  "progressionPlan": "How to progress and increase intensity over 4-8 weeks",
+  "equipmentNeeded": ["equipment1", "equipment2"],
+  "safetyTips": ["safety tip 1", "safety tip 2"]
+}
+
+Focus on:
+1. Fat loss and muscle preservation
+2. Metabolic health improvement
+3. Insulin sensitivity enhancement
+4. Cardiovascular fitness
+5. Functional movement patterns
+6. Injury prevention`;
+
+    const response = await openai.chat.completions.create({
+      model: "grok-2-1212",
+      messages: [
+        {
+          role: "system",
+          content: "You are an expert exercise physiologist and personal trainer specializing in metabolic health and weight management. Provide safe, evidence-based exercise recommendations."
+        },
+        {
+          role: "user",
+          content: prompt
+        }
+      ],
+      response_format: { type: "json_object" },
+      temperature: 0.7,
+    });
+
+    const result = JSON.parse(response.choices[0].message.content || '{}');
+    
+    return {
+      weeklyPlan: result.weeklyPlan || "Exercise plan generation pending.",
+      exerciseDetails: result.exerciseDetails || "Exercise details unavailable.",
+      progressionPlan: result.progressionPlan || "Progression plan unavailable.",
+      equipmentNeeded: Array.isArray(result.equipmentNeeded) ? result.equipmentNeeded : [],
+      safetyTips: Array.isArray(result.safetyTips) ? result.safetyTips : []
+    };
+
+  } catch (error: any) {
+    console.error("Error generating exercise plan:", error);
+    
+    // Check for credits issue
+    if (error?.status === 403 && error?.error?.includes('credits')) {
+      throw new Error("AI_CREDITS_NEEDED");
+    }
+    
+    throw new Error("Failed to generate exercise plan");
+  }
+}

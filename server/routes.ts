@@ -2,8 +2,8 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertPatientSchema, updatePatientSchema, insertProviderSchema } from "@shared/schema";
-import { generateNutritionInsights, generateMealPlan } from "./ai-insights";
-import { generateDemoInsights, generateDemoMealPlan } from "./demo-insights";
+import { generateNutritionInsights, generateMealPlan, generateExercisePlan } from "./ai-insights";
+import { generateDemoInsights, generateDemoMealPlan, generateDemoExercisePlan } from "./demo-insights";
 import { processVoiceCommand, getVoiceCommandSuggestions } from "./voice-commands";
 import { z } from "zod";
 
@@ -179,6 +179,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       } else {
         res.status(500).json({ message: "Failed to generate meal plan" });
+      }
+    }
+  });
+
+  // Generate AI exercise plan for a patient
+  app.post("/api/patients/:id/exercise-plan", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid patient ID" });
+      }
+
+      const patient = await storage.getPatient(id);
+      if (!patient) {
+        return res.status(404).json({ message: "Patient not found" });
+      }
+
+      const { preferences } = req.body;
+      const exercisePlan = await generateExercisePlan(patient, preferences);
+      res.json(exercisePlan);
+    } catch (error: any) {
+      console.error("Error generating exercise plan:", error);
+      
+      if (error.message === "AI_CREDITS_NEEDED") {
+        // Return demo exercise plan when credits are needed
+        const demoExercisePlan = generateDemoExercisePlan(patient);
+        res.json({
+          ...demoExercisePlan,
+          isDemo: true,
+          demoMessage: "Demo exercise plan shown. Add credits at console.x.ai for AI-powered planning."
+        });
+      } else {
+        res.status(500).json({ message: "Failed to generate exercise plan" });
       }
     }
   });
