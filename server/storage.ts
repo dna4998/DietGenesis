@@ -1,4 +1,4 @@
-import { patients, providers, messages, type Patient, type Provider, type Message, type InsertPatient, type UpdatePatient, type InsertProvider, type InsertMessage } from "@shared/schema";
+import { patients, providers, messages, dexcomData, type Patient, type Provider, type Message, type InsertPatient, type UpdatePatient, type InsertProvider, type InsertMessage, type DexcomData, type InsertDexcomData } from "@shared/schema";
 
 export interface IStorage {
   // Patient operations
@@ -28,23 +28,37 @@ export interface IStorage {
     subscriptionStartDate?: Date;
     subscriptionEndDate?: Date;
   }): Promise<Patient | undefined>;
+
+  // Dexcom operations
+  updatePatientDexcomTokens(id: number, tokens: {
+    dexcomAccessToken: string;
+    dexcomRefreshToken: string;
+    dexcomTokenExpiry: Date;
+  }): Promise<Patient | undefined>;
+  getDexcomDataForPatient(patientId: number, hours?: number): Promise<DexcomData[]>;
+  createDexcomData(data: InsertDexcomData): Promise<DexcomData>;
+  createDexcomDataBatch(data: InsertDexcomData[]): Promise<DexcomData[]>;
 }
 
 export class MemStorage implements IStorage {
   private patients: Map<number, Patient>;
   private providers: Map<number, Provider>;
   private messages: Map<number, Message>;
+  private dexcomData: Map<number, DexcomData>;
   private currentPatientId: number;
   private currentProviderId: number;
   private currentMessageId: number;
+  private currentDexcomDataId: number;
 
   constructor() {
     this.patients = new Map();
     this.providers = new Map();
     this.messages = new Map();
+    this.dexcomData = new Map();
     this.currentPatientId = 1;
     this.currentProviderId = 1;
     this.currentMessageId = 1;
+    this.currentDexcomDataId = 1;
 
     // Initialize with sample data
     this.initializeSampleData();
@@ -286,6 +300,65 @@ export class MemStorage implements IStorage {
     };
     this.patients.set(id, updatedPatient);
     return updatedPatient;
+  }
+
+  // Dexcom operations
+  async updatePatientDexcomTokens(id: number, tokens: {
+    dexcomAccessToken: string;
+    dexcomRefreshToken: string;
+    dexcomTokenExpiry: Date;
+  }): Promise<Patient | undefined> {
+    const patient = this.patients.get(id);
+    if (!patient) return undefined;
+
+    const updatedPatient: Patient = {
+      ...patient,
+      dexcomAccessToken: tokens.dexcomAccessToken,
+      dexcomRefreshToken: tokens.dexcomRefreshToken,
+      dexcomTokenExpiry: tokens.dexcomTokenExpiry,
+      dexcomConnected: true,
+      updatedAt: new Date(),
+    };
+
+    this.patients.set(id, updatedPatient);
+    return updatedPatient;
+  }
+
+  async getDexcomDataForPatient(patientId: number, hours: number = 24): Promise<DexcomData[]> {
+    const allData = Array.from(this.dexcomData.values());
+    const cutoffTime = new Date(Date.now() - hours * 60 * 60 * 1000);
+    
+    return allData
+      .filter(data => data.patientId === patientId && new Date(data.timestamp) >= cutoffTime)
+      .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+  }
+
+  async createDexcomData(insertData: InsertDexcomData): Promise<DexcomData> {
+    const data: DexcomData = {
+      id: this.currentDexcomDataId++,
+      ...insertData,
+      createdAt: new Date(),
+    };
+
+    this.dexcomData.set(data.id, data);
+    return data;
+  }
+
+  async createDexcomDataBatch(insertDataArray: InsertDexcomData[]): Promise<DexcomData[]> {
+    const createdData: DexcomData[] = [];
+    
+    for (const insertData of insertDataArray) {
+      const data: DexcomData = {
+        id: this.currentDexcomDataId++,
+        ...insertData,
+        createdAt: new Date(),
+      };
+      
+      this.dexcomData.set(data.id, data);
+      createdData.push(data);
+    }
+    
+    return createdData;
   }
 }
 

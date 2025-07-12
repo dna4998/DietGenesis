@@ -49,6 +49,9 @@ Preferred communication style: Simple, everyday language.
 ✓ **Predictive Health Analytics** - Provider dashboard with trend visualization and proactive patient monitoring
 ✓ **Heart Attack Risk Assessment** - Comprehensive cardiovascular risk scoring based on age, blood pressure, weight, insulin resistance, and lifestyle factors
 ✓ **Cancer Risk Prediction** - Grok AI-powered cancer risk assessment analyzing demographics, lifestyle factors, and health metrics with personalized prevention recommendations
+✓ **Dexcom CGM Integration** - Complete continuous glucose monitoring system with OAuth 2.0 authentication, real-time glucose data display, trend analysis, and clinical alerts
+✓ **Glucose Analytics Dashboard** - Interactive glucose trend charts, time-in-range statistics, and automated clinical recommendations based on glucose variability
+✓ **Demo Mode Support** - Dexcom integration runs in demo mode when credentials are not configured, generating realistic glucose data for testing
 
 ## System Architecture
 
@@ -116,6 +119,11 @@ Preferred communication style: Simple, everyday language.
 - `POST /api/patients/:id/generate-comprehensive-plan` - Generate complete treatment plan from AI analysis
 - `GET /api/patients/:id/daily-tip` - Get personalized daily health tip based on patient profile
 - `GET /api/patients/:id/health-prediction` - Generate advanced health trend predictions using ML algorithms with heart attack and cancer risk assessments
+- `GET /api/dexcom/connect/:patientId` - Initiate Dexcom CGM OAuth connection for patient
+- `GET /api/dexcom/callback` - Handle Dexcom OAuth callback and store access tokens
+- `GET /api/patients/:id/dexcom/status` - Check Dexcom connection status for patient
+- `GET /api/patients/:id/dexcom/data` - Retrieve continuous glucose monitoring data and statistics
+- `DELETE /api/patients/:id/dexcom/disconnect` - Disconnect patient from Dexcom CGM
 
 ## Data Flow
 

@@ -26,6 +26,10 @@ export const patients = pgTable("patients", {
   paypalSubscriptionId: text("paypal_subscription_id"),
   subscriptionStartDate: timestamp("subscription_start_date"),
   subscriptionEndDate: timestamp("subscription_end_date"),
+  dexcomAccessToken: text("dexcom_access_token"),
+  dexcomRefreshToken: text("dexcom_refresh_token"),
+  dexcomTokenExpiry: timestamp("dexcom_token_expiry"),
+  dexcomConnected: boolean("dexcom_connected").default(false),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -47,6 +51,18 @@ export const messages = pgTable("messages", {
   fileUrl: text("file_url"), // For uploaded files or external links
   fileName: text("file_name"), // Original filename for uploads
   isRead: boolean("is_read").default(false).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const dexcomData = pgTable("dexcom_data", {
+  id: serial("id").primaryKey(),
+  patientId: integer("patient_id").notNull().references(() => patients.id),
+  glucoseValue: decimal("glucose_value", { precision: 5, scale: 1 }).notNull(), // mg/dL
+  timestamp: timestamp("timestamp").notNull(),
+  trend: text("trend"), // 'flat', 'fortyFiveUp', 'singleUp', 'doubleUp', 'fortyFiveDown', 'singleDown', 'doubleDown'
+  trendRate: decimal("trend_rate", { precision: 5, scale: 2 }), // mg/dL/min
+  displayTime: timestamp("display_time").notNull(),
+  systemTime: timestamp("system_time").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -72,6 +88,11 @@ export const insertProviderSchema = createInsertSchema(providers).omit({
   createdAt: true,
 });
 
+export const insertDexcomDataSchema = createInsertSchema(dexcomData).omit({
+  id: true,
+  createdAt: true,
+});
+
 export const insertMessageSchema = createInsertSchema(messages).omit({
   id: true,
   createdAt: true,
@@ -84,3 +105,5 @@ export type Provider = typeof providers.$inferSelect;
 export type InsertProvider = z.infer<typeof insertProviderSchema>;
 export type Message = typeof messages.$inferSelect;
 export type InsertMessage = z.infer<typeof insertMessageSchema>;
+export type DexcomData = typeof dexcomData.$inferSelect;
+export type InsertDexcomData = z.infer<typeof insertDexcomDataSchema>;

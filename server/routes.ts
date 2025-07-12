@@ -13,6 +13,7 @@ import { createPaypalOrder, capturePaypalOrder, loadPaypalDefault, createSubscri
 import { analyzeLabResults, analyzeGutBiome, generateComprehensivePlan } from "./ai-plan-generator";
 import { getDailyHealthTip } from "./health-tips";
 import { generateDemoHealthPrediction } from "./health-prediction";
+import { dexcomService, isDexcomConfigured } from "./dexcom-integration";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -805,6 +806,155 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching subscription status:", error);
       res.status(500).json({ message: "Failed to fetch subscription status" });
+    }
+  });
+
+  // Dexcom API routes
+  app.get("/api/dexcom/connect/:patientId", async (req, res) => {
+    try {
+      const patientId = parseInt(req.params.patientId);
+      const state = `patient_${patientId}`;
+      
+      if (!isDexcomConfigured()) {
+        return res.json({ 
+          authUrl: null, 
+          demo: true, 
+          message: "Dexcom integration not configured - using demo data" 
+        });
+      }
+      
+      const authUrl = dexcomService.getAuthorizationUrl(state);
+      res.json({ authUrl, demo: false });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to generate Dexcom auth URL" });
+    }
+  });
+
+  app.get("/api/dexcom/callback", async (req, res) => {
+    try {
+      const { code, state, error } = req.query;
+      
+      if (error) {
+        return res.status(400).json({ message: `Dexcom authorization failed: ${error}` });
+      }
+      
+      if (!code || !state) {
+        return res.status(400).json({ message: "Missing authorization code or state" });
+      }
+      
+      const patientId = parseInt(state.toString().replace('patient_', ''));
+      
+      const tokenResponse = await dexcomService.exchangeCodeForToken(code.toString());
+      
+      const expiryDate = new Date(Date.now() + tokenResponse.expires_in * 1000);
+      
+      await storage.updatePatientDexcomTokens(patientId, {
+        dexcomAccessToken: tokenResponse.access_token,
+        dexcomRefreshToken: tokenResponse.refresh_token,
+        dexcomTokenExpiry: expiryDate,
+      });
+      
+      res.redirect(`/patient-dashboard?dexcom=connected`);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to process Dexcom callback" });
+    }
+  });
+
+  app.get("/api/patients/:id/dexcom/status", async (req, res) => {
+    try {
+      const patientId = parseInt(req.params.id);
+      const patient = await storage.getPatient(patientId);
+      
+      if (!patient) {
+        return res.status(404).json({ message: "Patient not found" });
+      }
+      
+      const isConnected = !!(patient.dexcomAccessToken && patient.dexcomTokenExpiry && 
+                            new Date() < patient.dexcomTokenExpiry);
+      
+      res.json({ 
+        connected: isConnected,
+        configured: isDexcomConfigured(),
+        demo: !isDexcomConfigured()
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to check Dexcom status" });
+    }
+  });
+
+  app.get("/api/patients/:id/dexcom/data", async (req, res) => {
+    try {
+      const patientId = parseInt(req.params.id);
+      const hours = parseInt(req.query.hours?.toString() || "24");
+      
+      if (!isDexcomConfigured()) {
+        // Generate demo data
+        const demoData = dexcomService.generateDemoData(patientId, hours);
+        await storage.createDexcomDataBatch(demoData);
+        const savedData = await storage.getDexcomDataForPatient(patientId, hours);
+        const stats = dexcomService.calculateGlucoseStats(savedData);
+        
+        return res.json({ 
+          data: savedData, 
+          stats,
+          demo: true 
+        });
+      }
+      
+      const patient = await storage.getPatient(patientId);
+      if (!patient?.dexcomAccessToken) {
+        return res.status(400).json({ message: "Dexcom not connected for this patient" });
+      }
+      
+      // Check if token is expired and refresh if needed
+      if (patient.dexcomTokenExpiry && new Date() >= patient.dexcomTokenExpiry) {
+        if (patient.dexcomRefreshToken) {
+          const newTokens = await dexcomService.refreshAccessToken(patient.dexcomRefreshToken);
+          const newExpiry = new Date(Date.now() + newTokens.expires_in * 1000);
+          
+          await storage.updatePatientDexcomTokens(patientId, {
+            dexcomAccessToken: newTokens.access_token,
+            dexcomRefreshToken: newTokens.refresh_token,
+            dexcomTokenExpiry: newExpiry,
+          });
+        }
+      }
+      
+      const updatedPatient = await storage.getPatient(patientId);
+      const dexcomData = await dexcomService.getLatestReadings(updatedPatient!.dexcomAccessToken!);
+      
+      const insertData = dexcomData.egvs.map(reading => 
+        dexcomService.convertToInsertData(reading, patientId)
+      );
+      
+      await storage.createDexcomDataBatch(insertData);
+      const savedData = await storage.getDexcomDataForPatient(patientId, hours);
+      const stats = dexcomService.calculateGlucoseStats(savedData);
+      
+      res.json({ data: savedData, stats, demo: false });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch Dexcom data" });
+    }
+  });
+
+  app.delete("/api/patients/:id/dexcom/disconnect", async (req, res) => {
+    try {
+      const patientId = parseInt(req.params.id);
+      const patient = await storage.getPatient(patientId);
+      
+      if (!patient) {
+        return res.status(404).json({ message: "Patient not found" });
+      }
+      
+      await storage.updatePatientDexcomTokens(patientId, {
+        dexcomAccessToken: '',
+        dexcomRefreshToken: '',
+        dexcomTokenExpiry: new Date(0),
+      });
+      
+      res.json({ message: "Dexcom disconnected successfully" });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to disconnect Dexcom" });
     }
   });
 

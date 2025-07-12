@@ -3,6 +3,7 @@ import HealthMetricsCard from "@/components/health-metrics-card";
 import MessagingCard from "@/components/messaging-card";
 import SubscriptionCard from "@/components/subscription-card";
 import HealthTipsWidget from "@/components/health-tips-widget";
+import DexcomIntegration from "@/components/dexcom-integration";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { Patient } from "@shared/schema";
 
@@ -82,6 +83,7 @@ export default function PatientDashboard({ selectedPatientId }: PatientDashboard
         {/* Messages from Provider */}
         <div className="space-y-6">
           <MessagingCard patient={patient} />
+          <DexcomIntegration patientId={patient.id} />
         </div>
       </div>
     </div>

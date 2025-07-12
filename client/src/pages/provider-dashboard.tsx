@@ -4,6 +4,7 @@ import ProviderPatientCard from "@/components/provider-patient-card";
 import PlanCreationForm from "@/components/plan-creation-form";
 import AIPlanGenerator from "@/components/ai-plan-generator";
 import HealthTrendPrediction from "@/components/health-trend-prediction";
+import DexcomProviderCard from "@/components/dexcom-provider-card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
@@ -164,13 +165,15 @@ export default function ProviderDashboard() {
       {patients && patients.length > 0 ? (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {patients.map(patient => (
-            <ProviderPatientCard 
-              key={patient.id} 
-              patient={patient} 
-              onUpdate={handleUpdateClick}
-              onAIAnalysis={handleAIAnalysisClick}
-              onHealthPrediction={handleHealthPredictionClick}
-            />
+            <div key={patient.id} className="space-y-4">
+              <ProviderPatientCard 
+                patient={patient} 
+                onUpdate={handleUpdateClick}
+                onAIAnalysis={handleAIAnalysisClick}
+                onHealthPrediction={handleHealthPredictionClick}
+              />
+              <DexcomProviderCard patient={patient} />
+            </div>
           ))}
         </div>
       ) : (
