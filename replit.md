@@ -9,6 +9,7 @@ This is a full-stack health management application designed for the DNA Diet Clu
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
+**Domain**: User owns thednadietclub.com and should use this domain for Replit deployment for brand consistency.
 
 ## Recent Changes (January 2025)
 
