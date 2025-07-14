@@ -1,18 +1,19 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import ProviderPatientCard from "@/components/provider-patient-card";
-import PlanCreationForm from "@/components/plan-creation-form";
-import AIPlanGenerator from "@/components/ai-plan-generator";
-import HealthTrendPrediction from "@/components/health-trend-prediction";
-import DexcomProviderCard from "@/components/dexcom-provider-card";
-import DexcomProviderManagement from "@/components/dexcom-provider-management";
-import DexcomTroubleshooting from "@/components/dexcom-troubleshooting";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { queryClient } from "@/lib/queryClient";
 import type { Patient } from "@shared/schema";
+
+// Lazy load components to prevent initial loading issues
+import { lazy, Suspense } from "react";
+const ProviderPatientCard = lazy(() => import("@/components/provider-patient-card"));
+const PlanCreationForm = lazy(() => import("@/components/plan-creation-form"));
+const AIPlanGenerator = lazy(() => import("@/components/ai-plan-generator"));
+const HealthTrendPrediction = lazy(() => import("@/components/health-trend-prediction"));
 
 export default function ProviderDashboard() {
   const [showPlanForm, setShowPlanForm] = useState(false);
@@ -164,24 +165,42 @@ export default function ProviderDashboard() {
         </div>
       </div>
 
-      {/* Dexcom Management Panel */}
-      <div className="mb-8 space-y-6">
-        <DexcomTroubleshooting />
-        <DexcomProviderManagement />
+      {/* Provider Tools */}
+      <div className="mb-8">
+        <Card>
+          <CardHeader>
+            <CardTitle>Provider Tools</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Button variant="outline" className="h-auto p-4 flex flex-col items-center space-y-2">
+                <span className="text-2xl">🩺</span>
+                <span>AI Analysis</span>
+              </Button>
+              <Button variant="outline" className="h-auto p-4 flex flex-col items-center space-y-2">
+                <span className="text-2xl">📊</span>
+                <span>Health Predictions</span>
+              </Button>
+              <Button variant="outline" className="h-auto p-4 flex flex-col items-center space-y-2">
+                <span className="text-2xl">💬</span>
+                <span>Patient Messaging</span>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {patients && patients.length > 0 ? (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {patients.map(patient => (
-            <div key={patient.id} className="space-y-4">
+            <Suspense key={patient.id} fallback={<Skeleton className="h-96" />}>
               <ProviderPatientCard 
                 patient={patient} 
                 onUpdate={handleUpdateClick}
                 onAIAnalysis={handleAIAnalysisClick}
                 onHealthPrediction={handleHealthPredictionClick}
               />
-              <DexcomProviderCard patient={patient} />
-            </div>
+            </Suspense>
           ))}
         </div>
       ) : (
@@ -192,28 +211,34 @@ export default function ProviderDashboard() {
       )}
 
       {showPlanForm && selectedPatient && (
-        <PlanCreationForm
-          patient={selectedPatient}
-          onSave={handlePlanSave}
-          onCancel={handlePlanCancel}
-        />
+        <Suspense fallback={<div>Loading...</div>}>
+          <PlanCreationForm
+            patient={selectedPatient}
+            onSave={handlePlanSave}
+            onCancel={handlePlanCancel}
+          />
+        </Suspense>
       )}
 
       {showAIAnalysis && selectedPatient && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <AIPlanGenerator
-            patient={selectedPatient}
-            onClose={handleAIAnalysisClose}
-          />
+          <Suspense fallback={<div className="bg-white p-8 rounded-lg">Loading AI Analysis...</div>}>
+            <AIPlanGenerator
+              patient={selectedPatient}
+              onClose={handleAIAnalysisClose}
+            />
+          </Suspense>
         </div>
       )}
 
       {showHealthPrediction && selectedPatient && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-            <HealthTrendPrediction
-              patient={selectedPatient}
-            />
+            <Suspense fallback={<div className="bg-white p-8 rounded-lg">Loading Health Predictions...</div>}>
+              <HealthTrendPrediction
+                patient={selectedPatient}
+              />
+            </Suspense>
             <div className="mt-4 flex justify-end">
               <Button
                 variant="outline"
