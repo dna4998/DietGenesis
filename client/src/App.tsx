@@ -50,6 +50,9 @@ function Router() {
           <Route path="/provider-dashboard">
             <ProviderDashboard />
           </Route>
+          <Route path="/provider">
+            <ProviderDashboard />
+          </Route>
           <Route component={NotFound} />
         </Switch>
       </div>
