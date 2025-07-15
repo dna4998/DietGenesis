@@ -14,7 +14,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { useLocation } from "wouter";
 import { Heart, Stethoscope, UserCheck, Shield } from "lucide-react";
 // Use public logo path to avoid Vite caching
-const logoPath = "/current-logo.png";
+const logoPath = "/dna-logo-v2.png";
 
 const loginSchema = z.object({
   email: z.string().email("Please enter a valid email"),

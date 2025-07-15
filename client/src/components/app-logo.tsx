@@ -1,6 +1,6 @@
 import { Dna } from "lucide-react";
 // Use public logo path to avoid Vite caching
-const logoPath = "/current-logo.png";
+const logoPath = "/dna-logo-v2.png";
 
 interface AppLogoProps {
   logoUrl?: string;
