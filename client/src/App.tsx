@@ -8,13 +8,18 @@ import { useAuth } from "@/hooks/useAuth";
 import Header from "@/components/header";
 import PatientDashboard from "@/pages/patient-dashboard";
 import ProviderDashboard from "@/pages/provider-dashboard";
+import HipaaConsent from "@/pages/hipaa-consent";
+import PrivacyPolicy from "@/pages/privacy-policy";
 import Login from "@/pages/login";
 import NotFound from "@/pages/not-found";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useQuery } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
+import { apiRequest } from "@/lib/queryClient";
 
 function AuthenticatedApp() {
   const { user, isPatient, isProvider } = useAuth();
+  const [showHipaaConsent, setShowHipaaConsent] = useState(false);
 
   // Your custom DNA Diet Club logo is now active!
   const logoUrl = "/logo.png"; // Your uploaded logo
@@ -24,6 +29,33 @@ function AuthenticatedApp() {
     queryKey: [`/api/patients/${user?.id}`],
     enabled: isPatient,
   });
+
+  // Check HIPAA consent status for patients
+  useEffect(() => {
+    if (user && user.type === 'patient') {
+      const checkHipaaStatus = async () => {
+        try {
+          const response = await apiRequest("GET", `/api/patients/${user.id}/hipaa-status`);
+          const data = await response.json();
+          setShowHipaaConsent(!data.hipaaConsentGiven);
+        } catch (error) {
+          console.error('Error checking HIPAA status:', error);
+          setShowHipaaConsent(true); // Default to showing consent if there's an error
+        }
+      };
+      checkHipaaStatus();
+    }
+  }, [user]);
+
+  // Show HIPAA consent form for patients who haven't consented yet
+  if (user && user.type === 'patient' && showHipaaConsent) {
+    return (
+      <HipaaConsent 
+        patientId={user.id} 
+        onComplete={() => setShowHipaaConsent(false)} 
+      />
+    );
+  }
 
   return (
     <AdaptiveThemeProvider 
@@ -40,6 +72,7 @@ function AuthenticatedApp() {
         />
         <Switch>
           <Route path="/login" component={Login} />
+          <Route path="/privacy-policy" component={PrivacyPolicy} />
           <Route path="/">
             {isPatient ? (
               <PatientDashboard selectedPatientId={user?.id || 1} />

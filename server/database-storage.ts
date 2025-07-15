@@ -3,6 +3,8 @@ import {
   providers,
   messages,
   dexcomData,
+  hipaaConsents,
+  auditLogs,
   type Patient,
   type Provider,
   type Message,
@@ -12,9 +14,13 @@ import {
   type InsertMessage,
   type DexcomData,
   type InsertDexcomData,
+  type HipaaConsent,
+  type InsertHipaaConsent,
+  type AuditLog,
+  type InsertAuditLog,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, and } from "drizzle-orm";
 import { hashPassword, verifyPassword } from "./auth";
 
 export interface IStorage {
@@ -61,6 +67,14 @@ export interface IStorage {
   getDexcomDataForPatient(patientId: number, hours?: number): Promise<DexcomData[]>;
   createDexcomData(data: InsertDexcomData): Promise<DexcomData>;
   createDexcomDataBatch(data: InsertDexcomData[]): Promise<DexcomData[]>;
+
+  // HIPAA Consent operations
+  createHipaaConsent(consentData: InsertHipaaConsent): Promise<HipaaConsent>;
+  getHipaaConsentForPatient(patientId: number): Promise<HipaaConsent | undefined>;
+
+  // Audit Log operations
+  createAuditLog(logData: InsertAuditLog): Promise<AuditLog>;
+  getAuditLogsForUser(userId: number, userType: string): Promise<AuditLog[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -251,6 +265,40 @@ export class DatabaseStorage implements IStorage {
 
   async createDexcomDataBatch(insertDataArray: InsertDexcomData[]): Promise<DexcomData[]> {
     return await db.insert(dexcomData).values(insertDataArray).returning();
+  }
+
+  // HIPAA Consent operations
+  async createHipaaConsent(consentData: InsertHipaaConsent): Promise<HipaaConsent> {
+    const [consent] = await db.insert(hipaaConsents).values(consentData).returning();
+    return consent;
+  }
+
+  async getHipaaConsentForPatient(patientId: number): Promise<HipaaConsent | undefined> {
+    const [consent] = await db
+      .select()
+      .from(hipaaConsents)
+      .where(eq(hipaaConsents.patientId, patientId))
+      .orderBy(desc(hipaaConsents.createdAt))
+      .limit(1);
+    return consent;
+  }
+
+  // Audit Log operations
+  async createAuditLog(logData: InsertAuditLog): Promise<AuditLog> {
+    const [log] = await db.insert(auditLogs).values(logData).returning();
+    return log;
+  }
+
+  async getAuditLogsForUser(userId: number, userType: string): Promise<AuditLog[]> {
+    return await db
+      .select()
+      .from(auditLogs)
+      .where(and(
+        eq(auditLogs.userId, userId),
+        eq(auditLogs.userType, userType)
+      ))
+      .orderBy(desc(auditLogs.timestamp))
+      .limit(100);
   }
 }
 

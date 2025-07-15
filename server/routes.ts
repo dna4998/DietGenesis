@@ -1262,6 +1262,86 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // HIPAA Consent Routes
+  app.post('/api/patients/:id/hipaa-consent', requireAuth, async (req: AuthenticatedRequest, res) => {
+    try {
+      const patientId = parseInt(req.params.id);
+      const patient = await storage.getPatient(patientId);
+      
+      if (!patient) {
+        return res.status(404).json({ error: 'Patient not found' });
+      }
+
+      // Log the consent submission
+      await storage.createAuditLog({
+        userId: req.user!.id,
+        userType: req.user!.type,
+        action: 'hipaa_consent_submitted',
+        resource: 'patient',
+        resourceId: patientId,
+        details: JSON.stringify({ consentVersion: req.body.consentVersion || '1.0' }),
+        ipAddress: req.ip,
+        userAgent: req.headers['user-agent'] || '',
+      });
+
+      // Save the consent form
+      const consentData = {
+        ...req.body,
+        patientId,
+        ipAddress: req.ip,
+        userAgent: req.headers['user-agent'] || '',
+      };
+
+      const consent = await storage.createHipaaConsent(consentData);
+
+      // Update patient's HIPAA consent status
+      await storage.updatePatient(patientId, {
+        hipaaConsentGiven: true,
+        hipaaConsentDate: new Date(),
+        hipaaConsentVersion: req.body.consentVersion || '1.0',
+        privacyPolicyAccepted: true,
+      });
+
+      res.json({ 
+        message: 'HIPAA consent submitted successfully',
+        consentId: consent.id 
+      });
+    } catch (error) {
+      console.error('Error submitting HIPAA consent:', error);
+      res.status(500).json({ error: 'Failed to submit HIPAA consent' });
+    }
+  });
+
+  app.get('/api/patients/:id/hipaa-status', requireAuth, async (req: AuthenticatedRequest, res) => {
+    try {
+      const patientId = parseInt(req.params.id);
+      const patient = await storage.getPatient(patientId);
+      
+      if (!patient) {
+        return res.status(404).json({ error: 'Patient not found' });
+      }
+
+      res.json({
+        hipaaConsentGiven: patient.hipaaConsentGiven,
+        hipaaConsentDate: patient.hipaaConsentDate,
+        hipaaConsentVersion: patient.hipaaConsentVersion,
+        privacyPolicyAccepted: patient.privacyPolicyAccepted,
+      });
+    } catch (error) {
+      console.error('Error fetching HIPAA status:', error);
+      res.status(500).json({ error: 'Failed to fetch HIPAA status' });
+    }
+  });
+
+  app.get('/api/privacy-policy', (req, res) => {
+    res.json({
+      version: '1.0',
+      effectiveDate: '2025-01-15',
+      lastUpdated: '2025-01-15',
+      content: 'Privacy policy content is available at /privacy-policy page'
+    });
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
