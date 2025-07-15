@@ -169,9 +169,10 @@ export default function Login() {
         <div className="text-center mb-8">
           <div className="flex items-center justify-center mb-4">
             <img 
-              src={logoPath} 
+              src={`${logoPath}?t=${Date.now()}`} 
               alt="DNA Diet Club" 
               className="h-24 w-auto object-contain"
+              key={`login-logo-${Date.now()}`}
             />
           </div>
           <p className="text-gray-600">Personalized health and wellness platform</p>

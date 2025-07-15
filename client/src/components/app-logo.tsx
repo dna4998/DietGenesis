@@ -32,9 +32,10 @@ export default function AppLogo({
   return (
     <div className="flex items-center space-x-3">
       <img 
-        src={displayLogoUrl} 
+        src={`${displayLogoUrl}?t=${Date.now()}`} 
         alt={`${title} Logo`}
         className={`${sizeClasses[size]} object-contain`}
+        key={`logo-${Date.now()}`}
         onError={(e) => {
           // Show fallback DNA icon if logo fails to load
           const fallback = (e.target as HTMLImageElement).nextElementSibling as HTMLElement;
