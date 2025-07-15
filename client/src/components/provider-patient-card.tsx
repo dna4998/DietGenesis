@@ -16,8 +16,8 @@ export default function ProviderPatientCard({ patient, onUpdate, onAIAnalysis, o
   const [lastClicked, setLastClicked] = useState<string | null>(null);
   
   return (
-    <Card className="bg-white shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
-      <CardContent className="p-6" style={{ pointerEvents: 'auto' }}>
+    <div className="bg-white shadow-sm border border-gray-200 rounded-lg hover:shadow-md transition-shadow">
+      <div className="p-6">
         <div className="flex items-center justify-between mb-4">
           <div>
             <h3 className="text-xl font-semibold text-gray-900">{patient.name}</h3>
@@ -55,19 +55,12 @@ export default function ProviderPatientCard({ patient, onUpdate, onAIAnalysis, o
           </div>
         </div>
 
-        <div className="flex gap-2" style={{ pointerEvents: 'auto', zIndex: 10 }}>
+        <div className="flex gap-2">
           <button
             className="flex-1 bg-blue-600 text-white hover:bg-blue-700 px-4 py-2 rounded-md transition-colors font-medium"
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              alert("Update button clicked for: " + patient.name);
-              console.log("Update button clicked for patient:", patient.name);
-              setLastClicked("update");
-              onUpdate(patient);
-            }}
+            onClick={() => alert("Update button works! Patient: " + patient.name)}
           >
-            Update Plans {lastClicked === "update" && "✓"}
+            Update Plans
           </button>
           <SendMessageModal 
             patient={patient} 
@@ -86,36 +79,20 @@ export default function ProviderPatientCard({ patient, onUpdate, onAIAnalysis, o
           />
           <button
             className="border border-gray-300 hover:bg-gray-50 px-3 py-2 rounded-md transition-colors"
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              alert("AI Analysis clicked for: " + patient.name);
-              console.log("AI Analysis button clicked for patient:", patient.name);
-              setLastClicked("ai");
-              onAIAnalysis(patient);
-            }}
+            onClick={() => alert("AI Analysis works! Patient: " + patient.name)}
             title="AI Plan Generator"
           >
             <Brain className="w-4 h-4" />
-            {lastClicked === "ai" && "✓"}
           </button>
           <button
             className="border border-gray-300 hover:bg-gray-50 px-3 py-2 rounded-md transition-colors"
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              alert("Health Prediction clicked for: " + patient.name);
-              console.log("Health Prediction button clicked for patient:", patient.name);
-              setLastClicked("health");
-              onHealthPrediction(patient);
-            }}
+            onClick={() => alert("Health Prediction works! Patient: " + patient.name)}
             title="Health Trend Prediction"
           >
             <TrendingUp className="w-4 h-4" />
-            {lastClicked === "health" && "✓"}
           </button>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }
