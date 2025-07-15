@@ -348,6 +348,284 @@ async function generateDietPlanPDF(
   yPosition += 10;
   doc.text(`Total Recipes: ${plan.breakfastOptions.length} breakfast, ${plan.lunchOptions.length} lunch, ${plan.dinnerOptions.length} dinner`, 15, yPosition);
   
+  yPosition += 20;
+  
+  // Function to add a new page with background and watermark
+  const addNewPage = () => {
+    doc.addPage();
+    
+    // Set background color if specified
+    if (backgroundColor !== '#ffffff') {
+      doc.setFillColor(backgroundColor);
+      doc.rect(0, 0, pageWidth, pageHeight, 'F');
+    }
+    
+    // Add watermark logo in background
+    if (logoBase64) {
+      doc.setGState(doc.GState({ opacity: 0.1 }));
+      doc.addImage(logoBase64, 'PNG', pageWidth/2 - 40, pageHeight/2 - 40, 80, 80);
+      doc.setGState(doc.GState({ opacity: 1.0 }));
+    }
+    
+    return 20; // Reset y position for new page
+  };
+  
+  // Add all breakfast recipes
+  if (yPosition > pageHeight - 40) {
+    yPosition = addNewPage();
+  }
+  
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(16);
+  doc.setTextColor(secondaryColor);
+  doc.text('🌅 BREAKFAST RECIPES', 15, yPosition);
+  yPosition += 15;
+  
+  for (let i = 0; i < plan.breakfastOptions.length; i++) {
+    const recipe = plan.breakfastOptions[i];
+    
+    // Check if we need a new page
+    if (yPosition > pageHeight - 60) {
+      yPosition = addNewPage();
+    }
+    
+    // Recipe title
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(14);
+    doc.setTextColor(textColor);
+    doc.text(`${i + 1}. ${recipe.name}`, 15, yPosition);
+    yPosition += 8;
+    
+    // Recipe details
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(12);
+    doc.text(`${recipe.calories} calories • ${recipe.prepTime}`, 15, yPosition);
+    yPosition += 6;
+    
+    // Description
+    if (recipe.description) {
+      const descLines = doc.splitTextToSize(recipe.description, 180);
+      doc.text(descLines, 15, yPosition);
+      yPosition += descLines.length * 5;
+    }
+    
+    // Ingredients
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(12);
+    doc.text('Ingredients:', 15, yPosition);
+    yPosition += 6;
+    
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(11);
+    for (const ingredient of recipe.ingredients) {
+      doc.text(`• ${ingredient}`, 20, yPosition);
+      yPosition += 5;
+    }
+    
+    // Instructions
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(12);
+    doc.text('Instructions:', 15, yPosition);
+    yPosition += 6;
+    
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(11);
+    for (let j = 0; j < recipe.instructions.length; j++) {
+      const instLines = doc.splitTextToSize(`${j + 1}. ${recipe.instructions[j]}`, 170);
+      doc.text(instLines, 20, yPosition);
+      yPosition += instLines.length * 5;
+    }
+    
+    yPosition += 10; // Space between recipes
+  }
+  
+  // Add all lunch recipes
+  if (yPosition > pageHeight - 40) {
+    yPosition = addNewPage();
+  }
+  
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(16);
+  doc.setTextColor(secondaryColor);
+  doc.text('🍽️ LUNCH RECIPES', 15, yPosition);
+  yPosition += 15;
+  
+  for (let i = 0; i < plan.lunchOptions.length; i++) {
+    const recipe = plan.lunchOptions[i];
+    
+    // Check if we need a new page
+    if (yPosition > pageHeight - 60) {
+      yPosition = addNewPage();
+    }
+    
+    // Recipe title
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(14);
+    doc.setTextColor(textColor);
+    doc.text(`${i + 1}. ${recipe.name}`, 15, yPosition);
+    yPosition += 8;
+    
+    // Recipe details
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(12);
+    doc.text(`${recipe.calories} calories • ${recipe.prepTime}`, 15, yPosition);
+    yPosition += 6;
+    
+    // Description
+    if (recipe.description) {
+      const descLines = doc.splitTextToSize(recipe.description, 180);
+      doc.text(descLines, 15, yPosition);
+      yPosition += descLines.length * 5;
+    }
+    
+    // Ingredients
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(12);
+    doc.text('Ingredients:', 15, yPosition);
+    yPosition += 6;
+    
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(11);
+    for (const ingredient of recipe.ingredients) {
+      doc.text(`• ${ingredient}`, 20, yPosition);
+      yPosition += 5;
+    }
+    
+    // Instructions
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(12);
+    doc.text('Instructions:', 15, yPosition);
+    yPosition += 6;
+    
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(11);
+    for (let j = 0; j < recipe.instructions.length; j++) {
+      const instLines = doc.splitTextToSize(`${j + 1}. ${recipe.instructions[j]}`, 170);
+      doc.text(instLines, 20, yPosition);
+      yPosition += instLines.length * 5;
+    }
+    
+    yPosition += 10; // Space between recipes
+  }
+  
+  // Add all dinner recipes
+  if (yPosition > pageHeight - 40) {
+    yPosition = addNewPage();
+  }
+  
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(16);
+  doc.setTextColor(secondaryColor);
+  doc.text('🍽️ DINNER RECIPES', 15, yPosition);
+  yPosition += 15;
+  
+  for (let i = 0; i < plan.dinnerOptions.length; i++) {
+    const recipe = plan.dinnerOptions[i];
+    
+    // Check if we need a new page
+    if (yPosition > pageHeight - 60) {
+      yPosition = addNewPage();
+    }
+    
+    // Recipe title
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(14);
+    doc.setTextColor(textColor);
+    doc.text(`${i + 1}. ${recipe.name}`, 15, yPosition);
+    yPosition += 8;
+    
+    // Recipe details
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(12);
+    doc.text(`${recipe.calories} calories • ${recipe.prepTime}`, 15, yPosition);
+    yPosition += 6;
+    
+    // Description
+    if (recipe.description) {
+      const descLines = doc.splitTextToSize(recipe.description, 180);
+      doc.text(descLines, 15, yPosition);
+      yPosition += descLines.length * 5;
+    }
+    
+    // Ingredients
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(12);
+    doc.text('Ingredients:', 15, yPosition);
+    yPosition += 6;
+    
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(11);
+    for (const ingredient of recipe.ingredients) {
+      doc.text(`• ${ingredient}`, 20, yPosition);
+      yPosition += 5;
+    }
+    
+    // Instructions
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(12);
+    doc.text('Instructions:', 15, yPosition);
+    yPosition += 6;
+    
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(11);
+    for (let j = 0; j < recipe.instructions.length; j++) {
+      const instLines = doc.splitTextToSize(`${j + 1}. ${recipe.instructions[j]}`, 170);
+      doc.text(instLines, 20, yPosition);
+      yPosition += instLines.length * 5;
+    }
+    
+    yPosition += 10; // Space between recipes
+  }
+  
+  // Add shopping list if available
+  if (plan.shoppingList && plan.shoppingList.length > 0) {
+    if (yPosition > pageHeight - 40) {
+      yPosition = addNewPage();
+    }
+    
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(16);
+    doc.setTextColor(secondaryColor);
+    doc.text('🛒 SHOPPING LIST', 15, yPosition);
+    yPosition += 15;
+    
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(12);
+    for (const item of plan.shoppingList) {
+      doc.text(`• ${item}`, 20, yPosition);
+      yPosition += 6;
+      
+      if (yPosition > pageHeight - 30) {
+        yPosition = addNewPage();
+      }
+    }
+  }
+  
+  // Add nutrition tips if available
+  if (plan.nutritionTips && plan.nutritionTips.length > 0) {
+    if (yPosition > pageHeight - 40) {
+      yPosition = addNewPage();
+    }
+    
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(16);
+    doc.setTextColor(secondaryColor);
+    doc.text('💡 NUTRITION TIPS', 15, yPosition);
+    yPosition += 15;
+    
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(12);
+    for (const tip of plan.nutritionTips) {
+      const tipLines = doc.splitTextToSize(`• ${tip}`, 180);
+      doc.text(tipLines, 20, yPosition);
+      yPosition += tipLines.length * 6;
+      
+      if (yPosition > pageHeight - 30) {
+        yPosition = addNewPage();
+      }
+    }
+  }
+  
   // Save PDF
   const timestamp = Date.now();
   const pdfFileName = `diet-plan-${patient.id}-${timestamp}.pdf`;
