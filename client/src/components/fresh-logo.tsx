@@ -44,17 +44,17 @@ export default function FreshLogo({
   };
 
   const sizeClasses = {
-    sm: 'h-6 w-auto',
-    md: 'h-10 w-auto',
-    lg: 'h-14 w-auto',
-    login: 'h-20 w-auto'
+    sm: 'h-8 w-auto',
+    md: 'h-16 w-auto',
+    lg: 'h-20 w-auto',
+    login: 'h-24 w-auto'
   };
 
   const textSizes = {
-    sm: 'text-sm',
-    md: 'text-lg',
-    lg: 'text-xl',
-    login: 'text-2xl'
+    sm: 'text-base',
+    md: 'text-xl',
+    lg: 'text-2xl',
+    login: 'text-3xl'
   };
 
   return (
@@ -68,7 +68,7 @@ export default function FreshLogo({
         />
       ) : (
         <div className={`${sizeClasses[size]} flex items-center justify-center text-blue-600`}>
-          <Dna className={`${size === 'sm' ? 'w-6 h-6' : size === 'md' ? 'w-10 h-10' : size === 'lg' ? 'w-14 h-14' : 'w-20 h-20'}`} />
+          <Dna className={`${size === 'sm' ? 'w-8 h-8' : size === 'md' ? 'w-16 h-16' : size === 'lg' ? 'w-20 h-20' : 'w-24 h-24'}`} />
         </div>
       )}
       
