@@ -681,6 +681,58 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Upload general medical document and send message
+  app.post("/api/patients/:id/messages/medical-document", upload.single('pdf'), async (req, res) => {
+    try {
+      const patientId = parseInt(req.params.id);
+      if (isNaN(patientId)) {
+        return res.status(400).json({ message: "Invalid patient ID" });
+      }
+
+      // Verify patient exists
+      const patient = await storage.getPatient(patientId);
+      if (!patient) {
+        return res.status(404).json({ message: "Patient not found" });
+      }
+
+      if (!req.file) {
+        return res.status(400).json({ message: "Medical document PDF file is required" });
+      }
+
+      const { content, providerId, documentType } = req.body;
+      if (!providerId) {
+        return res.status(400).json({ message: "Provider ID is required" });
+      }
+
+      if (!documentType) {
+        return res.status(400).json({ message: "Document type is required" });
+      }
+
+      // Create message with medical document
+      const messageData = {
+        patientId: patientId,
+        providerId: parseInt(providerId),
+        content: content || `Medical document uploaded: ${req.file.originalname}`,
+        messageType: documentType as 'lab_results' | 'gut_biome_test' | 'genetic_test' | 'imaging_results' | 'cardiology_report' | 'general_report',
+        filePath: req.file.path,
+        fileName: req.file.originalname,
+        fileSize: req.file.size,
+        createdAt: new Date()
+      };
+
+      // Validate the message data
+      const validatedData = insertMessageSchema.parse(messageData);
+      const message = await storage.createMessage(validatedData);
+      res.status(201).json(message);
+    } catch (error) {
+      console.error("Error uploading medical document:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid message data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to upload medical document" });
+    }
+  });
+
   // Upload gut biome test results and send message
   app.post("/api/patients/:id/messages/gut-biome", upload.single('pdf'), async (req, res) => {
     try {

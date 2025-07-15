@@ -1,7 +1,8 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Brain, Send, TrendingUp } from "lucide-react";
+import { Brain, Send, TrendingUp, Upload } from "lucide-react";
 import SendMessageModal from "@/components/send-message-modal";
+import MedicalDocumentUpload from "@/components/medical-document-upload";
 import type { Patient } from "@shared/schema";
 import { useState } from "react";
 
@@ -74,6 +75,20 @@ export default function ProviderPatientCard({ patient, onUpdate, onAIAnalysis, o
                 onClick={() => console.log("Send message clicked for:", patient.name)}
               >
                 <Send className="w-4 h-4" />
+              </Button>
+            }
+          />
+          <MedicalDocumentUpload 
+            patient={patient} 
+            providerId={1}
+            trigger={
+              <Button
+                variant="outline"
+                size="sm"
+                className="px-3"
+                title="Upload Medical Document"
+              >
+                <Upload className="w-4 h-4" />
               </Button>
             }
           />

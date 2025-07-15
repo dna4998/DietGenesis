@@ -64,9 +64,11 @@ export const messages = pgTable("messages", {
   patientId: integer("patient_id").notNull().references(() => patients.id),
   providerId: integer("provider_id").notNull().references(() => providers.id),
   content: text("content").notNull(),
-  messageType: text("message_type").notNull(), // 'text', 'pdf', 'video_link', 'pdf_link', 'lab_results', 'gut_biome_test'
+  messageType: text("message_type").notNull(), // 'text', 'pdf', 'video_link', 'pdf_link', 'lab_results', 'gut_biome_test', 'genetic_test', 'imaging_results', 'cardiology_report', 'general_report'
   fileUrl: text("file_url"), // For uploaded files or external links
   fileName: text("file_name"), // Original filename for uploads
+  filePath: text("file_path"), // Server file path for uploaded files
+  fileSize: integer("file_size"), // File size in bytes
   isRead: boolean("is_read").default(false).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
