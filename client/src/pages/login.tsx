@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -14,6 +14,8 @@ import { apiRequest } from "@/lib/queryClient";
 import { useLocation } from "wouter";
 import { Heart, Stethoscope, UserCheck, Shield } from "lucide-react";
 import FreshLogo from "@/components/fresh-logo";
+import { AccessibleLoading, AccessibleError, StatusAnnouncer } from "@/components/accessibility-features";
+import { announceToScreenReader, generateUniqueId } from "@/lib/accessibility";
 
 const loginSchema = z.object({
   email: z.string().email("Please enter a valid email"),
@@ -43,7 +45,13 @@ export default function Login() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("patient-login");
+  const [statusMessage, setStatusMessage] = useState("");
   const queryClient = useQueryClient();
+  
+  // Generate unique IDs for accessibility
+  const formId = generateUniqueId('login-form');
+  const titleId = generateUniqueId('login-title');
+  const subtitleId = generateUniqueId('login-subtitle');
 
   const loginForm = useForm({
     resolver: zodResolver(loginSchema),
@@ -82,6 +90,8 @@ export default function Login() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      setStatusMessage("Login successful. Redirecting to dashboard...");
+      announceToScreenReader("Login successful. Redirecting to dashboard.");
       toast({
         title: "Welcome back!",
         description: "Successfully logged in to your account.",
@@ -89,9 +99,12 @@ export default function Login() {
       setLocation("/");
     },
     onError: (error: any) => {
+      const errorMessage = error.message || "Invalid email or password";
+      setStatusMessage(`Patient login failed: ${errorMessage}`);
+      announceToScreenReader(`Patient login failed: ${errorMessage}`);
       toast({
         title: "Login Failed",
-        description: error.message || "Invalid email or password",
+        description: errorMessage,
         variant: "destructive",
       });
     },
@@ -104,6 +117,8 @@ export default function Login() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      setStatusMessage("Provider login successful. Redirecting to dashboard...");
+      announceToScreenReader("Provider login successful. Redirecting to dashboard.");
       toast({
         title: "Welcome back, Doctor!",
         description: "Successfully logged in to your provider account.",
@@ -111,9 +126,12 @@ export default function Login() {
       setLocation("/");
     },
     onError: (error: any) => {
+      const errorMessage = error.message || "Invalid email or password";
+      setStatusMessage(`Provider login failed: ${errorMessage}`);
+      announceToScreenReader(`Provider login failed: ${errorMessage}`);
       toast({
         title: "Login Failed",
-        description: error.message || "Invalid email or password",
+        description: errorMessage,
         variant: "destructive",
       });
     },
@@ -163,14 +181,40 @@ export default function Login() {
     },
   });
 
+  const isLoading = loginPatientMutation.isPending || loginProviderMutation.isPending || 
+                   registerPatientMutation.isPending || registerProviderMutation.isPending;
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 flex items-center justify-center p-4">
+    <main 
+      className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 flex items-center justify-center p-4"
+      role="main"
+      aria-labelledby={titleId}
+      aria-describedby={subtitleId}
+    >
       <div className="w-full max-w-4xl">
-        <div className="text-center mb-8">
+        {/* Status announcements for screen readers */}
+        {statusMessage && (
+          <StatusAnnouncer message={statusMessage} priority="assertive" />
+        )}
+        
+        <header className="text-center mb-8" role="banner">
           <div className="flex items-center justify-center mb-4">
             <FreshLogo size="login" showTitle={false} />
           </div>
-          <p className="text-gray-600">Personalized health and wellness platform</p>
+          <h1 
+            id={titleId} 
+            className="sr-only"
+          >
+            DNA Diet Club Login
+          </h1>
+          <p 
+            id={subtitleId} 
+            className="text-gray-600"
+            aria-label="Platform description"
+          >
+            Personalized health and wellness platform
+          </p>
+        </header>
         </div>
 
         <Card className="w-full max-w-2xl mx-auto">
@@ -178,48 +222,115 @@ export default function Login() {
             <CardTitle className="text-center text-2xl">Access Your Account</CardTitle>
           </CardHeader>
           <CardContent>
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="grid w-full grid-cols-4">
-                <TabsTrigger value="patient-login" className="flex items-center gap-1">
-                  <UserCheck className="w-4 h-4" />
-                  <span className="hidden sm:inline">Patient Login</span>
-                  <span className="sm:hidden">Login</span>
-                </TabsTrigger>
-                <TabsTrigger value="patient-register" className="flex items-center gap-1">
-                  <Heart className="w-4 h-4" />
-                  <span className="hidden sm:inline">Patient Register</span>
-                  <span className="sm:hidden">Register</span>
-                </TabsTrigger>
-                <TabsTrigger value="provider-login" className="flex items-center gap-1">
-                  <Stethoscope className="w-4 h-4" />
-                  <span className="hidden sm:inline">Provider Login</span>
-                  <span className="sm:hidden">Dr Login</span>
-                </TabsTrigger>
-                <TabsTrigger value="provider-register" className="flex items-center gap-1">
-                  <Shield className="w-4 h-4" />
-                  <span className="hidden sm:inline">Provider Register</span>
-                  <span className="sm:hidden">Dr Register</span>
-                </TabsTrigger>
-              </TabsList>
+            <AccessibleLoading isLoading={isLoading} message="Processing your request...">
+              <Tabs 
+                value={activeTab} 
+                onValueChange={setActiveTab} 
+                className="w-full"
+                aria-label="Login and registration options"
+              >
+                <TabsList 
+                  className="grid w-full grid-cols-4"
+                  role="tablist"
+                  aria-label="User type and action selection"
+                >
+                  <TabsTrigger 
+                    value="patient-login" 
+                    className="flex items-center gap-1 focus:ring-accessible"
+                    role="tab"
+                    aria-controls="patient-login-panel"
+                    aria-selected={activeTab === "patient-login"}
+                    aria-label="Patient login form"
+                  >
+                    <UserCheck className="w-4 h-4" aria-hidden="true" />
+                    <span className="hidden sm:inline">Patient Login</span>
+                    <span className="sm:hidden">Login</span>
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="patient-register" 
+                    className="flex items-center gap-1 focus:ring-accessible"
+                    role="tab"
+                    aria-controls="patient-register-panel"
+                    aria-selected={activeTab === "patient-register"}
+                    aria-label="Patient registration form"
+                  >
+                    <Heart className="w-4 h-4" aria-hidden="true" />
+                    <span className="hidden sm:inline">Patient Register</span>
+                    <span className="sm:hidden">Register</span>
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="provider-login" 
+                    className="flex items-center gap-1 focus:ring-accessible"
+                    role="tab"
+                    aria-controls="provider-login-panel"
+                    aria-selected={activeTab === "provider-login"}
+                    aria-label="Healthcare provider login form"
+                  >
+                    <Stethoscope className="w-4 h-4" aria-hidden="true" />
+                    <span className="hidden sm:inline">Provider Login</span>
+                    <span className="sm:hidden">Dr Login</span>
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="provider-register" 
+                    className="flex items-center gap-1 focus:ring-accessible"
+                    role="tab"
+                    aria-controls="provider-register-panel"
+                    aria-selected={activeTab === "provider-register"}
+                    aria-label="Healthcare provider registration form"
+                  >
+                    <Shield className="w-4 h-4" aria-hidden="true" />
+                    <span className="hidden sm:inline">Provider Register</span>
+                    <span className="sm:hidden">Dr Register</span>
+                  </TabsTrigger>
+                </TabsList>
 
-              <TabsContent value="patient-login" className="space-y-4">
+              <TabsContent 
+                value="patient-login" 
+                className="space-y-4"
+                role="tabpanel"
+                id="patient-login-panel"
+                aria-labelledby="patient-login-title"
+              >
                 <div className="text-center space-y-2">
-                  <h3 className="text-lg font-semibold">Patient Login</h3>
+                  <h3 id="patient-login-title" className="text-lg font-semibold">Patient Login</h3>
                   <p className="text-sm text-gray-600">Access your personalized health dashboard</p>
                   <Badge variant="secondary">Free Basic Access + Subscription for AI Features</Badge>
                 </div>
                 <Form {...loginForm}>
-                  <form onSubmit={loginForm.handleSubmit((data) => loginPatientMutation.mutate(data))} className="space-y-4">
+                  <form 
+                    onSubmit={loginForm.handleSubmit((data) => {
+                      setStatusMessage("Logging in...");
+                      announceToScreenReader("Logging in as patient...");
+                      loginPatientMutation.mutate(data);
+                    })} 
+                    className="space-y-4"
+                    role="form"
+                    aria-label="Patient login form"
+                    noValidate
+                  >
                     <FormField
                       control={loginForm.control}
                       name="email"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Email</FormLabel>
+                          <FormLabel htmlFor={`${formId}-patient-email`}>Email Address</FormLabel>
                           <FormControl>
-                            <Input placeholder="your@email.com" {...field} />
+                            <Input 
+                              id={`${formId}-patient-email`}
+                              placeholder="your@email.com" 
+                              type="email"
+                              autoComplete="email"
+                              required
+                              aria-describedby={loginForm.formState.errors.email ? `${formId}-patient-email-error` : undefined}
+                              className="focus:ring-accessible"
+                              {...field} 
+                            />
                           </FormControl>
-                          <FormMessage />
+                          <FormMessage 
+                            id={`${formId}-patient-email-error`}
+                            role="alert"
+                            aria-live="polite"
+                          />
                         </FormItem>
                       )}
                     />
@@ -228,7 +339,7 @@ export default function Login() {
                       name="password"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Password</FormLabel>
+                          <FormLabel htmlFor={`${formId}-patient-password`}>Password</FormLabel>
                           <FormControl>
                             <Input type="password" placeholder="••••••••" {...field} />
                           </FormControl>

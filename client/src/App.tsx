@@ -16,12 +16,13 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useQuery } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 import { apiRequest } from "@/lib/queryClient";
+import { SkipLinks, LiveRegion } from "@/components/accessibility-features";
+import { announceToScreenReader } from "@/lib/accessibility";
 
 function AuthenticatedApp() {
   const { user, isPatient, isProvider } = useAuth();
   const [showHipaaConsent, setShowHipaaConsent] = useState(false);
-
-  // Logo is now handled by FreshLogo component
+  const [routeAnnounced, setRouteAnnounced] = useState(false);
 
   // Get patient data for adaptive theming (only for patient view)
   const { data: patient } = useQuery({
@@ -46,6 +47,15 @@ function AuthenticatedApp() {
     }
   }, [user]);
 
+  // Announce route changes to screen readers
+  useEffect(() => {
+    if (!routeAnnounced && user) {
+      const role = user.type === 'patient' ? 'Patient' : 'Healthcare Provider';
+      announceToScreenReader(`${role} dashboard loaded`, 'polite');
+      setRouteAnnounced(true);
+    }
+  }, [user, routeAnnounced]);
+
   // Show HIPAA consent form for patients who haven't consented yet
   if (user && user.type === 'patient' && showHipaaConsent) {
     return (
@@ -62,17 +72,29 @@ function AuthenticatedApp() {
       enabled={isPatient}
     >
       <div className="min-h-screen bg-background">
-        <Header 
-          userRole={user?.type || "patient"} 
-          onRoleChange={() => {}} // Not needed with real auth
-          title="DNA Diet Club"
-          user={user}
-        />
-        <Switch>
-          <Route path="/login" component={Login} />
-          <Route path="/privacy-policy" component={PrivacyPolicy} />
-          <Route path="/">
-            {isPatient ? (
+        {/* Skip Links for keyboard navigation */}
+        <SkipLinks />
+        
+        {/* Live region for screen reader announcements */}
+        <LiveRegion />
+        
+        {/* Main navigation header */}
+        <nav id="navigation" role="navigation" aria-label="Main navigation">
+          <Header 
+            userRole={user?.type || "patient"} 
+            onRoleChange={() => {}} // Not needed with real auth
+            title="DNA Diet Club"
+            user={user}
+          />
+        </nav>
+        
+        {/* Main content area */}
+        <main id="main-content" role="main" tabIndex={-1} className="focus:outline-none">
+          <Switch>
+            <Route path="/login" component={Login} />
+            <Route path="/privacy-policy" component={PrivacyPolicy} />
+            <Route path="/">
+              {isPatient ? (
               <PatientDashboard selectedPatientId={user?.id || 1} />
             ) : (
               <ProviderDashboard />
@@ -80,6 +102,7 @@ function AuthenticatedApp() {
           </Route>
           <Route component={NotFound} />
         </Switch>
+        </main>
       </div>
     </AdaptiveThemeProvider>
   );

@@ -68,9 +68,84 @@
 }
 
 @layer utilities {
+  /* Accessibility utilities */
+  .sr-only {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+  }
+
+  .not-sr-only {
+    position: static !important;
+    width: auto !important;
+    height: auto !important;
+    padding: inherit !important;
+    margin: inherit !important;
+    overflow: visible !important;
+    clip: auto !important;
+    white-space: normal !important;
+  }
+
+  .focus-within\:not-sr-only:focus-within {
+    position: static !important;
+    width: auto !important;
+    height: auto !important;
+    padding: inherit !important;
+    margin: inherit !important;
+    overflow: visible !important;
+    clip: auto !important;
+    white-space: normal !important;
+  }
+
+  /* High contrast mode support */
+  @media (prefers-contrast: high) {
+    :root {
+      --border: hsl(0, 0%, 0%);
+      --ring: hsl(0, 0%, 0%);
+    }
+    
+    .dark {
+      --border: hsl(0, 0%, 100%);
+      --ring: hsl(0, 0%, 100%);
+    }
+  }
+
+  /* Reduced motion support */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+
+  /* Focus indicators with high contrast */
+  .focus\:outline-accessible:focus {
+    outline: 3px solid hsl(217, 91%, 60%);
+    outline-offset: 2px;
+  }
+
   /* Adaptive theme transitions */
   html {
     transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  /* Enhanced focus styles for better accessibility */
+  .focus\:ring-accessible:focus {
+    @apply ring-2 ring-blue-500 ring-offset-2;
+  }
+
+  .dark .focus\:ring-accessible:focus {
+    @apply ring-2 ring-blue-400 ring-offset-2;
   }
 
   /* Status-specific styling overrides */

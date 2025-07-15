@@ -16,6 +16,7 @@ import AuthHeader from "./auth-header";
 import type { User } from "@/hooks/useAuth";
 import { Link } from "wouter";
 import { cn } from "@/lib/utils";
+import { announceToScreenReader } from "@/lib/accessibility";
 
 interface HeaderProps {
   userRole: "patient" | "provider";
@@ -31,33 +32,46 @@ export default function Header({
   user
 }: HeaderProps) {
   return (
-    <header className="bg-white shadow-sm border-b border-gray-200">
+    <header 
+      className="bg-white shadow-sm border-b border-gray-200" 
+      role="banner"
+      aria-label="Main navigation header"
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-center h-36">
           {/* Navigation Menu */}
           {user && (
-            <NavigationMenu className="hidden md:flex">
+            <NavigationMenu className="hidden md:flex" aria-label="Main navigation">
               <NavigationMenuList>
                 <NavigationMenuItem>
                   <Link href="/">
-                    <NavigationMenuLink className={cn(navigationMenuTriggerStyle())}>
-                      <Home className="w-4 h-4 mr-2" />
+                    <NavigationMenuLink 
+                      className={cn(navigationMenuTriggerStyle())}
+                      aria-label="Go to Dashboard home page"
+                    >
+                      <Home className="w-4 h-4 mr-2" aria-hidden="true" />
                       Dashboard
                     </NavigationMenuLink>
                   </Link>
                 </NavigationMenuItem>
 
                 <NavigationMenuItem>
-                  <NavigationMenuTrigger>
-                    <Dna className="w-4 h-4 mr-2" />
+                  <NavigationMenuTrigger 
+                    aria-label="Services menu - Health monitoring, AI nutrition plans, and health predictions"
+                  >
+                    <Dna className="w-4 h-4 mr-2" aria-hidden="true" />
                     Services
                   </NavigationMenuTrigger>
                   <NavigationMenuContent>
                     <div className="grid gap-3 p-6 w-[400px] lg:w-[500px] lg:grid-cols-[.75fr_1fr]">
                       <div className="row-span-3">
                         <NavigationMenuLink asChild>
-                          <div className="flex h-full w-full select-none flex-col justify-end rounded-md bg-gradient-to-b from-muted/50 to-muted p-6 no-underline outline-none focus:shadow-md">
-                            <Dna className="h-6 w-6" />
+                          <div 
+                            className="flex h-full w-full select-none flex-col justify-end rounded-md bg-gradient-to-b from-muted/50 to-muted p-6 no-underline outline-none focus:shadow-md focus:ring-accessible"
+                            role="banner"
+                            aria-label="DNA Diet Club brand information"
+                          >
+                            <Dna className="h-6 w-6" aria-hidden="true" />
                             <div className="mb-2 mt-4 text-lg font-medium">
                               DNA Diet Club
                             </div>
@@ -67,10 +81,15 @@ export default function Header({
                           </div>
                         </NavigationMenuLink>
                       </div>
-                      <div className="grid gap-1">
+                      <div className="grid gap-1" role="list">
                         <NavigationMenuLink asChild>
-                          <div className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground">
-                            <Activity className="h-4 w-4 inline mr-2" />
+                          <div 
+                            className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:ring-accessible"
+                            role="listitem"
+                            tabIndex={0}
+                            aria-label="Health Monitoring - Real-time glucose tracking with Dexcom CGM integration"
+                          >
+                            <Activity className="h-4 w-4 inline mr-2" aria-hidden="true" />
                             <div className="text-sm font-medium leading-none">Health Monitoring</div>
                             <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
                               Real-time glucose tracking with Dexcom CGM integration
@@ -102,8 +121,10 @@ export default function Header({
 
                 {user.type === 'patient' && (
                   <NavigationMenuItem>
-                    <NavigationMenuTrigger>
-                      <MessageSquare className="w-4 h-4 mr-2" />
+                    <NavigationMenuTrigger
+                      aria-label="Support menu - Provider messages and privacy policy"
+                    >
+                      <MessageSquare className="w-4 h-4 mr-2" aria-hidden="true" />
                       Support
                     </NavigationMenuTrigger>
                     <NavigationMenuContent>
@@ -133,8 +154,10 @@ export default function Header({
 
                 {user.type === 'provider' && (
                   <NavigationMenuItem>
-                    <NavigationMenuTrigger>
-                      <Stethoscope className="w-4 h-4 mr-2" />
+                    <NavigationMenuTrigger
+                      aria-label="Provider Tools menu - AI plan generator, patient management, and lab analysis"
+                    >
+                      <Stethoscope className="w-4 h-4 mr-2" aria-hidden="true" />
                       Provider Tools
                     </NavigationMenuTrigger>
                     <NavigationMenuContent>
