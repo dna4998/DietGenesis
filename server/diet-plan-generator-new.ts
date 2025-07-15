@@ -360,7 +360,7 @@ async function generateDietPlanPDF(
   }
   
   // Save PDF file
-  fs.writeFileSync(pdfPath, doc.output('arraybuffer'));
+  fs.writeFileSync(pdfPath, Buffer.from(doc.output('arraybuffer')));
   
   return `/uploads/${pdfFileName}`;
 }
