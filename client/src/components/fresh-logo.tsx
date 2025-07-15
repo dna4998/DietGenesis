@@ -44,17 +44,17 @@ export default function FreshLogo({
   };
 
   const sizeClasses = {
-    sm: 'h-8 w-auto',
-    md: 'h-12 w-auto',
-    lg: 'h-16 w-auto',
-    login: 'h-24 w-auto'
+    sm: 'h-6 w-auto',
+    md: 'h-10 w-auto',
+    lg: 'h-14 w-auto',
+    login: 'h-20 w-auto'
   };
 
   const textSizes = {
-    sm: 'text-lg',
-    md: 'text-xl',
-    lg: 'text-2xl',
-    login: 'text-3xl'
+    sm: 'text-sm',
+    md: 'text-lg',
+    lg: 'text-xl',
+    login: 'text-2xl'
   };
 
   return (
@@ -68,7 +68,7 @@ export default function FreshLogo({
         />
       ) : (
         <div className={`${sizeClasses[size]} flex items-center justify-center text-blue-600`}>
-          <Dna className={`${size === 'sm' ? 'w-8 h-8' : size === 'md' ? 'w-12 h-12' : size === 'lg' ? 'w-16 h-16' : 'w-24 h-24'}`} />
+          <Dna className={`${size === 'sm' ? 'w-6 h-6' : size === 'md' ? 'w-10 h-10' : size === 'lg' ? 'w-14 h-14' : 'w-20 h-20'}`} />
         </div>
       )}
       
@@ -77,7 +77,7 @@ export default function FreshLogo({
           <h1 className={`font-bold bg-gradient-to-r from-blue-600 to-green-600 bg-clip-text text-transparent ${textSizes[size]}`}>
             {title}
           </h1>
-          {size !== 'sm' && (
+          {(size === 'lg' || size === 'login') && (
             <p className="text-xs text-gray-500">Personalized Health Platform</p>
           )}
         </div>
