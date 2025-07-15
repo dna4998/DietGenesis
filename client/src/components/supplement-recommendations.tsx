@@ -329,7 +329,15 @@ export function SupplementRecommendations({ patientId, isProvider }: SupplementR
                           </FormItem>
                         )}
                       />
-                      <Button type="submit" disabled={saveAffiliateSettings.isPending}>
+                      <Button 
+                        type="submit" 
+                        disabled={saveAffiliateSettings.isPending}
+                        onClick={() => {
+                          console.log("Save button clicked");
+                          console.log("Form values:", affiliateForm.getValues());
+                          console.log("Form errors:", affiliateForm.formState.errors);
+                        }}
+                      >
                         {saveAffiliateSettings.isPending ? "Saving..." : "Save Settings"}
                       </Button>
                     </form>
