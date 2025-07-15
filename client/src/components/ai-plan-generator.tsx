@@ -87,7 +87,9 @@ export default function AIPlanGenerator({ patient, onClose }: AIPlanGeneratorPro
     },
     onError: () => {
       updateStepStatus('gut-analysis', 'error');
-      toast({ title: "Gut biome analysis failed", variant: "destructive" });
+      toast({ title: "Gut biome analysis failed - continuing with lab results only", variant: "destructive" });
+      // Continue with plan generation even if gut biome analysis fails
+      generatePlanMutation.mutate();
     },
   });
 
@@ -200,6 +202,9 @@ ${finalPlan.followUpRecommendations.map((r: string) => `• ${r}`).join('\n')}`;
               {getStepStatusIcon(step.status)}
               {step.status === 'completed' && (
                 <Badge variant="secondary">Complete</Badge>
+              )}
+              {step.status === 'error' && step.id === 'gut-analysis' && (
+                <Badge variant="outline" className="text-orange-600">Optional - Skipped</Badge>
               )}
             </div>
           ))}

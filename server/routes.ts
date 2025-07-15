@@ -504,7 +504,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .sort((a, b) => new Date(b.createdAt!).getTime() - new Date(a.createdAt!).getTime())[0];
 
       if (!gutBiomeMessage) {
-        return res.status(404).json({ message: "No gut biome test found for this patient" });
+        // Return a default response when no gut biome test is available
+        return res.json({
+          diversityScore: "Not tested",
+          beneficialBacteria: ["Assessment pending - no gut biome test available"],
+          harmfulBacteria: ["Assessment pending - no gut biome test available"],
+          inflammationMarkers: ["Assessment pending - no gut biome test available"],
+          recommendations: ["Consider scheduling a comprehensive gut biome test for personalized recommendations"]
+        });
       }
 
       // For demo purposes, use the message content. In production, you'd extract text from the PDF
