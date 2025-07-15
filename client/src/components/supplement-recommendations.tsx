@@ -297,10 +297,7 @@ export function SupplementRecommendations({ patientId, isProvider }: SupplementR
                     </DialogDescription>
                   </DialogHeader>
                   <Form {...affiliateForm}>
-                    <form onSubmit={affiliateForm.handleSubmit((data) => {
-                      console.log("Form submit handler called with data:", data);
-                      saveAffiliateSettings.mutate(data);
-                    })} className="space-y-4">
+                    <form className="space-y-4">
                       <FormField
                         control={affiliateForm.control}
                         name="thorneAffiliateId"
@@ -365,7 +362,7 @@ export function SupplementRecommendations({ patientId, isProvider }: SupplementR
                         )}
                       />
                       <Button 
-                        type="button" 
+                        type="submit" 
                         disabled={saveAffiliateSettings.isPending}
                         onClick={(e) => {
                           e.preventDefault();
@@ -373,9 +370,13 @@ export function SupplementRecommendations({ patientId, isProvider }: SupplementR
                           console.log("Form values:", affiliateForm.getValues());
                           console.log("Form errors:", affiliateForm.formState.errors);
                           
-                          const formData = affiliateForm.getValues();
-                          console.log("Submitting form data:", formData);
-                          saveAffiliateSettings.mutate(formData);
+                          // Trigger form validation and submission
+                          affiliateForm.handleSubmit((data) => {
+                            console.log("Form validated successfully:", data);
+                            saveAffiliateSettings.mutate(data);
+                          }, (errors) => {
+                            console.log("Form validation errors:", errors);
+                          })();
                         }}
                       >
                         {saveAffiliateSettings.isPending ? "Saving..." : "Save Settings"}
