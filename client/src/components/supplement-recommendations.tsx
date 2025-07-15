@@ -122,13 +122,21 @@ export function SupplementRecommendations({ patientId, isProvider }: SupplementR
 
   // Mutations
   const saveAffiliateSettings = useMutation({
-    mutationFn: (data: any) => apiRequest('/api/provider/affiliate-settings', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    }),
-    onSuccess: () => {
+    mutationFn: (data: any) => {
+      console.log("Saving affiliate settings with data:", data);
+      return apiRequest('/api/provider/affiliate-settings', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      });
+    },
+    onSuccess: (response) => {
+      console.log("Affiliate settings saved successfully:", response);
       queryClient.invalidateQueries({ queryKey: ['/api/provider/affiliate-settings'] });
       setShowAffiliateSettings(false);
+    },
+    onError: (error) => {
+      console.error("Failed to save affiliate settings:", error);
+      // You could add a toast notification here to show the error to the user
     },
   });
 
