@@ -12,7 +12,6 @@ import {
 import { Home, Activity, MessageSquare, CreditCard, Stethoscope, Dna, Heart, Brain, Menu } from "lucide-react";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import FreshLogo from "@/components/fresh-logo";
-import LogoCustomizationPanel from "@/components/logo-customization-panel";
 import AuthHeader from "./auth-header";
 import type { User } from "@/hooks/useAuth";
 import { Link } from "wouter";
@@ -245,9 +244,6 @@ export default function Header({
 
           {/* Authentication Section */}
           <div className="flex items-center space-x-4">
-            {user && user.type === 'provider' && (
-              <LogoCustomizationPanel />
-            )}
             {user ? (
               <AuthHeader user={user} />
             ) : (
