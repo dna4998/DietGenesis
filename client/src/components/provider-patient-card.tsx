@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Brain, Send, TrendingUp } from "lucide-react";
 import SendMessageModal from "@/components/send-message-modal";
 import type { Patient } from "@shared/schema";
+import { useState } from "react";
 
 interface ProviderPatientCardProps {
   patient: Patient;
@@ -12,6 +13,8 @@ interface ProviderPatientCardProps {
 }
 
 export default function ProviderPatientCard({ patient, onUpdate, onAIAnalysis, onHealthPrediction }: ProviderPatientCardProps) {
+  const [lastClicked, setLastClicked] = useState<string | null>(null);
+  
   return (
     <Card className="bg-white shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
       <CardContent className="p-6">
@@ -55,9 +58,13 @@ export default function ProviderPatientCard({ patient, onUpdate, onAIAnalysis, o
         <div className="flex gap-2">
           <Button
             className="flex-1 bg-medical-blue text-white hover:bg-blue-700"
-            onClick={() => onUpdate(patient)}
+            onClick={() => {
+              console.log("Update button clicked for patient:", patient.name);
+              setLastClicked("update");
+              onUpdate(patient);
+            }}
           >
-            Update Plans
+            Update Plans {lastClicked === "update" && "✓"}
           </Button>
           <SendMessageModal 
             patient={patient} 
@@ -68,6 +75,7 @@ export default function ProviderPatientCard({ patient, onUpdate, onAIAnalysis, o
                 size="sm"
                 className="px-3"
                 title="Send Message"
+                onClick={() => console.log("Send message clicked for:", patient.name)}
               >
                 <Send className="w-4 h-4" />
               </Button>
@@ -77,19 +85,29 @@ export default function ProviderPatientCard({ patient, onUpdate, onAIAnalysis, o
             variant="outline"
             size="sm"
             className="px-3"
-            onClick={() => onAIAnalysis(patient)}
+            onClick={() => {
+              console.log("AI Analysis button clicked for patient:", patient.name);
+              setLastClicked("ai");
+              onAIAnalysis(patient);
+            }}
             title="AI Plan Generator"
           >
             <Brain className="w-4 h-4" />
+            {lastClicked === "ai" && "✓"}
           </Button>
           <Button
             variant="outline"
             size="sm"
             className="px-3"
-            onClick={() => onHealthPrediction(patient)}
+            onClick={() => {
+              console.log("Health Prediction button clicked for patient:", patient.name);
+              setLastClicked("health");
+              onHealthPrediction(patient);
+            }}
             title="Health Trend Prediction"
           >
             <TrendingUp className="w-4 h-4" />
+            {lastClicked === "health" && "✓"}
           </Button>
         </div>
       </CardContent>

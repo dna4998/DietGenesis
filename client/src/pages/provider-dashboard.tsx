@@ -61,11 +61,13 @@ export default function ProviderDashboard() {
   });
 
   const handleUpdateClick = (patient: Patient) => {
+    console.log("handleUpdateClick called for:", patient.name);
     setSelectedPatient(patient);
     setShowPlanForm(true);
   };
 
   const handleAIAnalysisClick = (patient: Patient) => {
+    console.log("handleAIAnalysisClick called for:", patient.name);
     setSelectedPatient(patient);
     setShowAIAnalysis(true);
   };
@@ -95,6 +97,7 @@ export default function ProviderDashboard() {
   };
 
   const handleHealthPredictionClick = (patient: Patient) => {
+    console.log("handleHealthPredictionClick called for:", patient.name);
     setSelectedPatient(patient);
     setShowHealthPrediction(true);
   };
