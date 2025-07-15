@@ -9,7 +9,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useLocation } from "wouter";
 import { Heart, Stethoscope, UserCheck, Shield } from "lucide-react";
@@ -43,6 +43,7 @@ export default function Login() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("patient-login");
+  const queryClient = useQueryClient();
 
   const loginForm = useForm({
     resolver: zodResolver(loginSchema),
@@ -80,6 +81,7 @@ export default function Login() {
       return response.json();
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
       toast({
         title: "Welcome back!",
         description: "Successfully logged in to your account.",
@@ -101,6 +103,7 @@ export default function Login() {
       return response.json();
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
       toast({
         title: "Welcome back, Doctor!",
         description: "Successfully logged in to your provider account.",
@@ -122,6 +125,7 @@ export default function Login() {
       return response.json();
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
       toast({
         title: "Account Created!",
         description: "Welcome to DNA Diet Club! Your personalized health journey begins now.",
@@ -143,6 +147,7 @@ export default function Login() {
       return response.json();
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
       toast({
         title: "Provider Account Created!",
         description: "Welcome to DNA Diet Club! You can now manage patients and create treatment plans.",

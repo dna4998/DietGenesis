@@ -16,7 +16,7 @@ import { generateDemoHealthPrediction } from "./health-prediction";
 import { dexcomService, isDexcomConfigured } from "./dexcom-integration";
 import { z } from "zod";
 
-import { AuthenticatedRequest, requireAuth, requireProvider, requireSubscription, createSession, deleteSession } from "./auth";
+import { AuthenticatedRequest, requireAuth, requireProvider, requireSubscription, createSession, deleteSession, sessionMiddleware } from "./auth";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Authentication routes
