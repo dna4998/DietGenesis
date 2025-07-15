@@ -20,7 +20,6 @@ import { cn } from "@/lib/utils";
 interface HeaderProps {
   userRole: "patient" | "provider";
   onRoleChange: (role: "patient" | "provider") => void;
-  logoUrl?: string;
   title?: string;
   user?: User;
 }
@@ -28,7 +27,6 @@ interface HeaderProps {
 export default function Header({ 
   userRole, 
   onRoleChange, 
-  logoUrl, 
   title = "DNA Diet Club",
   user
 }: HeaderProps) {
@@ -37,7 +35,7 @@ export default function Header({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
           {/* Logo Section */}
-          <FreshLogo title={title} />
+          <FreshLogo title={title} showTitle={false} />
 
           {/* Navigation Menu */}
           {user && (

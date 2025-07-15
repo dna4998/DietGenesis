@@ -21,8 +21,7 @@ function AuthenticatedApp() {
   const { user, isPatient, isProvider } = useAuth();
   const [showHipaaConsent, setShowHipaaConsent] = useState(false);
 
-  // Your custom DNA Diet Club logo is now active!
-  const logoUrl = "/logo.png"; // Your uploaded logo
+  // Logo is now handled by FreshLogo component
 
   // Get patient data for adaptive theming (only for patient view)
   const { data: patient } = useQuery({
@@ -66,7 +65,6 @@ function AuthenticatedApp() {
         <Header 
           userRole={user?.type || "patient"} 
           onRoleChange={() => {}} // Not needed with real auth
-          logoUrl={undefined} // Use default logo consistently
           title="DNA Diet Club"
           user={user}
         />
