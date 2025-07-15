@@ -51,6 +51,7 @@ const guidelinesSchema = z.object({
   cookingPreferences: z.string().min(1, "Please specify cooking preferences"),
   budgetConsiderations: z.string().optional(),
   specialInstructions: z.string().optional(),
+  pdfBackgroundColor: z.string().optional(),
 });
 
 type GuidelinesForm = z.infer<typeof guidelinesSchema>;
@@ -71,6 +72,7 @@ export default function DietPlanGenerator({ patient, onClose }: DietPlanGenerato
       cookingPreferences: "",
       budgetConsiderations: "",
       specialInstructions: "",
+      pdfBackgroundColor: "#ffffff",
     },
   });
 
@@ -260,6 +262,32 @@ export default function DietPlanGenerator({ patient, onClose }: DietPlanGenerato
                           rows={4}
                           {...field}
                         />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="pdfBackgroundColor"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>PDF Background Color (Optional)</FormLabel>
+                      <FormControl>
+                        <div className="flex items-center gap-2">
+                          <Input
+                            type="color"
+                            className="w-16 h-10"
+                            {...field}
+                          />
+                          <Input
+                            type="text"
+                            placeholder="#ffffff"
+                            className="flex-1"
+                            {...field}
+                          />
+                        </div>
                       </FormControl>
                       <FormMessage />
                     </FormItem>

@@ -14,6 +14,7 @@ export interface DietPlanGuidelines {
   cookingPreferences: string;
   budgetConsiderations?: string;
   specialInstructions?: string;
+  pdfBackgroundColor?: string;
 }
 
 export interface DietPlanResponse {
@@ -80,15 +81,17 @@ Provider Guidelines:
 - Budget Considerations: ${guidelines.budgetConsiderations || 'Standard budget'}
 - Special Instructions: ${guidelines.specialInstructions || 'None'}
 
+IMPORTANT: You must generate EXACTLY 30 breakfast recipes, 30 lunch recipes, and 30 dinner recipes. Do not generate fewer recipes. Each meal category must have exactly 30 complete recipes with all details.
+
 Create a detailed 30-day diet plan with:
-1. 30 breakfast options with recipes
-2. 30 lunch options with recipes
-3. 30 dinner options with recipes
+1. EXACTLY 30 breakfast options with complete recipes (not less)
+2. EXACTLY 30 lunch options with complete recipes (not less)
+3. EXACTLY 30 dinner options with complete recipes (not less)
 4. Weekly meal structure and themes
 5. Comprehensive shopping list
 6. Nutrition tips and guidelines
 
-Each meal should include:
+Each meal must include:
 - Recipe name and description
 - Complete ingredient list with quantities
 - Step-by-step cooking instructions
@@ -96,7 +99,9 @@ Each meal should include:
 - Nutritional information
 - Estimated calories
 
-Respond in JSON format:
+CRITICAL: Generate all 90 recipes (30 breakfast + 30 lunch + 30 dinner) in this single response. Do not abbreviate or summarize.
+
+Respond in JSON format with all 90 recipes listed:
 {
   "summary": "Brief overview of the 30-day plan and its benefits",
   "breakfastCount": 30,
@@ -112,9 +117,14 @@ Respond in JSON format:
       "nutritionInfo": "Key nutritional highlights",
       "calories": number
     }
+    // MUST include all 30 breakfast recipes here
   ],
-  "lunchOptions": [similar structure],
-  "dinnerOptions": [similar structure],
+  "lunchOptions": [
+    // MUST include all 30 lunch recipes here with same structure
+  ],
+  "dinnerOptions": [
+    // MUST include all 30 dinner recipes here with same structure
+  ],
   "shoppingList": ["grouped ingredients by category"],
   "nutritionTips": ["practical nutrition advice"],
   "weeklyStructure": [
@@ -161,14 +171,25 @@ async function generateDietPlanPDF(
     logoBase64 = logoBuffer.toString('base64');
   }
   
-  // Set up colors
+  // Set up colors and fonts
   const primaryColor = '#2563eb'; // Blue
   const secondaryColor = '#16a34a'; // Green
   const textColor = '#1f2937'; // Gray
+  const backgroundColor = guidelines.pdfBackgroundColor || '#ffffff';
+  
+  // Set font to sans-serif and size 14
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(14);
   
   let yPosition = 20;
   const pageWidth = doc.internal.pageSize.width;
   const pageHeight = doc.internal.pageSize.height;
+  
+  // Set background color if specified
+  if (backgroundColor !== '#ffffff') {
+    doc.setFillColor(backgroundColor);
+    doc.rect(0, 0, pageWidth, pageHeight, 'F');
+  }
   
   // Add watermark logo in background
   if (logoBase64) {
@@ -183,10 +204,12 @@ async function generateDietPlanPDF(
   }
   
   // Title
+  doc.setFont('helvetica', 'bold');
   doc.setFontSize(24);
   doc.setTextColor(primaryColor);
   doc.text('DNA Diet Club', logoBase64 ? 50 : 15, 25);
   
+  doc.setFont('helvetica', 'normal');
   doc.setFontSize(18);
   doc.setTextColor(textColor);
   doc.text('30-Day Personalized Diet Plan', logoBase64 ? 50 : 15, 35);
@@ -194,12 +217,14 @@ async function generateDietPlanPDF(
   yPosition = 55;
   
   // Patient Information
+  doc.setFont('helvetica', 'bold');
   doc.setFontSize(14);
   doc.setTextColor(primaryColor);
   doc.text('Patient Information', 15, yPosition);
   
   yPosition += 10;
-  doc.setFontSize(10);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(14);
   doc.setTextColor(textColor);
   doc.text(`Name: ${patient.name}`, 15, yPosition);
   doc.text(`Age: ${patient.age}`, 120, yPosition);
@@ -213,12 +238,14 @@ async function generateDietPlanPDF(
   yPosition += 15;
   
   // Plan Summary
+  doc.setFont('helvetica', 'bold');
   doc.setFontSize(14);
   doc.setTextColor(primaryColor);
   doc.text('Plan Overview', 15, yPosition);
   
   yPosition += 10;
-  doc.setFontSize(10);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(14);
   doc.setTextColor(textColor);
   const summaryLines = doc.splitTextToSize(plan.summary, pageWidth - 30);
   doc.text(summaryLines, 15, yPosition);
@@ -231,6 +258,7 @@ async function generateDietPlanPDF(
   }
   
   // Breakfast Options
+  doc.setFont('helvetica', 'bold');
   doc.setFontSize(16);
   doc.setTextColor(secondaryColor);
   doc.text('🌅 Breakfast Options', 15, yPosition);
@@ -244,10 +272,12 @@ async function generateDietPlanPDF(
       yPosition = 20;
     }
     
-    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(14);
     doc.setTextColor(textColor);
     doc.text(`${i + 1}. ${meal.name}`, 15, yPosition);
-    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(14);
     doc.text(`${meal.calories} calories • ${meal.prepTime}`, 15, yPosition + 6);
     
     yPosition += 12;
