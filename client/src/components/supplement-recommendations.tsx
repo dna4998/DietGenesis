@@ -329,6 +329,30 @@ export function SupplementRecommendations({ patientId, isProvider }: SupplementR
                           </FormItem>
                         )}
                       />
+                      <FormField
+                        control={affiliateForm.control}
+                        name="trackingEnabled"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                            <div className="space-y-0.5">
+                              <FormLabel className="text-base">
+                                Enable Tracking
+                              </FormLabel>
+                              <div className="text-sm text-muted-foreground">
+                                Track affiliate commissions for supplement recommendations
+                              </div>
+                            </div>
+                            <FormControl>
+                              <input
+                                type="checkbox"
+                                checked={field.value}
+                                onChange={field.onChange}
+                                className="h-4 w-4"
+                              />
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
                       <Button 
                         type="submit" 
                         disabled={saveAffiliateSettings.isPending}
