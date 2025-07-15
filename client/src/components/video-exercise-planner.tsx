@@ -119,39 +119,50 @@ export function VideoExercisePlanner({ patientId }: VideoExercisePlannerProps) {
     }));
   };
 
-  const VideoCard = ({ video, title }: { video: ExerciseVideo; title: string }) => (
-    <div className="border rounded-lg p-3 space-y-2">
-      <div className="flex items-center justify-between">
-        <h4 className="font-medium text-sm">{title}</h4>
-        <Badge variant="outline" className="text-xs">
-          {video.intensity}
-        </Badge>
-      </div>
-      <p className="text-sm text-muted-foreground">{video.name}</p>
-      <p className="text-xs text-muted-foreground">{video.description}</p>
-      <div className="flex items-center gap-2 text-xs text-muted-foreground">
-        <Clock className="h-3 w-3" />
-        {video.duration}
-        <Target className="h-3 w-3" />
-        {video.targetMuscles.join(', ')}
-      </div>
-      {video.platform && (
-        <div className="text-xs text-blue-600 font-medium">
-          📱 {video.platform}
+  const VideoCard = ({ video, title }: { video: ExerciseVideo; title: string }) => {
+    if (!video) {
+      return (
+        <div className="border rounded-lg p-3 text-center text-muted-foreground">
+          <p className="text-sm">No video available</p>
         </div>
-      )}
-      <Button 
-        size="sm" 
-        variant="outline" 
-        className="w-full"
-        onClick={() => window.open(video.videoUrl, '_blank')}
-      >
-        <Play className="h-3 w-3 mr-1" />
-        Open App/Link
-        <ExternalLink className="h-3 w-3 ml-1" />
-      </Button>
-    </div>
-  );
+      );
+    }
+    
+    return (
+      <div className="border rounded-lg p-3 space-y-2">
+        <div className="flex items-center justify-between">
+          <h4 className="font-medium text-sm">{title}</h4>
+          <Badge variant="outline" className="text-xs">
+            {video.intensity || 'N/A'}
+          </Badge>
+        </div>
+        <p className="text-sm text-muted-foreground">{video.name || 'Unnamed Exercise'}</p>
+        <p className="text-xs text-muted-foreground">{video.description || 'No description available'}</p>
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <Clock className="h-3 w-3" />
+          {video.duration || 'N/A'}
+          <Target className="h-3 w-3" />
+          {video.targetMuscles?.join(', ') || 'N/A'}
+        </div>
+        {video.platform && (
+          <div className="text-xs text-blue-600 font-medium">
+            📱 {video.platform}
+          </div>
+        )}
+        <Button 
+          size="sm" 
+          variant="outline" 
+          className="w-full"
+          onClick={() => window.open(video.videoUrl, '_blank')}
+          disabled={!video.videoUrl}
+        >
+          <Play className="h-3 w-3 mr-1" />
+          {video.videoUrl ? 'Download App' : 'No Link Available'}
+          <ExternalLink className="h-3 w-3 ml-1" />
+        </Button>
+      </div>
+    );
+  };
 
   const DayCard = ({ day }: { day: DailyExercise }) => (
     <Card className="mb-4">
@@ -172,15 +183,19 @@ export function VideoExercisePlanner({ patientId }: VideoExercisePlannerProps) {
       <CardContent className="space-y-4">
         <p className="text-sm text-muted-foreground">{day.notes}</p>
         
-        {day.exercises.length > 0 && (
+        {day.exercises.length > 0 ? (
           <div className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              <VideoCard video={day.warmUp} title="Warm-Up" />
+              {day.warmUp && <VideoCard video={day.warmUp} title="Warm-Up" />}
               {day.exercises.map((exercise, idx) => (
                 <VideoCard key={idx} video={exercise} title="Main Workout" />
               ))}
-              <VideoCard video={day.coolDown} title="Cool-Down" />
+              {day.coolDown && <VideoCard video={day.coolDown} title="Cool-Down" />}
             </div>
+          </div>
+        ) : (
+          <div className="text-center py-4 text-muted-foreground">
+            <p>Rest day - No exercises scheduled</p>
           </div>
         )}
       </CardContent>
