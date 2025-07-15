@@ -104,9 +104,9 @@ export function SupplementRecommendations({ patientId, isProvider }: SupplementR
   const affiliateForm = useForm({
     resolver: zodResolver(affiliateSettingsSchema),
     defaultValues: affiliateSettings?.settings || {
-      thorneAffiliateId: "",
-      affiliateCode: "",
-      practiceUrl: "",
+      thorneAffiliateId: "PR115297",
+      affiliateCode: "PR115297",
+      practiceUrl: "https://www.thorne.com/u/PR115297",
       trackingEnabled: true,
     },
   });
@@ -156,6 +156,19 @@ export function SupplementRecommendations({ patientId, isProvider }: SupplementR
   console.log("Loading state:", loadingRecommendations);
   console.log("Recommendations data:", recommendationsData);
   console.log("Affiliate settings:", affiliateSettings);
+
+  // Auto-save affiliate settings if not already configured
+  React.useEffect(() => {
+    if (isProvider && !affiliateSettings?.settings?.thorneAffiliateId) {
+      console.log("Auto-saving default affiliate settings...");
+      saveAffiliateSettings.mutate({
+        thorneAffiliateId: "PR115297",
+        affiliateCode: "PR115297",
+        practiceUrl: "https://www.thorne.com/u/PR115297",
+        trackingEnabled: true,
+      });
+    }
+  }, [isProvider, affiliateSettings, saveAffiliateSettings]);
 
   if (loadingRecommendations) {
     return (
