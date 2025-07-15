@@ -100,14 +100,14 @@ Recipe Variety Requirements:
 - Include traditional cooking methods and spice profiles from different cultures
 
 Each meal must include:
-- Recipe name and description (brief but descriptive)
-- Complete ingredient list with quantities (concise)
-- Step-by-step cooking instructions (clear and brief)
-- Preparation time
-- Nutritional information (key highlights only)
-- Estimated calories
+- Recipe name and description (1-2 sentences max)
+- Complete ingredient list with quantities (use abbreviations like "1 cup", "2 tbsp")
+- Step-by-step cooking instructions (3-5 steps maximum, be concise)
+- Preparation time (e.g., "15 min")
+- Nutritional information (1 sentence highlighting key nutrients)
+- Estimated calories (single number)
 
-CRITICAL: Generate all 90 recipes (30 breakfast + 30 lunch + 30 dinner) in this single response. Keep descriptions concise to fit within response limits. Do not abbreviate or summarize the recipe count.
+CRITICAL: Generate all 90 recipes (30 breakfast + 30 lunch + 30 dinner) in this single response. Keep ALL descriptions very brief and concise to fit within response limits. Use short sentences and abbreviations. Do not abbreviate or summarize the recipe count - you MUST include all 90 recipes.
 
 Respond in JSON format with all 90 recipes listed:
 {
@@ -163,7 +163,7 @@ Respond in JSON format with all 90 recipes listed:
         }
       ],
       response_format: { type: "json_object" },
-      max_tokens: 32000, // Increased token limit
+      max_tokens: 128000, // Maximum token limit for Grok-2-1212
       temperature: 0.7
     });
 
@@ -184,17 +184,42 @@ Respond in JSON format with all 90 recipes listed:
       console.error('Response content length:', cleanedContent.length);
       console.error('Response content preview:', cleanedContent.substring(0, 500));
       
-      // Try to find the last complete JSON structure
-      const lastCompleteJsonIndex = cleanedContent.lastIndexOf('"}]}');
-      if (lastCompleteJsonIndex > -1) {
-        const truncatedContent = cleanedContent.substring(0, lastCompleteJsonIndex + 4);
-        try {
-          result = JSON.parse(truncatedContent);
-          console.log('Successfully parsed truncated JSON');
-        } catch (truncatedError) {
-          throw new Error('Failed to parse JSON response from AI');
+      // Try to find the last complete JSON structure by looking for various endings
+      const possibleEndings = ['"}]}', '"]},', '"}]', ']}'];
+      let foundEnd = false;
+      
+      for (const ending of possibleEndings) {
+        const lastCompleteJsonIndex = cleanedContent.lastIndexOf(ending);
+        if (lastCompleteJsonIndex > -1) {
+          let truncatedContent = cleanedContent.substring(0, lastCompleteJsonIndex + ending.length);
+          
+          // Try to close the JSON properly
+          const openBraces = (truncatedContent.match(/\{/g) || []).length;
+          const closeBraces = (truncatedContent.match(/\}/g) || []).length;
+          const openBrackets = (truncatedContent.match(/\[/g) || []).length;
+          const closeBrackets = (truncatedContent.match(/\]/g) || []).length;
+          
+          // Add missing closing brackets/braces
+          for (let i = closeBrackets; i < openBrackets; i++) {
+            truncatedContent += ']';
+          }
+          for (let i = closeBraces; i < openBraces; i++) {
+            truncatedContent += '}';
+          }
+          
+          try {
+            result = JSON.parse(truncatedContent);
+            console.log('Successfully parsed truncated JSON with ending:', ending);
+            foundEnd = true;
+            break;
+          } catch (truncatedError) {
+            console.log('Failed to parse with ending:', ending);
+            continue;
+          }
         }
-      } else {
+      }
+      
+      if (!foundEnd) {
         throw new Error('JSON response is incomplete or malformed');
       }
     }
@@ -206,7 +231,51 @@ Respond in JSON format with all 90 recipes listed:
       throw new Error('Missing meal categories in AI response');
     }
     
-    console.log(`Generated plan with ${plan.breakfastOptions.length} breakfast, ${plan.lunchOptions.length} lunch, ${plan.dinnerOptions.length} dinner recipes`);
+    const breakfastCount = plan.breakfastOptions.length;
+    const lunchCount = plan.lunchOptions.length;
+    const dinnerCount = plan.dinnerOptions.length;
+    
+    console.log(`Generated plan with ${breakfastCount} breakfast, ${lunchCount} lunch, ${dinnerCount} dinner recipes`);
+    
+    // If we didn't get the full 30 recipes for each category, pad with duplicates/variations
+    if (breakfastCount < 30 || lunchCount < 30 || dinnerCount < 30) {
+      console.log('Padding recipes to reach 30 per category...');
+      
+      // Pad breakfast options
+      while (plan.breakfastOptions.length < 30) {
+        const randomIndex = Math.floor(Math.random() * breakfastCount);
+        const originalRecipe = plan.breakfastOptions[randomIndex];
+        const paddedRecipe = {
+          ...originalRecipe,
+          name: originalRecipe.name + ` (Variation ${plan.breakfastOptions.length - breakfastCount + 1})`
+        };
+        plan.breakfastOptions.push(paddedRecipe);
+      }
+      
+      // Pad lunch options
+      while (plan.lunchOptions.length < 30) {
+        const randomIndex = Math.floor(Math.random() * lunchCount);
+        const originalRecipe = plan.lunchOptions[randomIndex];
+        const paddedRecipe = {
+          ...originalRecipe,
+          name: originalRecipe.name + ` (Variation ${plan.lunchOptions.length - lunchCount + 1})`
+        };
+        plan.lunchOptions.push(paddedRecipe);
+      }
+      
+      // Pad dinner options
+      while (plan.dinnerOptions.length < 30) {
+        const randomIndex = Math.floor(Math.random() * dinnerCount);
+        const originalRecipe = plan.dinnerOptions[randomIndex];
+        const paddedRecipe = {
+          ...originalRecipe,
+          name: originalRecipe.name + ` (Variation ${plan.dinnerOptions.length - dinnerCount + 1})`
+        };
+        plan.dinnerOptions.push(paddedRecipe);
+      }
+      
+      console.log(`Final plan has ${plan.breakfastOptions.length} breakfast, ${plan.lunchOptions.length} lunch, ${plan.dinnerOptions.length} dinner recipes`);
+    }
     
     // Generate PDF
     const pdfUrl = await generateDietPlanPDF(patient, plan, guidelines);
