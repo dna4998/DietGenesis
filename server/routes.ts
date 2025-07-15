@@ -572,6 +572,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Generate 7-day exercise plan with YouTube videos
+  app.post("/api/patients/:id/generate-exercise-plan", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid patient ID" });
+      }
+
+      const patient = await storage.getPatient(id);
+      if (!patient) {
+        return res.status(404).json({ message: "Patient not found" });
+      }
+
+      const { exercisePreferences } = req.body;
+      if (!exercisePreferences) {
+        return res.status(400).json({ message: "Exercise preferences are required" });
+      }
+
+      const { generateVideoExercisePlan } = await import('./video-exercise-generator');
+      const exercisePlanResponse = await generateVideoExercisePlan(patient, exercisePreferences);
+      res.json(exercisePlanResponse);
+    } catch (error) {
+      console.error("Error generating exercise plan:", error);
+      res.status(500).json({ message: "Failed to generate exercise plan" });
+    }
+  });
+
   // Send diet plan to patient
   app.post("/api/patients/:id/send-diet-plan", async (req, res) => {
     try {

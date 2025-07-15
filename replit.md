@@ -83,6 +83,11 @@ Preferred communication style: Simple, everyday language.
 ✓ **Complete Recipe Documentation** - Comprehensive PDF generation with all 90 recipes detailed including ingredients, instructions, calories, prep time, and nutrition information
 ✓ **Chunked AI Generation** - Solved JSON truncation issues by generating recipes in separate chunks (breakfast, lunch, dinner) with parallel processing
 ✓ **Professional PDF Layout** - Multi-page PDFs with proper pagination, section headers, DNA Diet Club watermark, and organized recipe presentation
+✓ **7-Day Video Exercise Planner** - Complete exercise plan generator with YouTube video links for workouts, customizable for weight loss, insulin resistance, resistance training, and stationary bike
+✓ **Exercise Goal Customization** - Targeted workout plans based on specific fitness goals with intensity levels (beginner, intermediate, advanced)
+✓ **YouTube Video Integration** - Curated collection of workout videos with warm-up, main exercises, and cool-down routines with direct links
+✓ **Equipment-Based Planning** - Exercise recommendations adapt to available equipment from bodyweight-only to full gym setups
+✓ **Provider Exercise Tools** - Healthcare providers can generate and customize 7-day exercise plans for patients with video guidance
 
 ## System Architecture
 
