@@ -124,8 +124,15 @@ export function SupplementRecommendations({ patientId, isProvider }: SupplementR
   const saveAffiliateSettings = useMutation({
     mutationFn: (data: any) => {
       console.log("Saving affiliate settings with data:", data);
+      console.log("Data type:", typeof data);
+      console.log("Data keys:", Object.keys(data));
+      console.log("JSON stringified data:", JSON.stringify(data));
+      
       return apiRequest('/api/provider/affiliate-settings', {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify(data),
       });
     },
@@ -136,6 +143,7 @@ export function SupplementRecommendations({ patientId, isProvider }: SupplementR
     },
     onError: (error) => {
       console.error("Failed to save affiliate settings:", error);
+      console.error("Error details:", error.message || error);
       // You could add a toast notification here to show the error to the user
     },
   });
