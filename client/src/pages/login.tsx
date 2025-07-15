@@ -168,7 +168,7 @@ export default function Login() {
       <div className="w-full max-w-4xl">
         <div className="text-center mb-8">
           <div className="flex items-center justify-center mb-4">
-            <FreshLogo size="lg" showTitle={false} />
+            <FreshLogo size="login" showTitle={false} />
           </div>
           <p className="text-gray-600">Personalized health and wellness platform</p>
         </div>

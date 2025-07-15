@@ -13,7 +13,7 @@ import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useLocation } from "wouter";
 import { Shield, FileCheck, Lock, Eye, UserCheck } from "lucide-react";
-import logoPath from "@assets/Logo-1_1752362928812.png";
+import FreshLogo from "@/components/fresh-logo";
 
 const hipaaConsentSchema = z.object({
   patientName: z.string().min(2, "Patient name is required"),
@@ -382,11 +382,9 @@ export default function HipaaConsent({ patientId, onComplete }: HipaaConsentProp
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 p-4">
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-8">
-          <img 
-            src={logoPath} 
-            alt="DNA Diet Club" 
-            className="h-16 w-auto object-contain mx-auto mb-4"
-          />
+          <div className="flex items-center justify-center mb-4">
+            <FreshLogo size="login" showTitle={false} />
+          </div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">HIPAA Consent Form</h1>
           <p className="text-gray-600">Protected Health Information Authorization</p>
         </div>

@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 
 interface FreshLogoProps {
   title?: string;
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'sm' | 'md' | 'lg' | 'login';
   showTitle?: boolean;
 }
 
@@ -14,14 +14,16 @@ export default function FreshLogo({
 }: FreshLogoProps) {
   const sizeClasses = {
     sm: 'h-48',
-    md: 'h-72',
-    lg: 'h-96'
+    md: 'h-80',
+    lg: 'h-96',
+    login: 'h-64'
   };
 
   const textSizes = {
     sm: 'text-xl',
     md: 'text-2xl',
-    lg: 'text-3xl'
+    lg: 'text-3xl',
+    login: 'text-2xl'
   };
 
   // Use the actual logo with fallback to simple text
