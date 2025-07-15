@@ -23,6 +23,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 import { 
   Utensils,
   Coffee,
@@ -52,6 +54,7 @@ const guidelinesSchema = z.object({
   budgetConsiderations: z.string().optional(),
   specialInstructions: z.string().optional(),
   pdfBackgroundColor: z.string().optional(),
+  cuisinePreferences: z.array(z.string()).min(1, "Please select at least one cuisine"),
 });
 
 type GuidelinesForm = z.infer<typeof guidelinesSchema>;
@@ -73,6 +76,7 @@ export default function DietPlanGenerator({ patient, onClose }: DietPlanGenerato
       budgetConsiderations: "",
       specialInstructions: "",
       pdfBackgroundColor: "#ffffff",
+      cuisinePreferences: [],
     },
   });
 
@@ -262,6 +266,44 @@ export default function DietPlanGenerator({ patient, onClose }: DietPlanGenerato
                           rows={4}
                           {...field}
                         />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="cuisinePreferences"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Preferred Cuisines</FormLabel>
+                      <FormControl>
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 p-3 border rounded-md">
+                          {[
+                            "American", "Italian", "Mediterranean", "Asian", "Mexican", "Indian",
+                            "Middle Eastern", "French", "Japanese", "Thai", "Greek", "Chinese",
+                            "Korean", "Vietnamese", "Spanish", "German", "British", "Russian",
+                            "Brazilian", "Moroccan", "Ethiopian", "Lebanese", "Turkish", "Peruvian"
+                          ].map((cuisine) => (
+                            <div key={cuisine} className="flex items-center space-x-2">
+                              <Checkbox
+                                id={cuisine}
+                                checked={field.value?.includes(cuisine)}
+                                onCheckedChange={(checked) => {
+                                  if (checked) {
+                                    field.onChange([...field.value, cuisine]);
+                                  } else {
+                                    field.onChange(field.value?.filter((c: string) => c !== cuisine));
+                                  }
+                                }}
+                              />
+                              <Label htmlFor={cuisine} className="text-sm font-medium">
+                                {cuisine}
+                              </Label>
+                            </div>
+                          ))}
+                        </div>
                       </FormControl>
                       <FormMessage />
                     </FormItem>

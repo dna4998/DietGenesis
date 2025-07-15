@@ -78,6 +78,8 @@ Preferred communication style: Simple, everyday language.
 ✓ **Enhanced 30-Recipe Diet Plan Generator** - Complete meal planning system with 30 breakfast, 30 lunch, and 30 dinner recipes
 ✓ **Comprehensive PDF Generation** - Professional diet plan PDFs with DNA Diet Club logo watermark, complete recipe collection, and shopping lists
 ✓ **Provider Guidelines Interface** - Detailed form system for dietary restrictions, preferences, timing, cooking methods, and budget considerations
+✓ **Global Cuisine Selection** - Multi-select cuisine preferences including American, Italian, Mediterranean, Asian, Mexican, Indian, Middle Eastern, French, Japanese, Thai, Greek, Chinese, Korean, Vietnamese, Spanish, German, British, Russian, Brazilian, Moroccan, Ethiopian, Lebanese, Turkish, and Peruvian cuisines
+✓ **PDF Customization Options** - Background color selection and consistent sans-serif font formatting at 14pt size
 
 ## System Architecture
 

@@ -15,6 +15,7 @@ export interface DietPlanGuidelines {
   budgetConsiderations?: string;
   specialInstructions?: string;
   pdfBackgroundColor?: string;
+  cuisinePreferences: string[];
 }
 
 export interface DietPlanResponse {
@@ -80,16 +81,23 @@ Provider Guidelines:
 - Cooking Preferences: ${guidelines.cookingPreferences}
 - Budget Considerations: ${guidelines.budgetConsiderations || 'Standard budget'}
 - Special Instructions: ${guidelines.specialInstructions || 'None'}
+- Cuisine Preferences: ${guidelines.cuisinePreferences?.join(', ') || 'International variety'}
 
 IMPORTANT: You must generate EXACTLY 30 breakfast recipes, 30 lunch recipes, and 30 dinner recipes. Do not generate fewer recipes. Each meal category must have exactly 30 complete recipes with all details.
 
 Create a detailed 30-day diet plan with:
-1. EXACTLY 30 breakfast options with complete recipes (not less)
-2. EXACTLY 30 lunch options with complete recipes (not less)
-3. EXACTLY 30 dinner options with complete recipes (not less)
+1. EXACTLY 30 breakfast options with complete recipes (not less) - incorporate diverse cuisines from around the world
+2. EXACTLY 30 lunch options with complete recipes (not less) - include international flavors and cooking styles
+3. EXACTLY 30 dinner options with complete recipes (not less) - feature global cuisine variety
 4. Weekly meal structure and themes
 5. Comprehensive shopping list
 6. Nutrition tips and guidelines
+
+Recipe Variety Requirements:
+- Include recipes from the selected cuisine preferences: ${guidelines.cuisinePreferences?.join(', ') || 'Mix of American, Italian, Mediterranean, Asian, Mexican, Indian, Middle Eastern, French, Japanese, Thai, Greek, and other international cuisines'}
+- Ensure cultural authenticity while meeting dietary restrictions
+- Balance familiar comfort foods with exciting international flavors
+- Include traditional cooking methods and spice profiles from different cultures
 
 Each meal must include:
 - Recipe name and description
