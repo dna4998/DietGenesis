@@ -58,7 +58,7 @@ export default function ProviderPatientCard({ patient, onUpdate, onAIAnalysis, o
         <div className="flex gap-2">
           <button
             className="flex-1 bg-blue-600 text-white hover:bg-blue-700 px-4 py-2 rounded-md transition-colors font-medium"
-            onClick={() => alert("Update button works! Patient: " + patient.name)}
+            onClick={() => onUpdate(patient)}
           >
             Update Plans
           </button>
@@ -79,14 +79,14 @@ export default function ProviderPatientCard({ patient, onUpdate, onAIAnalysis, o
           />
           <button
             className="border border-gray-300 hover:bg-gray-50 px-3 py-2 rounded-md transition-colors"
-            onClick={() => alert("AI Analysis works! Patient: " + patient.name)}
+            onClick={() => onAIAnalysis(patient)}
             title="AI Plan Generator"
           >
             <Brain className="w-4 h-4" />
           </button>
           <button
             className="border border-gray-300 hover:bg-gray-50 px-3 py-2 rounded-md transition-colors"
-            onClick={() => alert("Health Prediction works! Patient: " + patient.name)}
+            onClick={() => onHealthPrediction(patient)}
             title="Health Trend Prediction"
           >
             <TrendingUp className="w-4 h-4" />
