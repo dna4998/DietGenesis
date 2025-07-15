@@ -1505,8 +1505,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Set up affiliate settings for provider
   app.post('/api/provider/affiliate-settings', requireAuth, requireProvider, async (req: AuthenticatedRequest, res) => {
     try {
+      console.log("BACKEND: Received affiliate settings request");
+      console.log("BACKEND: Request body:", req.body);
+      console.log("BACKEND: User ID:", req.user!.id);
+      
       const { thorneAffiliateId, affiliateCode, practiceUrl, trackingEnabled } = req.body;
       
+      console.log("BACKEND: Extracted fields:", {
+        thorneAffiliateId,
+        affiliateCode,
+        practiceUrl,
+        trackingEnabled
+      });
+
       const validation = insertProviderAffiliateSettingsSchema.parse({
         providerId: req.user!.id,
         thorneAffiliateId,
@@ -1515,19 +1526,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
         trackingEnabled,
       });
 
+      console.log("BACKEND: Validation passed:", validation);
+
       // Check if settings already exist
       const existing = await storage.getProviderAffiliateSettings(req.user!.id);
+      console.log("BACKEND: Existing settings:", existing);
       
       let settings;
       if (existing) {
+        console.log("BACKEND: Updating existing settings");
         settings = await storage.updateProviderAffiliateSettings(req.user!.id, validation);
       } else {
+        console.log("BACKEND: Creating new settings");
         settings = await storage.createProviderAffiliateSettings(validation);
       }
 
+      console.log("BACKEND: Final settings result:", settings);
       res.json({ settings });
     } catch (error) {
-      console.error('Error setting affiliate settings:', error);
+      console.error('BACKEND ERROR: Error setting affiliate settings:', error);
       res.status(500).json({ message: 'Failed to save affiliate settings' });
     }
   });

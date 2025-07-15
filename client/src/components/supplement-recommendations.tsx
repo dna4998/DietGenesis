@@ -19,7 +19,7 @@ import { apiRequest } from "@/lib/queryClient";
 const affiliateSettingsSchema = z.object({
   thorneAffiliateId: z.string().min(1, "Affiliate ID is required"),
   affiliateCode: z.string().min(1, "Affiliate code is required"),
-  practiceUrl: z.string().url("Must be a valid URL"),
+  practiceUrl: z.string().url("Must be a valid URL").optional(),
   trackingEnabled: z.boolean().default(true),
 });
 
@@ -357,7 +357,7 @@ export function SupplementRecommendations({ patientId, isProvider }: SupplementR
                               <input
                                 type="checkbox"
                                 checked={field.value}
-                                onChange={field.onChange}
+                                onChange={(e) => field.onChange(e.target.checked)}
                                 className="h-4 w-4"
                               />
                             </FormControl>
