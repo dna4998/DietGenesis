@@ -89,6 +89,7 @@ Preferred communication style: Simple, everyday language.
 ✓ **Equipment-Based Planning** - Exercise recommendations adapt to available equipment from bodyweight-only to full gym setups
 ✓ **Provider Exercise Tools** - Healthcare providers can generate and customize 7-day exercise plans for patients with video guidance
 ✓ **XAI-Powered Exercise Generation** - Fixed API request method issue and confirmed Grok AI integration for personalized 7-day workout plans
+✓ **Multi-Platform Video Integration** - Replaced YouTube-only videos with reliable alternatives: FitOn (free app), Nike Training Club (free), and J&J 7 Minute Workout for better video availability
 
 ## System Architecture
 

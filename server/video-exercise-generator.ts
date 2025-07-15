@@ -27,6 +27,7 @@ export interface ExerciseVideo {
   description: string;
   duration: string;
   videoUrl: string;
+  platform?: string;
   intensity: string;
   targetMuscles: string[];
   modifications: string[];
@@ -44,14 +45,15 @@ export interface VideoExercisePlanResponse {
   };
 }
 
-// Curated YouTube video database for reliable links
+// Multi-platform exercise video database with reliable alternatives
 const EXERCISE_VIDEOS = {
   warmup: [
     {
       name: "5-Minute Dynamic Warm-Up",
       description: "Full body dynamic warm-up to prepare for workout",
       duration: "5 minutes",
-      videoUrl: "https://www.youtube.com/watch?v=v_0wONJdYrs",
+      videoUrl: "https://fitonapp.com/workouts/warm-up-5min",
+      platform: "FitOn (Free App)",
       intensity: "Low",
       targetMuscles: ["Full Body"],
       modifications: ["Reduce range of motion", "Slower pace"]
@@ -60,7 +62,8 @@ const EXERCISE_VIDEOS = {
       name: "10-Minute Total Body Warm-Up",
       description: "Comprehensive warm-up routine for all fitness levels",
       duration: "10 minutes", 
-      videoUrl: "https://www.youtube.com/watch?v=WYaJSc26eQo",
+      videoUrl: "https://www.nike.com/ntc-app",
+      platform: "Nike Training Club (Free)",
       intensity: "Low",
       targetMuscles: ["Full Body"],
       modifications: ["Skip jumping movements", "Seated options"]
@@ -71,7 +74,8 @@ const EXERCISE_VIDEOS = {
       name: "10-Minute Full Body Stretch",
       description: "Relaxing stretch routine for post-workout recovery",
       duration: "10 minutes",
-      videoUrl: "https://www.youtube.com/watch?v=g_tea8ZNk5A",
+      videoUrl: "https://fitonapp.com/workouts/stretching-10min",
+      platform: "FitOn (Free App)",
       intensity: "Low",
       targetMuscles: ["Full Body"],
       modifications: ["Use wall for support", "Reduce stretch depth"]
@@ -80,7 +84,8 @@ const EXERCISE_VIDEOS = {
       name: "15-Minute Deep Stretch",
       description: "Deep stretching routine for flexibility and recovery",
       duration: "15 minutes",
-      videoUrl: "https://www.youtube.com/watch?v=qULTwquOuT4",
+      videoUrl: "https://www.nike.com/ntc-app/yoga-recovery",
+      platform: "Nike Training Club (Free)",
       intensity: "Low",
       targetMuscles: ["Full Body"],
       modifications: ["Use props for support", "Hold stretches shorter"]
@@ -91,7 +96,8 @@ const EXERCISE_VIDEOS = {
       name: "20-Minute HIIT Cardio",
       description: "High-intensity interval training for fat burning",
       duration: "20 minutes",
-      videoUrl: "https://www.youtube.com/watch?v=m1ygdsVxhJM",
+      videoUrl: "https://fitonapp.com/workouts/hiit-20min",
+      platform: "FitOn (Free App)",
       intensity: "High",
       targetMuscles: ["Cardiovascular"],
       modifications: ["Lower impact options", "Extended rest periods"]
@@ -100,10 +106,21 @@ const EXERCISE_VIDEOS = {
       name: "30-Minute Low Impact Cardio",
       description: "Joint-friendly cardio workout for all fitness levels",
       duration: "30 minutes",
-      videoUrl: "https://www.youtube.com/watch?v=2vJlWgZJYf4",
+      videoUrl: "https://www.nike.com/ntc-app/cardio-endurance",
+      platform: "Nike Training Club (Free)",
       intensity: "Moderate",
       targetMuscles: ["Cardiovascular"],
       modifications: ["Seated modifications", "Arm movements only"]
+    },
+    {
+      name: "7-Minute Scientific Workout",
+      description: "Research-based high-intensity circuit training",
+      duration: "7 minutes",
+      videoUrl: "https://play.google.com/store/apps/details?id=com.jnj.sevenminuteworkout",
+      platform: "J&J 7 Minute Workout (Free)",
+      intensity: "High",
+      targetMuscles: ["Full Body"],
+      modifications: ["Extend rest periods", "Reduce intensity"]
     }
   ],
   strength: [
@@ -111,7 +128,8 @@ const EXERCISE_VIDEOS = {
       name: "30-Minute Full Body Strength",
       description: "Complete strength training workout using bodyweight",
       duration: "30 minutes",
-      videoUrl: "https://www.youtube.com/watch?v=UBMk30rjy0o",
+      videoUrl: "https://fitonapp.com/workouts/strength-bodyweight",
+      platform: "FitOn (Free App)",
       intensity: "Moderate",
       targetMuscles: ["Full Body"],
       modifications: ["Use lighter weights", "Reduce repetitions"]
@@ -120,7 +138,8 @@ const EXERCISE_VIDEOS = {
       name: "20-Minute Resistance Band Workout",
       description: "Full body strength training with resistance bands",
       duration: "20 minutes",
-      videoUrl: "https://www.youtube.com/watch?v=9HDGrHIHm_g",
+      videoUrl: "https://www.nike.com/ntc-app/strength-resistance",
+      platform: "Nike Training Club (Free)",
       intensity: "Moderate",
       targetMuscles: ["Full Body"],
       modifications: ["Lighter resistance", "Fewer sets"]
@@ -131,7 +150,8 @@ const EXERCISE_VIDEOS = {
       name: "25-Minute Stationary Bike HIIT",
       description: "High-intensity interval training on stationary bike",
       duration: "25 minutes",
-      videoUrl: "https://www.youtube.com/watch?v=KJhGklFKHyE",
+      videoUrl: "https://fitonapp.com/workouts/cycling-hiit-25min",
+      platform: "FitOn (Free App)",
       intensity: "High",
       targetMuscles: ["Legs", "Cardiovascular"],
       modifications: ["Lower resistance", "Longer recovery periods"]
@@ -140,7 +160,8 @@ const EXERCISE_VIDEOS = {
       name: "45-Minute Steady State Cycling",
       description: "Moderate intensity cycling for endurance",
       duration: "45 minutes",
-      videoUrl: "https://www.youtube.com/watch?v=FVIIkGz6tus",
+      videoUrl: "https://www.nike.com/ntc-app/endurance-cycling",
+      platform: "Nike Training Club (Free)",
       intensity: "Moderate",
       targetMuscles: ["Legs", "Cardiovascular"],
       modifications: ["Shorter duration", "Lower resistance"]
@@ -151,10 +172,21 @@ const EXERCISE_VIDEOS = {
       name: "20-Minute Yoga Flow",
       description: "Gentle yoga flow for flexibility and relaxation",
       duration: "20 minutes",
-      videoUrl: "https://www.youtube.com/watch?v=v7AYKMP6rOE",
+      videoUrl: "https://fitonapp.com/workouts/yoga-flow-20min",
+      platform: "FitOn (Free App)",
       intensity: "Low",
       targetMuscles: ["Full Body"],
       modifications: ["Use blocks/straps", "Chair modifications"]
+    },
+    {
+      name: "15-Minute Beginner Yoga",
+      description: "Simple yoga routine perfect for beginners",
+      duration: "15 minutes",
+      videoUrl: "https://www.nike.com/ntc-app/yoga-beginner",
+      platform: "Nike Training Club (Free)",
+      intensity: "Low",
+      targetMuscles: ["Full Body"],
+      modifications: ["Chair yoga options", "Use wall for support"]
     }
   ]
 };

@@ -17,6 +17,7 @@ interface ExerciseVideo {
   description: string;
   duration: string;
   videoUrl: string;
+  platform?: string;
   intensity: string;
   targetMuscles: string[];
   modifications: string[];
@@ -134,6 +135,11 @@ export function VideoExercisePlanner({ patientId }: VideoExercisePlannerProps) {
         <Target className="h-3 w-3" />
         {video.targetMuscles.join(', ')}
       </div>
+      {video.platform && (
+        <div className="text-xs text-blue-600 font-medium">
+          📱 {video.platform}
+        </div>
+      )}
       <Button 
         size="sm" 
         variant="outline" 
@@ -141,7 +147,7 @@ export function VideoExercisePlanner({ patientId }: VideoExercisePlannerProps) {
         onClick={() => window.open(video.videoUrl, '_blank')}
       >
         <Play className="h-3 w-3 mr-1" />
-        Watch Video
+        Open App/Link
         <ExternalLink className="h-3 w-3 ml-1" />
       </Button>
     </div>
