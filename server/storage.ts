@@ -1,4 +1,21 @@
-import { patients, providers, messages, dexcomData, type Patient, type Provider, type Message, type InsertPatient, type UpdatePatient, type InsertProvider, type InsertMessage, type DexcomData, type InsertDexcomData } from "@shared/schema";
+import {
+  patients,
+  providers,
+  messages,
+  dexcomData,
+  type Patient,
+  type Provider,
+  type Message,
+  type InsertPatient,
+  type UpdatePatient,
+  type InsertProvider,
+  type InsertMessage,
+  type DexcomData,
+  type InsertDexcomData,
+} from "@shared/schema";
+import { db } from "./db";
+import { eq } from "drizzle-orm";
+import { hashPassword, verifyPassword } from "./auth";
 
 export interface IStorage {
   // Patient operations
@@ -8,6 +25,12 @@ export interface IStorage {
   createPatient(patient: InsertPatient): Promise<Patient>;
   updatePatient(id: number, patient: UpdatePatient): Promise<Patient | undefined>;
   deletePatient(id: number): Promise<boolean>;
+  
+  // Authentication operations
+  registerPatient(data: { name: string; email: string; password: string; age: number; weight: number; weightGoal: number; bodyFat: number; bodyFatGoal: number; bloodPressure: string }): Promise<Patient>;
+  loginPatient(email: string, password: string): Promise<Patient | null>;
+  registerProvider(data: { name: string; email: string; password: string; specialty?: string }): Promise<Provider>;
+  loginProvider(email: string, password: string): Promise<Provider | null>;
 
   // Provider operations
   getProvider(id: number): Promise<Provider | undefined>;
@@ -40,15 +63,60 @@ export interface IStorage {
   createDexcomDataBatch(data: InsertDexcomData[]): Promise<DexcomData[]>;
 }
 
-export class MemStorage implements IStorage {
-  private patients: Map<number, Patient>;
-  private providers: Map<number, Provider>;
-  private messages: Map<number, Message>;
-  private dexcomData: Map<number, DexcomData>;
-  private currentPatientId: number;
-  private currentProviderId: number;
-  private currentMessageId: number;
-  private currentDexcomDataId: number;
+export class DatabaseStorage implements IStorage {
+  // Authentication operations
+  async registerPatient(data: { name: string; email: string; password: string; age: number; weight: number; weightGoal: number; bodyFat: number; bodyFatGoal: number; bloodPressure: string }): Promise<Patient> {
+    const hashedPassword = await hashPassword(data.password);
+    
+    const [patient] = await db
+      .insert(patients)
+      .values({
+        ...data,
+        password: hashedPassword,
+        lastVisit: new Date().toLocaleDateString(),
+      })
+      .returning();
+    
+    return patient;
+  }
+
+  async loginPatient(email: string, password: string): Promise<Patient | null> {
+    const [patient] = await db
+      .select()
+      .from(patients)
+      .where(eq(patients.email, email));
+    
+    if (!patient) return null;
+    
+    const isValid = await verifyPassword(password, patient.password);
+    return isValid ? patient : null;
+  }
+
+  async registerProvider(data: { name: string; email: string; password: string; specialty?: string }): Promise<Provider> {
+    const hashedPassword = await hashPassword(data.password);
+    
+    const [provider] = await db
+      .insert(providers)
+      .values({
+        ...data,
+        password: hashedPassword,
+      })
+      .returning();
+    
+    return provider;
+  }
+
+  async loginProvider(email: string, password: string): Promise<Provider | null> {
+    const [provider] = await db
+      .select()
+      .from(providers)
+      .where(eq(providers.email, email));
+    
+    if (!provider) return null;
+    
+    const isValid = await verifyPassword(password, provider.password);
+    return isValid ? provider : null;
+  }
 
   constructor() {
     this.patients = new Map();
@@ -172,7 +240,8 @@ export class MemStorage implements IStorage {
   }
 
   async getPatient(id: number): Promise<Patient | undefined> {
-    return this.patients.get(id);
+    const [patient] = await db.select().from(patients).where(eq(patients.id, id));
+    return patient;
   }
 
   async getPatientByEmail(email: string): Promise<Patient | undefined> {
@@ -372,4 +441,4 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();

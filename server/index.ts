@@ -1,10 +1,15 @@
 import express, { type Request, Response, NextFunction } from "express";
+import cookieParser from "cookie-parser";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import { sessionMiddleware } from "./auth";
+import { seedDatabase } from "./seed-data";
 
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+app.use(cookieParser());
+app.use(sessionMiddleware);
 
 app.use((req, res, next) => {
   const start = Date.now();
@@ -37,6 +42,9 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  // Seed the database with sample data
+  await seedDatabase();
+  
   const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {

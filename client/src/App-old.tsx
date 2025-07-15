@@ -1,51 +1,57 @@
+import { useState } from "react";
 import { Switch, Route } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AdaptiveThemeProvider } from "@/components/adaptive-theme-provider";
-import { useAuth } from "@/hooks/useAuth";
 import Header from "@/components/header";
 import PatientDashboard from "@/pages/patient-dashboard";
 import ProviderDashboard from "@/pages/provider-dashboard";
-import Login from "@/pages/login";
 import NotFound from "@/pages/not-found";
-import { Skeleton } from "@/components/ui/skeleton";
 import { useQuery } from "@tanstack/react-query";
 
-function AuthenticatedApp() {
-  const { user, isPatient, isProvider } = useAuth();
+function Router() {
+  const [userRole, setUserRole] = useState<"patient" | "provider">("patient");
+  const [selectedPatientId, setSelectedPatientId] = useState(1);
 
   // Your custom DNA Diet Club logo is now active!
   const logoUrl = "/logo.png"; // Your uploaded logo
 
   // Get patient data for adaptive theming (only for patient view)
   const { data: patient } = useQuery({
-    queryKey: [`/api/patients/${user?.id}`],
-    enabled: isPatient,
+    queryKey: [`/api/patients/${selectedPatientId}`],
+    enabled: userRole === "patient",
   });
 
   return (
     <AdaptiveThemeProvider 
-      patient={isPatient ? patient : undefined}
-      enabled={isPatient}
+      patient={userRole === "patient" ? patient : undefined}
+      enabled={userRole === "patient"}
     >
       <div className="min-h-screen bg-background">
         <Header 
-          userRole={user?.type || "patient"} 
-          onRoleChange={() => {}} // Not needed with real auth
+          userRole={userRole} 
+          onRoleChange={setUserRole}
           logoUrl={logoUrl}
           title="DNA Diet Club"
-          user={user}
         />
         <Switch>
-          <Route path="/login" component={Login} />
           <Route path="/">
-            {isPatient ? (
-              <PatientDashboard selectedPatientId={user?.id || 1} />
+            {userRole === "patient" ? (
+              <PatientDashboard selectedPatientId={selectedPatientId} />
             ) : (
               <ProviderDashboard />
             )}
+          </Route>
+          <Route path="/patient-dashboard">
+            <PatientDashboard selectedPatientId={selectedPatientId} />
+          </Route>
+          <Route path="/provider-dashboard">
+            <ProviderDashboard />
+          </Route>
+          <Route path="/provider">
+            <ProviderDashboard />
           </Route>
           <Route component={NotFound} />
         </Switch>
@@ -54,35 +60,15 @@ function AuthenticatedApp() {
   );
 }
 
-function Router() {
-  const { user, isLoading, isAuthenticated } = useAuth();
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 flex items-center justify-center">
-        <div className="space-y-4 w-full max-w-md">
-          <Skeleton className="h-8 w-48 mx-auto" />
-          <Skeleton className="h-32 w-full" />
-          <Skeleton className="h-4 w-3/4 mx-auto" />
-        </div>
-      </div>
-    );
-  }
-
-  if (!isAuthenticated) {
-    return <Login />;
-  }
-
-  return <AuthenticatedApp />;
-}
-
-export default function App() {
+function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <Router />
         <Toaster />
+        <Router />
       </TooltipProvider>
     </QueryClientProvider>
   );
 }
+
+export default App;

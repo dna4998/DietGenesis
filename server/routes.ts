@@ -4,7 +4,7 @@ import { createServer, type Server } from "http";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
-import { storage } from "./storage";
+import { storage } from "./database-storage";
 import { insertPatientSchema, updatePatientSchema, insertProviderSchema, insertMessageSchema } from "@shared/schema";
 import { generateNutritionInsights, generateMealPlan, generateExercisePlan } from "./ai-insights";
 import { generateDemoInsights, generateDemoMealPlan, generateDemoExercisePlan } from "./demo-insights";
@@ -16,9 +16,155 @@ import { generateDemoHealthPrediction } from "./health-prediction";
 import { dexcomService, isDexcomConfigured } from "./dexcom-integration";
 import { z } from "zod";
 
+import { AuthenticatedRequest, requireAuth, requireProvider, requireSubscription, createSession, deleteSession } from "./auth";
+
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Get all patients
-  app.get("/api/patients", async (req, res) => {
+  // Authentication routes
+  app.post('/api/register/patient', async (req, res) => {
+    try {
+      const { name, email, password, age, weight, weightGoal, bodyFat, bodyFatGoal, bloodPressure } = req.body;
+      
+      // Check if patient already exists
+      const existingPatient = await storage.getPatientByEmail(email);
+      if (existingPatient) {
+        return res.status(400).json({ message: 'Email already registered' });
+      }
+
+      const patient = await storage.registerPatient({
+        name,
+        email,
+        password,
+        age,
+        weight,
+        weightGoal,
+        bodyFat,
+        bodyFatGoal,
+        bloodPressure,
+      });
+
+      const sessionId = await createSession(patient.id, 'patient');
+      res.cookie('sessionId', sessionId, { httpOnly: true, maxAge: 30 * 24 * 60 * 60 * 1000 });
+      
+      res.json({
+        user: {
+          id: patient.id,
+          name: patient.name,
+          email: patient.email,
+          type: 'patient',
+          hasSubscription: patient.hasSubscription,
+        }
+      });
+    } catch (error) {
+      console.error('Patient registration error:', error);
+      res.status(500).json({ message: 'Registration failed' });
+    }
+  });
+
+  app.post('/api/register/provider', async (req, res) => {
+    try {
+      const { name, email, password, specialty } = req.body;
+      
+      // Check if provider already exists
+      const existingProvider = await storage.getProviderByEmail(email);
+      if (existingProvider) {
+        return res.status(400).json({ message: 'Email already registered' });
+      }
+
+      const provider = await storage.registerProvider({
+        name,
+        email,
+        password,
+        specialty,
+      });
+
+      const sessionId = await createSession(provider.id, 'provider');
+      res.cookie('sessionId', sessionId, { httpOnly: true, maxAge: 30 * 24 * 60 * 60 * 1000 });
+      
+      res.json({
+        user: {
+          id: provider.id,
+          name: provider.name,
+          email: provider.email,
+          type: 'provider',
+        }
+      });
+    } catch (error) {
+      console.error('Provider registration error:', error);
+      res.status(500).json({ message: 'Registration failed' });
+    }
+  });
+
+  app.post('/api/login/patient', async (req, res) => {
+    try {
+      const { email, password } = req.body;
+      
+      const patient = await storage.loginPatient(email, password);
+      if (!patient) {
+        return res.status(401).json({ message: 'Invalid email or password' });
+      }
+
+      const sessionId = await createSession(patient.id, 'patient');
+      res.cookie('sessionId', sessionId, { httpOnly: true, maxAge: 30 * 24 * 60 * 60 * 1000 });
+      
+      res.json({
+        user: {
+          id: patient.id,
+          name: patient.name,
+          email: patient.email,
+          type: 'patient',
+          hasSubscription: patient.hasSubscription,
+        }
+      });
+    } catch (error) {
+      console.error('Patient login error:', error);
+      res.status(500).json({ message: 'Login failed' });
+    }
+  });
+
+  app.post('/api/login/provider', async (req, res) => {
+    try {
+      const { email, password } = req.body;
+      
+      const provider = await storage.loginProvider(email, password);
+      if (!provider) {
+        return res.status(401).json({ message: 'Invalid email or password' });
+      }
+
+      const sessionId = await createSession(provider.id, 'provider');
+      res.cookie('sessionId', sessionId, { httpOnly: true, maxAge: 30 * 24 * 60 * 60 * 1000 });
+      
+      res.json({
+        user: {
+          id: provider.id,
+          name: provider.name,
+          email: provider.email,
+          type: 'provider',
+        }
+      });
+    } catch (error) {
+      console.error('Provider login error:', error);
+      res.status(500).json({ message: 'Login failed' });
+    }
+  });
+
+  app.post('/api/logout', async (req: AuthenticatedRequest, res) => {
+    const sessionId = req.cookies?.sessionId;
+    if (sessionId) {
+      await deleteSession(sessionId);
+      res.clearCookie('sessionId');
+    }
+    res.json({ message: 'Logged out successfully' });
+  });
+
+  app.get('/api/auth/user', (req: AuthenticatedRequest, res) => {
+    if (req.user) {
+      res.json(req.user);
+    } else {
+      res.status(401).json({ message: 'Not authenticated' });
+    }
+  });
+  // Get all patients (requires authentication)
+  app.get("/api/patients", requireAuth, async (req: AuthenticatedRequest, res) => {
     try {
       const patients = await storage.getAllPatients();
       res.json(patients);
@@ -27,8 +173,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get patient by ID
-  app.get("/api/patients/:id", async (req, res) => {
+  // Get patient by ID (requires authentication)
+  app.get("/api/patients/:id", requireAuth, async (req: AuthenticatedRequest, res) => {
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) {

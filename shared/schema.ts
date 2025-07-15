@@ -6,6 +6,8 @@ export const patients = pgTable("patients", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
   email: text("email").notNull().unique(),
+  password: text("password").notNull(),
+  hasSubscription: boolean("has_subscription").default(false).notNull(),
   age: integer("age").notNull(),
   weight: decimal("weight", { precision: 5, scale: 2 }).notNull(),
   weightGoal: decimal("weight_goal", { precision: 5, scale: 2 }).notNull(),
@@ -38,7 +40,17 @@ export const providers = pgTable("providers", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
   email: text("email").notNull().unique(),
+  password: text("password").notNull(),
   specialty: text("specialty"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Session storage table for authentication
+export const sessions = pgTable("sessions", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").notNull(),
+  userType: text("user_type").notNull(), // 'patient' or 'provider'
+  expiresAt: timestamp("expires_at").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
