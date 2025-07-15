@@ -1,5 +1,5 @@
 # DNA Diet Club - Deployment Guide
-*Professional Health Platform for thednadietclub.com*
+*Professional Health Platform*
 
 ## 📦 Download & Setup
 
@@ -129,10 +129,10 @@ npm run build
 ### Deploy to Replit (Recommended)
 - The app is already configured for Replit deployment
 - Click the **Deploy** button in Replit interface
-- **Custom Domain**: Connect your **thednadietclub.com** domain:
+- **Custom Domain**: Connect your custom domain:
   1. Go to Replit Deployments dashboard
   2. Select "Custom Domain"
-  3. Add your domain: `thednadietclub.com`
+  3. Add your domain: `yourdomain.com`
   4. Update your DNS settings as instructed by Replit
   5. Your app will be live at your professional domain!
 

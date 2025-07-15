@@ -1,9 +1,9 @@
-# Domain Setup Guide: thednadietclub.com
+# Domain Setup Guide: Custom Domain
 
 ## Current Status
-- **Domain**: thednadietclub.com (owned by user)
+- **Domain**: Ready for custom domain deployment
 - **Application**: Ready for deployment with Modern Minimalist theme
-- **Next Step**: Connect domain to Replit deployment
+- **Next Step**: Connect your custom domain to Replit deployment
 
 ## Domain Configuration Steps
 
@@ -17,11 +17,11 @@
 1. In your Replit Deployments dashboard, find your deployed app
 2. Click **"Custom Domain"** or **"Domains"**
 3. Click **"Add Domain"**
-4. Enter: `thednadietclub.com`
+4. Enter your custom domain (e.g., `yourdomain.com`)
 5. Replit will provide DNS configuration instructions
 
 ### 3. Configure DNS (At Your Domain Registrar)
-You'll need to add DNS records where you manage thednadietclub.com:
+You'll need to add DNS records where you manage your domain:
 
 **Option A: CNAME Record (Recommended)**
 ```
@@ -39,7 +39,7 @@ Value: [IP address provided by Replit]
 
 ### 4. SSL Certificate
 - Replit automatically provides SSL certificates
-- Your site will be secure: `https://thednadietclub.com`
+- Your site will be secure: `https://yourdomain.com`
 
 ### 5. Verification
 - DNS changes can take 1-48 hours to propagate
@@ -47,10 +47,10 @@ Value: [IP address provided by Replit]
 - Once working, your professional health platform will be live!
 
 ## What This Achieves
-✅ **Professional branding** with your established domain
+✅ **Professional branding** with your custom domain
 ✅ **Brand consistency** across all your health services
-✅ **SEO benefits** from your existing domain authority
-✅ **Patient trust** with familiar domain name
+✅ **SEO benefits** from your domain authority
+✅ **Patient trust** with professional domain name
 ✅ **SSL security** automatically configured
 
 ## Important Notes
