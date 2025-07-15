@@ -13,7 +13,8 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useLocation } from "wouter";
 import { Heart, Stethoscope, UserCheck, Shield } from "lucide-react";
-import logoPath from "@assets/Logo-1_1752362928812.png";
+// Use public logo path to avoid Vite caching
+const logoPath = "/current-logo.png";
 
 const loginSchema = z.object({
   email: z.string().email("Please enter a valid email"),
