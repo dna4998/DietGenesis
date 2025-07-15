@@ -177,7 +177,7 @@ export default function ThemeDemoControls({ patient, onPatientUpdate }: ThemeDem
         </div>
 
         <div className="text-xs text-gray-500">
-          <p>💡 The app theme automatically adapts based on health metrics. Try adjusting the values above to see different color schemes!</p>
+          <p>💡 The app theme automatically adapts based on health metrics. Try adjusting the values above to see the adaptive colors!</p>
         </div>
       </CardContent>
     </Card>
