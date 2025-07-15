@@ -81,9 +81,9 @@ Provider Guidelines:
 - Special Instructions: ${guidelines.specialInstructions || 'None'}
 
 Create a detailed 30-day diet plan with:
-1. 10 breakfast options with recipes
-2. 10 lunch options with recipes
-3. 10 dinner options with recipes
+1. 30 breakfast options with recipes
+2. 30 lunch options with recipes
+3. 30 dinner options with recipes
 4. Weekly meal structure and themes
 5. Comprehensive shopping list
 6. Nutrition tips and guidelines
@@ -99,9 +99,9 @@ Each meal should include:
 Respond in JSON format:
 {
   "summary": "Brief overview of the 30-day plan and its benefits",
-  "breakfastCount": 10,
-  "lunchCount": 10,
-  "dinnerCount": 10,
+  "breakfastCount": 30,
+  "lunchCount": 30,
+  "dinnerCount": 30,
   "breakfastOptions": [
     {
       "name": "Recipe name",
@@ -236,7 +236,7 @@ async function generateDietPlanPDF(
   doc.text('🌅 Breakfast Options', 15, yPosition);
   yPosition += 10;
   
-  for (let i = 0; i < Math.min(5, plan.breakfastOptions.length); i++) {
+  for (let i = 0; i < Math.min(15, plan.breakfastOptions.length); i++) {
     const meal = plan.breakfastOptions[i];
     
     if (yPosition > pageHeight - 50) {
@@ -267,7 +267,7 @@ async function generateDietPlanPDF(
   doc.text('🌞 Lunch Options', 15, yPosition);
   yPosition += 10;
   
-  for (let i = 0; i < Math.min(5, plan.lunchOptions.length); i++) {
+  for (let i = 0; i < Math.min(15, plan.lunchOptions.length); i++) {
     const meal = plan.lunchOptions[i];
     
     if (yPosition > pageHeight - 50) {
@@ -298,7 +298,7 @@ async function generateDietPlanPDF(
   doc.text('🌙 Dinner Options', 15, yPosition);
   yPosition += 10;
   
-  for (let i = 0; i < Math.min(5, plan.dinnerOptions.length); i++) {
+  for (let i = 0; i < Math.min(15, plan.dinnerOptions.length); i++) {
     const meal = plan.dinnerOptions[i];
     
     if (yPosition > pageHeight - 50) {
@@ -318,6 +318,132 @@ async function generateDietPlanPDF(
     yPosition += descLines.length * 4 + 8;
   }
   
+  // Complete Recipe Section
+  if (yPosition > pageHeight - 40) {
+    doc.addPage();
+    yPosition = 20;
+  }
+  
+  doc.setFontSize(16);
+  doc.setTextColor(secondaryColor);
+  doc.text('📖 Complete Recipe Collection', 15, yPosition);
+  yPosition += 15;
+  
+  // All Breakfast Recipes
+  doc.setFontSize(14);
+  doc.setTextColor(primaryColor);
+  doc.text('All Breakfast Recipes', 15, yPosition);
+  yPosition += 10;
+  
+  plan.breakfastOptions.forEach((meal: any, index: number) => {
+    if (yPosition > pageHeight - 60) {
+      doc.addPage();
+      yPosition = 20;
+    }
+    
+    doc.setFontSize(12);
+    doc.setTextColor(textColor);
+    doc.text(`${index + 1}. ${meal.name}`, 15, yPosition);
+    doc.setFontSize(10);
+    doc.text(`${meal.calories} calories • ${meal.prepTime}`, 15, yPosition + 6);
+    
+    yPosition += 12;
+    const descLines = doc.splitTextToSize(meal.description, pageWidth - 30);
+    doc.text(descLines, 15, yPosition);
+    yPosition += descLines.length * 4;
+    
+    if (meal.ingredients && meal.ingredients.length > 0) {
+      doc.text('Ingredients:', 15, yPosition);
+      yPosition += 4;
+      meal.ingredients.slice(0, 5).forEach((ingredient: string) => {
+        doc.text(`• ${ingredient}`, 20, yPosition);
+        yPosition += 4;
+      });
+    }
+    
+    yPosition += 6;
+  });
+  
+  // All Lunch Recipes
+  if (yPosition > pageHeight - 40) {
+    doc.addPage();
+    yPosition = 20;
+  }
+  
+  doc.setFontSize(14);
+  doc.setTextColor(primaryColor);
+  doc.text('All Lunch Recipes', 15, yPosition);
+  yPosition += 10;
+  
+  plan.lunchOptions.forEach((meal: any, index: number) => {
+    if (yPosition > pageHeight - 60) {
+      doc.addPage();
+      yPosition = 20;
+    }
+    
+    doc.setFontSize(12);
+    doc.setTextColor(textColor);
+    doc.text(`${index + 1}. ${meal.name}`, 15, yPosition);
+    doc.setFontSize(10);
+    doc.text(`${meal.calories} calories • ${meal.prepTime}`, 15, yPosition + 6);
+    
+    yPosition += 12;
+    const descLines = doc.splitTextToSize(meal.description, pageWidth - 30);
+    doc.text(descLines, 15, yPosition);
+    yPosition += descLines.length * 4;
+    
+    if (meal.ingredients && meal.ingredients.length > 0) {
+      doc.text('Ingredients:', 15, yPosition);
+      yPosition += 4;
+      meal.ingredients.slice(0, 5).forEach((ingredient: string) => {
+        doc.text(`• ${ingredient}`, 20, yPosition);
+        yPosition += 4;
+      });
+    }
+    
+    yPosition += 6;
+  });
+  
+  // All Dinner Recipes
+  if (yPosition > pageHeight - 40) {
+    doc.addPage();
+    yPosition = 20;
+  }
+  
+  doc.setFontSize(14);
+  doc.setTextColor(primaryColor);
+  doc.text('All Dinner Recipes', 15, yPosition);
+  yPosition += 10;
+  
+  plan.dinnerOptions.forEach((meal: any, index: number) => {
+    if (yPosition > pageHeight - 60) {
+      doc.addPage();
+      yPosition = 20;
+    }
+    
+    doc.setFontSize(12);
+    doc.setTextColor(textColor);
+    doc.text(`${index + 1}. ${meal.name}`, 15, yPosition);
+    doc.setFontSize(10);
+    doc.text(`${meal.calories} calories • ${meal.prepTime}`, 15, yPosition + 6);
+    
+    yPosition += 12;
+    const descLines = doc.splitTextToSize(meal.description, pageWidth - 30);
+    doc.text(descLines, 15, yPosition);
+    yPosition += descLines.length * 4;
+    
+    if (meal.ingredients && meal.ingredients.length > 0) {
+      doc.text('Ingredients:', 15, yPosition);
+      yPosition += 4;
+      meal.ingredients.slice(0, 5).forEach((ingredient: string) => {
+        doc.text(`• ${ingredient}`, 20, yPosition);
+        yPosition += 4;
+      });
+    }
+    
+    yPosition += 6;
+  });
+
   // Shopping List
   if (yPosition > pageHeight - 40) {
     doc.addPage();

@@ -279,8 +279,8 @@ export default function DietPlanGenerator({ patient, onClose }: DietPlanGenerato
             <Loader2 className="h-12 w-12 animate-spin text-green-600" />
             <h3 className="text-lg font-semibold">Generating Your 30-Day Diet Plan</h3>
             <p className="text-sm text-gray-600 text-center max-w-md">
-              Our AI is creating a personalized meal plan with breakfast, lunch, and dinner options
-              based on your guidelines and the patient's health profile...
+              Our AI is creating a personalized meal plan with 30 breakfast, 30 lunch, and 30 dinner recipes
+              based on your guidelines and the patient's health profile. This may take a few moments...
             </p>
           </div>
         )}
@@ -301,17 +301,17 @@ export default function DietPlanGenerator({ patient, onClose }: DietPlanGenerato
                   <div className="flex items-center gap-2">
                     <Coffee className="h-4 w-4 text-orange-500" />
                     <span className="font-medium">Breakfast Options:</span>
-                    <Badge variant="outline">{generatedPlan.breakfastCount || 10} recipes</Badge>
+                    <Badge variant="outline">{generatedPlan.breakfastCount || 30} recipes</Badge>
                   </div>
                   <div className="flex items-center gap-2">
                     <Sun className="h-4 w-4 text-yellow-500" />
                     <span className="font-medium">Lunch Options:</span>
-                    <Badge variant="outline">{generatedPlan.lunchCount || 10} recipes</Badge>
+                    <Badge variant="outline">{generatedPlan.lunchCount || 30} recipes</Badge>
                   </div>
                   <div className="flex items-center gap-2">
                     <Moon className="h-4 w-4 text-blue-500" />
                     <span className="font-medium">Dinner Options:</span>
-                    <Badge variant="outline">{generatedPlan.dinnerCount || 10} recipes</Badge>
+                    <Badge variant="outline">{generatedPlan.dinnerCount || 30} recipes</Badge>
                   </div>
                 </div>
                 
