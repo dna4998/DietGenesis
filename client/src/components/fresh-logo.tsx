@@ -17,7 +17,7 @@ export default function FreshLogo({
 
   useEffect(() => {
     const timestamp = Date.now();
-    // Try different logo formats
+    // Use the uploaded logo if available, otherwise use the default SVG
     const logoFormats = ['/logo.png', '/logo.jpg', '/logo.jpeg', '/logo.svg'];
     
     const checkLogoExists = async () => {
@@ -32,8 +32,8 @@ export default function FreshLogo({
           // Continue to next format
         }
       }
-      // If no logo found, use default SVG
-      setLogoUrl(`/logo.svg?v=${timestamp}`);
+      // No logo found, don't set logoUrl to force fallback to DNA icon
+      setLogoUrl(null);
     };
 
     checkLogoExists();
