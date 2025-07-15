@@ -296,93 +296,64 @@ export function SupplementRecommendations({ patientId, isProvider }: SupplementR
                       Configure your Thorne affiliate settings to generate personalized supplement recommendations.
                     </DialogDescription>
                   </DialogHeader>
-                  <Form {...affiliateForm}>
-                    <form className="space-y-4">
-                      <FormField
-                        control={affiliateForm.control}
-                        name="thorneAffiliateId"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Thorne Affiliate ID</FormLabel>
-                            <FormControl>
-                              <Input placeholder="Your Thorne affiliate ID" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
+                  <div className="space-y-4">
+                    <div>
+                      <label className="text-sm font-medium">Thorne Affiliate ID</label>
+                      <Input 
+                        placeholder="Your Thorne affiliate ID" 
+                        {...affiliateForm.register("thorneAffiliateId")}
                       />
-                      <FormField
-                        control={affiliateForm.control}
-                        name="affiliateCode"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Affiliate Code</FormLabel>
-                            <FormControl>
-                              <Input placeholder="Your affiliate tracking code" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium">Affiliate Code</label>
+                      <Input 
+                        placeholder="Your affiliate tracking code" 
+                        {...affiliateForm.register("affiliateCode")}
                       />
-                      <FormField
-                        control={affiliateForm.control}
-                        name="practiceUrl"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Practice URL</FormLabel>
-                            <FormControl>
-                              <Input placeholder="https://yourpractice.com" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium">Practice URL</label>
+                      <Input 
+                        placeholder="https://yourpractice.com" 
+                        {...affiliateForm.register("practiceUrl")}
                       />
-                      <FormField
-                        control={affiliateForm.control}
-                        name="trackingEnabled"
-                        render={({ field }) => (
-                          <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                            <div className="space-y-0.5">
-                              <FormLabel className="text-base">
-                                Enable Tracking
-                              </FormLabel>
-                              <div className="text-sm text-muted-foreground">
-                                Track affiliate commissions for supplement recommendations
-                              </div>
-                            </div>
-                            <FormControl>
-                              <input
-                                type="checkbox"
-                                checked={field.value}
-                                onChange={(e) => field.onChange(e.target.checked)}
-                                className="h-4 w-4"
-                              />
-                            </FormControl>
-                          </FormItem>
-                        )}
+                    </div>
+                    <div className="flex flex-row items-center justify-between rounded-lg border p-4">
+                      <div className="space-y-0.5">
+                        <label className="text-base font-medium">
+                          Enable Tracking
+                        </label>
+                        <div className="text-sm text-muted-foreground">
+                          Track affiliate commissions for supplement recommendations
+                        </div>
+                      </div>
+                      <input
+                        type="checkbox"
+                        {...affiliateForm.register("trackingEnabled")}
+                        className="h-4 w-4"
                       />
-                      <Button 
-                        type="submit" 
-                        disabled={saveAffiliateSettings.isPending}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          console.log("Save button clicked");
-                          console.log("Form values:", affiliateForm.getValues());
-                          console.log("Form errors:", affiliateForm.formState.errors);
-                          
-                          // Trigger form validation and submission
-                          affiliateForm.handleSubmit((data) => {
-                            console.log("Form validated successfully:", data);
-                            saveAffiliateSettings.mutate(data);
-                          }, (errors) => {
-                            console.log("Form validation errors:", errors);
-                          })();
-                        }}
-                      >
-                        {saveAffiliateSettings.isPending ? "Saving..." : "Save Settings"}
-                      </Button>
-                    </form>
-                  </Form>
+                    </div>
+                    <Button 
+                      type="button" 
+                      disabled={saveAffiliateSettings.isPending}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        
+                        console.log("Save button clicked");
+                        
+                        const formData = affiliateForm.getValues();
+                        console.log("Form values:", formData);
+                        console.log("Form errors:", affiliateForm.formState.errors);
+                        
+                        // Direct mutation without form submission
+                        console.log("Calling mutation directly");
+                        saveAffiliateSettings.mutate(formData);
+                      }}
+                    >
+                      {saveAffiliateSettings.isPending ? "Saving..." : "Save Settings"}
+                    </Button>
+                  </div>
                 </DialogContent>
               </Dialog>
 
