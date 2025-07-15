@@ -161,9 +161,12 @@ export default function Login() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 flex items-center justify-center p-4">
       <div className="w-full max-w-4xl">
         <div className="text-center mb-8">
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <Heart className="w-8 h-8 text-blue-600" />
-            <h1 className="text-3xl font-bold text-gray-900">DNA Diet Club</h1>
+          <div className="flex items-center justify-center mb-4">
+            <img 
+              src="/dna-diet-club-logo.png" 
+              alt="DNA Diet Club" 
+              className="h-16 w-auto object-contain"
+            />
           </div>
           <p className="text-gray-600">Personalized health and wellness platform</p>
         </div>
