@@ -11,7 +11,38 @@ import { Separator } from '@/components/ui/separator';
 import { Play, Clock, Target, Calendar, ExternalLink } from 'lucide-react';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
-import type { VideoExercisePlanResponse, DailyExercise, ExerciseVideo } from '../../../server/video-exercise-generator';
+// Type definitions for exercise planner
+interface ExerciseVideo {
+  name: string;
+  description: string;
+  duration: string;
+  videoUrl: string;
+  intensity: string;
+  targetMuscles: string[];
+  modifications: string[];
+}
+
+interface DailyExercise {
+  day: string;
+  type: string;
+  duration: number;
+  exercises: ExerciseVideo[];
+  warmUp: ExerciseVideo;
+  coolDown: ExerciseVideo;
+  notes: string;
+}
+
+interface VideoExercisePlanResponse {
+  plan: {
+    summary: string;
+    weeklyOverview: string;
+    totalDuration: number;
+    dailyPlans: DailyExercise[];
+    progressionTips: string[];
+    safetyGuidelines: string[];
+    equipmentList: string[];
+  };
+}
 
 interface VideoExercisePlannerProps {
   patientId: number;
