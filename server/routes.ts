@@ -14,6 +14,7 @@ import { analyzeLabResults, analyzeGutBiome, generateComprehensivePlan } from ".
 import { getDailyHealthTip } from "./health-tips";
 import { generateDemoHealthPrediction } from "./health-prediction";
 import { dexcomService, isDexcomConfigured } from "./dexcom-integration";
+import logoRoutes from "./logo-routes";
 import { z } from "zod";
 
 import { AuthenticatedRequest, requireAuth, requireProvider, requireSubscription, createSession, deleteSession, sessionMiddleware } from "./auth";
@@ -1341,6 +1342,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       content: 'Privacy policy content is available at /privacy-policy page'
     });
   });
+
+  // Logo customization routes
+  app.use('/api/logo', logoRoutes);
 
   const httpServer = createServer(app);
   return httpServer;

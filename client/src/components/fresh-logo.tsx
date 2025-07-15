@@ -12,49 +12,71 @@ export default function FreshLogo({
   size = 'md', 
   showTitle = true 
 }: FreshLogoProps) {
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  const [imageError, setImageError] = useState(false);
+
+  useEffect(() => {
+    const timestamp = Date.now();
+    // Try different logo formats
+    const logoFormats = ['/logo.png', '/logo.jpg', '/logo.jpeg', '/logo.svg'];
+    
+    const checkLogoExists = async () => {
+      for (const format of logoFormats) {
+        try {
+          const response = await fetch(`${format}?v=${timestamp}`, { method: 'HEAD' });
+          if (response.ok) {
+            setLogoUrl(`${format}?v=${timestamp}`);
+            return;
+          }
+        } catch (error) {
+          // Continue to next format
+        }
+      }
+      // If no logo found, use default SVG
+      setLogoUrl(`/logo.svg?v=${timestamp}`);
+    };
+
+    checkLogoExists();
+  }, []);
+
+  const handleImageError = () => {
+    setImageError(true);
+  };
+
   const sizeClasses = {
-    sm: 'h-64',
-    md: 'h-32',
-    lg: 'h-40',
-    login: 'h-64'
+    sm: 'h-8 w-auto',
+    md: 'h-12 w-auto',
+    lg: 'h-16 w-auto',
+    login: 'h-24 w-auto'
   };
 
   const textSizes = {
-    sm: 'text-xl',
-    md: 'text-2xl',
-    lg: 'text-3xl',
-    login: 'text-2xl'
+    sm: 'text-lg',
+    md: 'text-xl',
+    lg: 'text-2xl',
+    login: 'text-3xl'
   };
-
-  // Use the actual logo with fallback to simple text
-  const logoSrc = `/logo.png?v=${Date.now()}`;
 
   return (
     <div className="flex items-center space-x-3">
-      <img 
-        src={logoSrc}
-        alt={`${title} Logo`}
-        className={`${sizeClasses[size]} w-auto object-contain`}
-        onError={(e) => {
-          // Fallback to simple text logo
-          const img = e.target as HTMLImageElement;
-          img.style.display = 'none';
-          const fallback = img.nextElementSibling as HTMLElement;
-          if (fallback) fallback.style.display = 'block';
-        }}
-      />
-      
-      {/* Simple fallback logo */}
-      <div className="hidden">
-        <div className="flex items-center space-x-3">
-          <Dna className="h-12 w-12 text-purple-600" />
-          <span className="text-2xl font-bold text-gray-900">DNA Diet Club</span>
+      {logoUrl && !imageError ? (
+        <img 
+          src={logoUrl}
+          alt={`${title} Logo`}
+          className={`${sizeClasses[size]} object-contain`}
+          onError={handleImageError}
+        />
+      ) : (
+        <div className={`${sizeClasses[size]} flex items-center justify-center text-blue-600`}>
+          <Dna className={`${size === 'sm' ? 'w-8 h-8' : size === 'md' ? 'w-12 h-12' : size === 'lg' ? 'w-16 h-16' : 'w-24 h-24'}`} />
         </div>
-      </div>
+      )}
       
       {showTitle && (
         <div className="flex flex-col">
-          <h1 className={`font-bold text-gray-900 ${textSizes[size]}`}>{title}</h1>
+          <h1 className={`font-bold bg-gradient-to-r from-blue-600 to-green-600 bg-clip-text text-transparent ${textSizes[size]}`}>
+            {title}
+          </h1>
           {size !== 'sm' && (
             <p className="text-xs text-gray-500">Personalized Health Platform</p>
           )}
