@@ -195,6 +195,7 @@ export async function generateVideoExercisePlan(
   try {
     console.log("Generating 7-day exercise plan with videos...");
     
+    // Use XAI (Grok) to generate personalized exercise plan
     const prompt = `Create a personalized 7-day exercise plan for this patient:
 
 Patient Profile:
