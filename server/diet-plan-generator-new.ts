@@ -378,7 +378,7 @@ async function generateDietPlanPDF(
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(16);
   doc.setTextColor(secondaryColor);
-  doc.text('🌅 BREAKFAST RECIPES', 15, yPosition);
+  doc.text('BREAKFAST RECIPES', 15, yPosition);
   yPosition += 15;
   
   for (let i = 0; i < plan.breakfastOptions.length; i++) {
@@ -447,7 +447,7 @@ async function generateDietPlanPDF(
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(16);
   doc.setTextColor(secondaryColor);
-  doc.text('🍽️ LUNCH RECIPES', 15, yPosition);
+  doc.text('LUNCH RECIPES', 15, yPosition);
   yPosition += 15;
   
   for (let i = 0; i < plan.lunchOptions.length; i++) {
@@ -516,7 +516,7 @@ async function generateDietPlanPDF(
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(16);
   doc.setTextColor(secondaryColor);
-  doc.text('🍽️ DINNER RECIPES', 15, yPosition);
+  doc.text('DINNER RECIPES', 15, yPosition);
   yPosition += 15;
   
   for (let i = 0; i < plan.dinnerOptions.length; i++) {
@@ -586,7 +586,7 @@ async function generateDietPlanPDF(
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(16);
     doc.setTextColor(secondaryColor);
-    doc.text('🛒 SHOPPING LIST', 15, yPosition);
+    doc.text('SHOPPING LIST', 15, yPosition);
     yPosition += 15;
     
     doc.setFont('helvetica', 'normal');
@@ -610,7 +610,7 @@ async function generateDietPlanPDF(
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(16);
     doc.setTextColor(secondaryColor);
-    doc.text('💡 NUTRITION TIPS', 15, yPosition);
+    doc.text('NUTRITION TIPS', 15, yPosition);
     yPosition += 15;
     
     doc.setFont('helvetica', 'normal');
