@@ -128,7 +128,10 @@ export default function ProviderPatientCard({ patient, onUpdate, onAIAnalysis, o
           </button>
           <button
             className="border border-gray-300 hover:bg-gray-50 px-3 py-2 rounded-md transition-colors"
-            onClick={() => setShowSupplementRecommendations(true)}
+            onClick={() => {
+              console.log("Supplement button clicked for patient:", patient.name);
+              setShowSupplementRecommendations(true);
+            }}
             title="Supplement Recommendations"
           >
             <Pill className="w-4 h-4" />
@@ -158,13 +161,20 @@ export default function ProviderPatientCard({ patient, onUpdate, onAIAnalysis, o
       
       {showSupplementRecommendations && (
         <div className="border-t border-gray-200 p-6">
+          <div className="mb-4">
+            <h3 className="text-lg font-semibold text-gray-900">Supplement Recommendations for {patient.name}</h3>
+            <p className="text-sm text-gray-600">State: {showSupplementRecommendations ? 'Open' : 'Closed'}</p>
+          </div>
           <SupplementRecommendations 
             patientId={patient.id} 
             isProvider={true}
           />
           <Button 
             variant="outline" 
-            onClick={() => setShowSupplementRecommendations(false)}
+            onClick={() => {
+              console.log("Closing supplement recommendations");
+              setShowSupplementRecommendations(false);
+            }}
             className="mt-4"
           >
             Close Supplement Recommendations

@@ -71,6 +71,8 @@ interface SupplementRecommendationsProps {
 }
 
 export function SupplementRecommendations({ patientId, isProvider }: SupplementRecommendationsProps) {
+  console.log("SupplementRecommendations component rendering for patient:", patientId, "isProvider:", isProvider);
+  
   const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState("");
   const [showAffiliateSettings, setShowAffiliateSettings] = useState(false);
@@ -151,13 +153,17 @@ export function SupplementRecommendations({ patientId, isProvider }: SupplementR
   const recommendations = recommendationsData?.recommendations || [];
   const totalMonthlyCost = recommendationsData?.totalMonthlyCost || 0;
 
+  console.log("Loading state:", loadingRecommendations);
+  console.log("Recommendations data:", recommendationsData);
+  console.log("Affiliate settings:", affiliateSettings);
+
   if (loadingRecommendations) {
     return (
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Pill className="h-5 w-5" />
-            Supplement Recommendations
+            Supplement Recommendations (Loading...)
           </CardTitle>
         </CardHeader>
         <CardContent>
