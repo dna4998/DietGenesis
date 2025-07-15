@@ -66,7 +66,7 @@ function AuthenticatedApp() {
         <Header 
           userRole={user?.type || "patient"} 
           onRoleChange={() => {}} // Not needed with real auth
-          logoUrl={logoUrl}
+          logoUrl={undefined} // Use default logo consistently
           title="DNA Diet Club"
           user={user}
         />

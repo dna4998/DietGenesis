@@ -1,4 +1,5 @@
 import { Dna } from "lucide-react";
+import logoPath from "@assets/Logo-1_1752362928812.png";
 
 interface AppLogoProps {
   logoUrl?: string;
@@ -14,9 +15,9 @@ export default function AppLogo({
   showTitle = true 
 }: AppLogoProps) {
   const sizeClasses = {
-    sm: 'h-6 w-6',
-    md: 'h-8 w-8', 
-    lg: 'h-12 w-12'
+    sm: 'h-8 w-auto max-w-24',
+    md: 'h-12 w-auto max-w-32', 
+    lg: 'h-16 w-auto max-w-40'
   };
 
   const textSizes = {
@@ -25,25 +26,26 @@ export default function AppLogo({
     lg: 'text-2xl'
   };
 
+  // Always use the same logo as login page
+  const displayLogoUrl = logoUrl || logoPath;
+
   return (
     <div className="flex items-center space-x-3">
-      {logoUrl ? (
-        <img 
-          src={logoUrl} 
-          alt={`${title} Logo`}
-          className={`${sizeClasses[size]} w-auto object-contain`}
-          onError={(e) => {
-            // Show fallback DNA icon if logo fails to load
-            const fallback = (e.target as HTMLImageElement).nextElementSibling as HTMLElement;
-            (e.target as HTMLImageElement).style.display = 'none';
-            if (fallback) fallback.style.display = 'block';
-          }}
-        />
-      ) : null}
+      <img 
+        src={displayLogoUrl} 
+        alt={`${title} Logo`}
+        className={`${sizeClasses[size]} object-contain`}
+        onError={(e) => {
+          // Show fallback DNA icon if logo fails to load
+          const fallback = (e.target as HTMLImageElement).nextElementSibling as HTMLElement;
+          (e.target as HTMLImageElement).style.display = 'none';
+          if (fallback) fallback.style.display = 'block';
+        }}
+      />
       
       {/* Fallback DNA icon */}
       <Dna 
-        className={`${sizeClasses[size]} text-blue-600 ${logoUrl ? 'hidden' : 'block'}`} 
+        className={`h-8 w-8 text-blue-600 hidden`} 
       />
       
       {showTitle && (
