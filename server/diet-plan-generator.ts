@@ -100,14 +100,14 @@ Recipe Variety Requirements:
 - Include traditional cooking methods and spice profiles from different cultures
 
 Each meal must include:
-- Recipe name and description
-- Complete ingredient list with quantities
-- Step-by-step cooking instructions
+- Recipe name and description (brief but descriptive)
+- Complete ingredient list with quantities (concise)
+- Step-by-step cooking instructions (clear and brief)
 - Preparation time
-- Nutritional information
+- Nutritional information (key highlights only)
 - Estimated calories
 
-CRITICAL: Generate all 90 recipes (30 breakfast + 30 lunch + 30 dinner) in this single response. Do not abbreviate or summarize.
+CRITICAL: Generate all 90 recipes (30 breakfast + 30 lunch + 30 dinner) in this single response. Keep descriptions concise to fit within response limits. Do not abbreviate or summarize the recipe count.
 
 Respond in JSON format with all 90 recipes listed:
 {
@@ -149,18 +149,73 @@ Respond in JSON format with all 90 recipes listed:
   ]
 }`;
 
-  const response = await openai.chat.completions.create({
-    model: "grok-2-1212",
-    messages: [{ role: "user", content: prompt }],
-    response_format: { type: "json_object" },
-  });
+  try {
+    const response = await openai.chat.completions.create({
+      model: "grok-2-1212",
+      messages: [
+        {
+          role: "system",
+          content: "You are a professional nutritionist and chef creating comprehensive diet plans. Always respond with valid JSON format containing exactly 30 recipes for each meal category. Ensure your JSON response is properly formatted and complete."
+        },
+        {
+          role: "user",
+          content: prompt
+        }
+      ],
+      response_format: { type: "json_object" },
+      max_tokens: 32000, // Increased token limit
+      temperature: 0.7
+    });
 
-  const plan = JSON.parse(response.choices[0].message.content);
-  
-  // Generate PDF with the plan
-  const pdfUrl = await generateDietPlanPDF(patient, plan, guidelines);
-  
-  return { plan, pdfUrl };
+    const responseContent = response.choices[0].message.content;
+    
+    // Clean up the response content to fix common JSON issues
+    let cleanedContent = responseContent.trim();
+    
+    // Remove any markdown code blocks if present
+    cleanedContent = cleanedContent.replace(/```json\n?/g, '').replace(/```\n?/g, '');
+    
+    // Try to parse the JSON
+    let result;
+    try {
+      result = JSON.parse(cleanedContent);
+    } catch (parseError) {
+      console.error('JSON Parse Error:', parseError);
+      console.error('Response content length:', cleanedContent.length);
+      console.error('Response content preview:', cleanedContent.substring(0, 500));
+      
+      // Try to find the last complete JSON structure
+      const lastCompleteJsonIndex = cleanedContent.lastIndexOf('"}]}');
+      if (lastCompleteJsonIndex > -1) {
+        const truncatedContent = cleanedContent.substring(0, lastCompleteJsonIndex + 4);
+        try {
+          result = JSON.parse(truncatedContent);
+          console.log('Successfully parsed truncated JSON');
+        } catch (truncatedError) {
+          throw new Error('Failed to parse JSON response from AI');
+        }
+      } else {
+        throw new Error('JSON response is incomplete or malformed');
+      }
+    }
+    
+    const plan = result;
+    
+    // Validate that we have the required recipe counts
+    if (!plan.breakfastOptions || !plan.lunchOptions || !plan.dinnerOptions) {
+      throw new Error('Missing meal categories in AI response');
+    }
+    
+    console.log(`Generated plan with ${plan.breakfastOptions.length} breakfast, ${plan.lunchOptions.length} lunch, ${plan.dinnerOptions.length} dinner recipes`);
+    
+    // Generate PDF
+    const pdfUrl = await generateDietPlanPDF(patient, plan, guidelines);
+    
+    return { plan, pdfUrl };
+  } catch (error) {
+    console.error('Error generating diet plan:', error);
+    throw error;
+  }
 }
 
 async function generateDietPlanPDF(
