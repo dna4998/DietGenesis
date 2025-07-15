@@ -13,9 +13,9 @@ export default function FreshLogo({
   showTitle = true 
 }: FreshLogoProps) {
   const sizeClasses = {
-    sm: 'h-16',
-    md: 'h-20',
-    lg: 'h-28'
+    sm: 'h-24',
+    md: 'h-32',
+    lg: 'h-40'
   };
 
   const textSizes = {
