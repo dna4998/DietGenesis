@@ -1,5 +1,5 @@
 import OpenAI from "openai";
-import jsPDF from "jspdf";
+import { jsPDF } from "jspdf";
 import fs from "fs";
 import path from "path";
 import type { Patient } from "@shared/schema";
