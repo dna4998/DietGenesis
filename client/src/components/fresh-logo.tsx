@@ -13,15 +13,15 @@ export default function FreshLogo({
   showTitle = true 
 }: FreshLogoProps) {
   const sizeClasses = {
-    sm: 'h-32',
-    md: 'h-48',
-    lg: 'h-64'
+    sm: 'h-48',
+    md: 'h-72',
+    lg: 'h-96'
   };
 
   const textSizes = {
-    sm: 'text-lg',
-    md: 'text-xl',
-    lg: 'text-2xl'
+    sm: 'text-xl',
+    md: 'text-2xl',
+    lg: 'text-3xl'
   };
 
   // Use the actual logo with fallback to simple text
@@ -44,9 +44,9 @@ export default function FreshLogo({
       
       {/* Simple fallback logo */}
       <div className="hidden">
-        <div className="flex items-center space-x-2">
-          <Dna className="h-8 w-8 text-purple-600" />
-          <span className="text-xl font-bold text-gray-900">DNA Diet Club</span>
+        <div className="flex items-center space-x-3">
+          <Dna className="h-16 w-16 text-purple-600" />
+          <span className="text-3xl font-bold text-gray-900">DNA Diet Club</span>
         </div>
       </div>
       
