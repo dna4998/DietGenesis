@@ -13,8 +13,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useLocation } from "wouter";
 import { Heart, Stethoscope, UserCheck, Shield } from "lucide-react";
-// Use public logo path to avoid Vite caching
-const logoPath = "/logo.png";
+import FreshLogo from "@/components/fresh-logo";
 
 const loginSchema = z.object({
   email: z.string().email("Please enter a valid email"),
@@ -169,15 +168,7 @@ export default function Login() {
       <div className="w-full max-w-4xl">
         <div className="text-center mb-8">
           <div className="flex items-center justify-center mb-4">
-            <img 
-              src={`${logoPath}?v=${Date.now()}&cache=false`} 
-              alt="DNA Diet Club" 
-              className="h-24 w-auto object-contain"
-              key={`login-logo-${Date.now()}`}
-              style={{ imageRendering: 'auto', maxWidth: '100%' }}
-              onLoad={() => console.log('Login logo loaded:', logoPath)}
-              onError={() => console.error('Login logo failed to load:', logoPath)}
-            />
+            <FreshLogo size="lg" showTitle={false} />
           </div>
           <p className="text-gray-600">Personalized health and wellness platform</p>
         </div>

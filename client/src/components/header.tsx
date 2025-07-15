@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/navigation-menu";
 import { Home, Activity, MessageSquare, CreditCard, Stethoscope, Dna, Heart, Brain, Menu } from "lucide-react";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import AppLogo from "@/components/app-logo";
+import FreshLogo from "@/components/fresh-logo";
 import AuthHeader from "./auth-header";
 import type { User } from "@/hooks/useAuth";
 import { Link } from "wouter";
@@ -37,7 +37,7 @@ export default function Header({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
           {/* Logo Section */}
-          <AppLogo logoUrl={logoUrl} title={title} />
+          <FreshLogo title={title} />
 
           {/* Navigation Menu */}
           {user && (
