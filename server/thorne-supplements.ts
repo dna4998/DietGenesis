@@ -240,8 +240,17 @@ export function generateAffiliateUrl(
   productId: string, 
   affiliateSettings: ProviderAffiliateSettings
 ): string {
-  const baseUrl = affiliateSettings.practiceUrl || "https://thorne.com";
-  return `${baseUrl}/products/${productId}?aff=${affiliateSettings.affiliateCode}&ref=${affiliateSettings.thorneAffiliateId}`;
+  // Use the master Thorne affiliate link provided by the user
+  const masterAffiliateUrl = "https://www.thorne.com/u/PR115297";
+  
+  // If provider has custom settings, use those; otherwise use the master link
+  if (affiliateSettings.practiceUrl && affiliateSettings.affiliateCode) {
+    const baseUrl = affiliateSettings.practiceUrl;
+    return `${baseUrl}/products/${productId}?aff=${affiliateSettings.affiliateCode}&ref=${affiliateSettings.thorneAffiliateId}`;
+  }
+  
+  // Default to master affiliate link with product reference
+  return `${masterAffiliateUrl}?product=${productId}`;
 }
 
 // AI-powered supplement recommendations

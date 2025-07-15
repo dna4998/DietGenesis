@@ -1554,9 +1554,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: 'Patient not found' });
       }
 
-      const affiliateSettings = await storage.getProviderAffiliateSettings(req.user!.id);
+      let affiliateSettings = await storage.getProviderAffiliateSettings(req.user!.id);
       if (!affiliateSettings) {
-        return res.status(400).json({ message: 'Please set up your Thorne affiliate settings first' });
+        // Create default affiliate settings with master Thorne link
+        const defaultSettings = {
+          providerId: req.user!.id,
+          thorneAffiliateId: 'PR115297',
+          affiliateCode: 'PR115297',
+          practiceUrl: 'https://www.thorne.com/u/PR115297',
+          trackingEnabled: true,
+        };
+        affiliateSettings = await storage.createProviderAffiliateSettings(defaultSettings);
       }
 
       const recommendations = await generateSupplementRecommendations(
