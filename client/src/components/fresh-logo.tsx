@@ -13,9 +13,9 @@ export default function FreshLogo({
   showTitle = true 
 }: FreshLogoProps) {
   const sizeClasses = {
-    sm: 'h-48',
-    md: 'h-80',
-    lg: 'h-96',
+    sm: 'h-64',
+    md: 'h-32',
+    lg: 'h-40',
     login: 'h-64'
   };
 
@@ -47,8 +47,8 @@ export default function FreshLogo({
       {/* Simple fallback logo */}
       <div className="hidden">
         <div className="flex items-center space-x-3">
-          <Dna className="h-16 w-16 text-purple-600" />
-          <span className="text-3xl font-bold text-gray-900">DNA Diet Club</span>
+          <Dna className="h-12 w-12 text-purple-600" />
+          <span className="text-2xl font-bold text-gray-900">DNA Diet Club</span>
         </div>
       </div>
       
