@@ -68,10 +68,12 @@ export function VideoExercisePlanner({ patientId }: VideoExercisePlannerProps) {
         throw new Error('Please select at least one fitness goal');
       }
       
-      return apiRequest(`/api/patients/${patientId}/generate-exercise-plan`, {
-        method: 'POST',
-        body: { exercisePreferences }
-      });
+      const response = await apiRequest(
+        'POST',
+        `/api/patients/${patientId}/generate-exercise-plan`,
+        { exercisePreferences }
+      );
+      return response.json();
     },
     onSuccess: (data) => {
       setGeneratedPlan(data);
