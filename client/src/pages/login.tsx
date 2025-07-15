@@ -166,7 +166,7 @@ export default function Login() {
             <img 
               src={logoPath} 
               alt="DNA Diet Club" 
-              className="h-16 w-auto object-contain"
+              className="h-24 w-auto object-contain"
             />
           </div>
           <p className="text-gray-600">Personalized health and wellness platform</p>
