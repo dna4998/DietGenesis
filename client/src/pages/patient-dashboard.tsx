@@ -9,7 +9,7 @@ import DexcomIntegration from "@/components/dexcom-integration";
 import HealthStatusIndicator from "@/components/health-status-indicator";
 import ThemeDemoControls from "@/components/theme-demo-controls";
 import MobilePreview from "@/components/mobile-optimizations";
-import ColorSchemeSelector from "@/components/color-scheme-selector";
+
 import { Skeleton } from "@/components/ui/skeleton";
 import type { Patient } from "@shared/schema";
 
@@ -109,16 +109,7 @@ export default function PatientDashboard({ selectedPatientId }: PatientDashboard
         <p className="mt-2 text-muted-foreground">Last visit: {displayPatient.lastVisit}</p>
       </div>
 
-      {/* Color Scheme Options */}
-      <div className="mb-6">
-        <ColorSchemeSelector 
-          onSchemeSelect={(scheme) => {
-            // In a real app, this would update the theme configuration
-            console.log('Selected color scheme:', scheme.name);
-          }}
-          currentScheme="Modern Minimalist"
-        />
-      </div>
+
 
       {/* Mobile Preview - shows how the app looks on mobile devices */}
       <div className="mb-6 hidden md:block">
