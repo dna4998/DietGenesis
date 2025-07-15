@@ -563,7 +563,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Diet plan guidelines are required" });
       }
 
-      const { generateComprehensiveDietPlan } = await import('./diet-plan-generator');
+      const { generateComprehensiveDietPlan } = await import('./diet-plan-generator-new');
       const dietPlanResponse = await generateComprehensiveDietPlan(patient, guidelines);
       res.json(dietPlanResponse);
     } catch (error) {
