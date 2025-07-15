@@ -1,8 +1,9 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Brain, Send, TrendingUp, Upload } from "lucide-react";
+import { Brain, Send, TrendingUp, Upload, Utensils } from "lucide-react";
 import SendMessageModal from "@/components/send-message-modal";
 import MedicalDocumentUpload from "@/components/medical-document-upload";
+import DietPlanGenerator from "@/components/diet-plan-generator";
 import type { Patient } from "@shared/schema";
 import { useState } from "react";
 
@@ -15,6 +16,7 @@ interface ProviderPatientCardProps {
 
 export default function ProviderPatientCard({ patient, onUpdate, onAIAnalysis, onHealthPrediction }: ProviderPatientCardProps) {
   const [lastClicked, setLastClicked] = useState<string | null>(null);
+  const [showDietPlanGenerator, setShowDietPlanGenerator] = useState(false);
   
   return (
     <div className="bg-white shadow-sm border border-gray-200 rounded-lg hover:shadow-md transition-shadow">
@@ -106,8 +108,22 @@ export default function ProviderPatientCard({ patient, onUpdate, onAIAnalysis, o
           >
             <TrendingUp className="w-4 h-4" />
           </button>
+          <button
+            className="border border-gray-300 hover:bg-gray-50 px-3 py-2 rounded-md transition-colors"
+            onClick={() => setShowDietPlanGenerator(true)}
+            title="Generate 30-Day Diet Plan"
+          >
+            <Utensils className="w-4 h-4" />
+          </button>
         </div>
       </div>
+      
+      {showDietPlanGenerator && (
+        <DietPlanGenerator
+          patient={patient}
+          onClose={() => setShowDietPlanGenerator(false)}
+        />
+      )}
     </div>
   );
 }

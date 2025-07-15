@@ -1,0 +1,367 @@
+import OpenAI from "openai";
+import jsPDF from "jspdf";
+import fs from "fs";
+import path from "path";
+import type { Patient } from "@shared/schema";
+
+const openai = new OpenAI({ baseURL: "https://api.x.ai/v1", apiKey: process.env.XAI_API_KEY });
+
+export interface DietPlanGuidelines {
+  dietaryRestrictions: string;
+  preferredFoods: string;
+  foodsToAvoid: string;
+  mealTimingPreferences: string;
+  cookingPreferences: string;
+  budgetConsiderations?: string;
+  specialInstructions?: string;
+}
+
+export interface DietPlanResponse {
+  plan: {
+    summary: string;
+    breakfastCount: number;
+    lunchCount: number;
+    dinnerCount: number;
+    breakfastOptions: MealOption[];
+    lunchOptions: MealOption[];
+    dinnerOptions: MealOption[];
+    shoppingList: string[];
+    nutritionTips: string[];
+    weeklyStructure: WeeklyMealStructure[];
+  };
+  pdfUrl: string;
+}
+
+export interface MealOption {
+  name: string;
+  description: string;
+  ingredients: string[];
+  instructions: string[];
+  prepTime: string;
+  nutritionInfo: string;
+  calories: number;
+}
+
+export interface WeeklyMealStructure {
+  week: number;
+  theme: string;
+  focusAreas: string[];
+  sampleDay: {
+    breakfast: string;
+    lunch: string;
+    dinner: string;
+  };
+}
+
+export async function generateComprehensiveDietPlan(
+  patient: Patient,
+  guidelines: DietPlanGuidelines
+): Promise<DietPlanResponse> {
+  const prompt = `As a registered dietitian and nutritionist, create a comprehensive 30-day diet plan for ${patient.name}.
+
+Patient Profile:
+- Name: ${patient.name}
+- Age: ${patient.age}
+- Current Weight: ${patient.weight} lbs
+- Weight Goal: ${patient.weightGoal} lbs
+- Body Fat: ${patient.bodyFat}%
+- Body Fat Goal: ${patient.bodyFatGoal}%
+- Insulin Resistance: ${patient.insulinResistance ? 'Yes' : 'No'}
+- Blood Pressure: ${patient.bloodPressure}
+- Blood Sugar Status: ${patient.bloodSugar}
+- Current Diet Plan: ${patient.dietPlan || 'None assigned'}
+
+Provider Guidelines:
+- Dietary Restrictions: ${guidelines.dietaryRestrictions}
+- Preferred Foods: ${guidelines.preferredFoods}
+- Foods to Avoid: ${guidelines.foodsToAvoid}
+- Meal Timing Preferences: ${guidelines.mealTimingPreferences}
+- Cooking Preferences: ${guidelines.cookingPreferences}
+- Budget Considerations: ${guidelines.budgetConsiderations || 'Standard budget'}
+- Special Instructions: ${guidelines.specialInstructions || 'None'}
+
+Create a detailed 30-day diet plan with:
+1. 10 breakfast options with recipes
+2. 10 lunch options with recipes
+3. 10 dinner options with recipes
+4. Weekly meal structure and themes
+5. Comprehensive shopping list
+6. Nutrition tips and guidelines
+
+Each meal should include:
+- Recipe name and description
+- Complete ingredient list with quantities
+- Step-by-step cooking instructions
+- Preparation time
+- Nutritional information
+- Estimated calories
+
+Respond in JSON format:
+{
+  "summary": "Brief overview of the 30-day plan and its benefits",
+  "breakfastCount": 10,
+  "lunchCount": 10,
+  "dinnerCount": 10,
+  "breakfastOptions": [
+    {
+      "name": "Recipe name",
+      "description": "Brief description",
+      "ingredients": ["ingredient with quantity"],
+      "instructions": ["step by step"],
+      "prepTime": "X minutes",
+      "nutritionInfo": "Key nutritional highlights",
+      "calories": number
+    }
+  ],
+  "lunchOptions": [similar structure],
+  "dinnerOptions": [similar structure],
+  "shoppingList": ["grouped ingredients by category"],
+  "nutritionTips": ["practical nutrition advice"],
+  "weeklyStructure": [
+    {
+      "week": 1,
+      "theme": "Week theme",
+      "focusAreas": ["key focus areas"],
+      "sampleDay": {
+        "breakfast": "breakfast option name",
+        "lunch": "lunch option name", 
+        "dinner": "dinner option name"
+      }
+    }
+  ]
+}`;
+
+  const response = await openai.chat.completions.create({
+    model: "grok-2-1212",
+    messages: [{ role: "user", content: prompt }],
+    response_format: { type: "json_object" },
+  });
+
+  const plan = JSON.parse(response.choices[0].message.content);
+  
+  // Generate PDF with the plan
+  const pdfUrl = await generateDietPlanPDF(patient, plan, guidelines);
+  
+  return { plan, pdfUrl };
+}
+
+async function generateDietPlanPDF(
+  patient: Patient,
+  plan: any,
+  guidelines: DietPlanGuidelines
+): Promise<string> {
+  const doc = new jsPDF();
+  
+  // Load logo (if exists)
+  const logoPath = path.join(process.cwd(), 'public', 'logo.png');
+  let logoBase64 = '';
+  
+  if (fs.existsSync(logoPath)) {
+    const logoBuffer = fs.readFileSync(logoPath);
+    logoBase64 = logoBuffer.toString('base64');
+  }
+  
+  // Set up colors
+  const primaryColor = '#2563eb'; // Blue
+  const secondaryColor = '#16a34a'; // Green
+  const textColor = '#1f2937'; // Gray
+  
+  let yPosition = 20;
+  const pageWidth = doc.internal.pageSize.width;
+  const pageHeight = doc.internal.pageSize.height;
+  
+  // Add watermark logo in background
+  if (logoBase64) {
+    doc.setGState(doc.GState({ opacity: 0.1 }));
+    doc.addImage(logoBase64, 'PNG', pageWidth/2 - 40, pageHeight/2 - 40, 80, 80);
+    doc.setGState(doc.GState({ opacity: 1.0 }));
+  }
+  
+  // Header with logo
+  if (logoBase64) {
+    doc.addImage(logoBase64, 'PNG', 15, 15, 30, 30);
+  }
+  
+  // Title
+  doc.setFontSize(24);
+  doc.setTextColor(primaryColor);
+  doc.text('DNA Diet Club', logoBase64 ? 50 : 15, 25);
+  
+  doc.setFontSize(18);
+  doc.setTextColor(textColor);
+  doc.text('30-Day Personalized Diet Plan', logoBase64 ? 50 : 15, 35);
+  
+  yPosition = 55;
+  
+  // Patient Information
+  doc.setFontSize(14);
+  doc.setTextColor(primaryColor);
+  doc.text('Patient Information', 15, yPosition);
+  
+  yPosition += 10;
+  doc.setFontSize(10);
+  doc.setTextColor(textColor);
+  doc.text(`Name: ${patient.name}`, 15, yPosition);
+  doc.text(`Age: ${patient.age}`, 120, yPosition);
+  yPosition += 6;
+  doc.text(`Current Weight: ${patient.weight} lbs`, 15, yPosition);
+  doc.text(`Goal Weight: ${patient.weightGoal} lbs`, 120, yPosition);
+  yPosition += 6;
+  doc.text(`Body Fat: ${patient.bodyFat}%`, 15, yPosition);
+  doc.text(`Goal Body Fat: ${patient.bodyFatGoal}%`, 120, yPosition);
+  
+  yPosition += 15;
+  
+  // Plan Summary
+  doc.setFontSize(14);
+  doc.setTextColor(primaryColor);
+  doc.text('Plan Overview', 15, yPosition);
+  
+  yPosition += 10;
+  doc.setFontSize(10);
+  doc.setTextColor(textColor);
+  const summaryLines = doc.splitTextToSize(plan.summary, pageWidth - 30);
+  doc.text(summaryLines, 15, yPosition);
+  yPosition += summaryLines.length * 5 + 10;
+  
+  // Check if we need a new page
+  if (yPosition > pageHeight - 40) {
+    doc.addPage();
+    yPosition = 20;
+  }
+  
+  // Breakfast Options
+  doc.setFontSize(16);
+  doc.setTextColor(secondaryColor);
+  doc.text('🌅 Breakfast Options', 15, yPosition);
+  yPosition += 10;
+  
+  for (let i = 0; i < Math.min(5, plan.breakfastOptions.length); i++) {
+    const meal = plan.breakfastOptions[i];
+    
+    if (yPosition > pageHeight - 50) {
+      doc.addPage();
+      yPosition = 20;
+    }
+    
+    doc.setFontSize(12);
+    doc.setTextColor(textColor);
+    doc.text(`${i + 1}. ${meal.name}`, 15, yPosition);
+    doc.setFontSize(10);
+    doc.text(`${meal.calories} calories • ${meal.prepTime}`, 15, yPosition + 6);
+    
+    yPosition += 12;
+    const descLines = doc.splitTextToSize(meal.description, pageWidth - 30);
+    doc.text(descLines, 15, yPosition);
+    yPosition += descLines.length * 4 + 8;
+  }
+  
+  // Lunch Options
+  if (yPosition > pageHeight - 40) {
+    doc.addPage();
+    yPosition = 20;
+  }
+  
+  doc.setFontSize(16);
+  doc.setTextColor(secondaryColor);
+  doc.text('🌞 Lunch Options', 15, yPosition);
+  yPosition += 10;
+  
+  for (let i = 0; i < Math.min(5, plan.lunchOptions.length); i++) {
+    const meal = plan.lunchOptions[i];
+    
+    if (yPosition > pageHeight - 50) {
+      doc.addPage();
+      yPosition = 20;
+    }
+    
+    doc.setFontSize(12);
+    doc.setTextColor(textColor);
+    doc.text(`${i + 1}. ${meal.name}`, 15, yPosition);
+    doc.setFontSize(10);
+    doc.text(`${meal.calories} calories • ${meal.prepTime}`, 15, yPosition + 6);
+    
+    yPosition += 12;
+    const descLines = doc.splitTextToSize(meal.description, pageWidth - 30);
+    doc.text(descLines, 15, yPosition);
+    yPosition += descLines.length * 4 + 8;
+  }
+  
+  // Dinner Options
+  if (yPosition > pageHeight - 40) {
+    doc.addPage();
+    yPosition = 20;
+  }
+  
+  doc.setFontSize(16);
+  doc.setTextColor(secondaryColor);
+  doc.text('🌙 Dinner Options', 15, yPosition);
+  yPosition += 10;
+  
+  for (let i = 0; i < Math.min(5, plan.dinnerOptions.length); i++) {
+    const meal = plan.dinnerOptions[i];
+    
+    if (yPosition > pageHeight - 50) {
+      doc.addPage();
+      yPosition = 20;
+    }
+    
+    doc.setFontSize(12);
+    doc.setTextColor(textColor);
+    doc.text(`${i + 1}. ${meal.name}`, 15, yPosition);
+    doc.setFontSize(10);
+    doc.text(`${meal.calories} calories • ${meal.prepTime}`, 15, yPosition + 6);
+    
+    yPosition += 12;
+    const descLines = doc.splitTextToSize(meal.description, pageWidth - 30);
+    doc.text(descLines, 15, yPosition);
+    yPosition += descLines.length * 4 + 8;
+  }
+  
+  // Shopping List
+  if (yPosition > pageHeight - 40) {
+    doc.addPage();
+    yPosition = 20;
+  }
+  
+  doc.setFontSize(16);
+  doc.setTextColor(secondaryColor);
+  doc.text('🛒 Shopping List', 15, yPosition);
+  yPosition += 10;
+  
+  doc.setFontSize(10);
+  doc.setTextColor(textColor);
+  plan.shoppingList.forEach((item: string, index: number) => {
+    if (yPosition > pageHeight - 20) {
+      doc.addPage();
+      yPosition = 20;
+    }
+    doc.text(`• ${item}`, 15, yPosition);
+    yPosition += 5;
+  });
+  
+  // Footer
+  const totalPages = doc.internal.getNumberOfPages();
+  for (let i = 1; i <= totalPages; i++) {
+    doc.setPage(i);
+    doc.setFontSize(8);
+    doc.setTextColor('#666666');
+    doc.text(`DNA Diet Club • Page ${i} of ${totalPages}`, 15, pageHeight - 10);
+    doc.text(`Generated for ${patient.name}`, pageWidth - 60, pageHeight - 10);
+  }
+  
+  // Save PDF
+  const fileName = `diet-plan-${patient.id}-${Date.now()}.pdf`;
+  const filePath = path.join(process.cwd(), 'uploads', fileName);
+  
+  // Ensure uploads directory exists
+  const uploadsDir = path.join(process.cwd(), 'uploads');
+  if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+  }
+  
+  const pdfBuffer = doc.output('arraybuffer');
+  fs.writeFileSync(filePath, Buffer.from(pdfBuffer));
+  
+  return `/uploads/${fileName}`;
+}

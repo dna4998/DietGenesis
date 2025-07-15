@@ -545,6 +545,72 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Generate 30-day diet plan with PDF
+  app.post("/api/patients/:id/generate-diet-plan", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid patient ID" });
+      }
+
+      const patient = await storage.getPatient(id);
+      if (!patient) {
+        return res.status(404).json({ message: "Patient not found" });
+      }
+
+      const { guidelines } = req.body;
+      if (!guidelines) {
+        return res.status(400).json({ message: "Diet plan guidelines are required" });
+      }
+
+      const { generateComprehensiveDietPlan } = await import('./diet-plan-generator');
+      const dietPlanResponse = await generateComprehensiveDietPlan(patient, guidelines);
+      res.json(dietPlanResponse);
+    } catch (error) {
+      console.error("Error generating diet plan:", error);
+      res.status(500).json({ message: "Failed to generate diet plan" });
+    }
+  });
+
+  // Send diet plan to patient
+  app.post("/api/patients/:id/send-diet-plan", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid patient ID" });
+      }
+
+      const patient = await storage.getPatient(id);
+      if (!patient) {
+        return res.status(404).json({ message: "Patient not found" });
+      }
+
+      const { pdfUrl, planSummary } = req.body;
+      if (!pdfUrl) {
+        return res.status(400).json({ message: "PDF URL is required" });
+      }
+
+      // Create message with diet plan
+      const messageData = {
+        patientId: id,
+        providerId: 1, // Assuming provider ID 1 for now
+        content: `🍽️ **30-Day Personalized Diet Plan**\n\n${planSummary}\n\nYour comprehensive meal plan with breakfast, lunch, and dinner options has been generated based on your health profile and dietary preferences. The plan includes detailed recipes, shopping lists, and nutritional guidance.\n\nPlease download the PDF below to view your complete meal plan.`,
+        messageType: 'pdf' as const,
+        fileUrl: pdfUrl,
+        fileName: 'DNA_Diet_Club_30_Day_Plan.pdf',
+        createdAt: new Date()
+      };
+
+      const validatedData = insertMessageSchema.parse(messageData);
+      const message = await storage.createMessage(validatedData);
+      
+      res.json({ message: "Diet plan sent successfully", messageId: message.id });
+    } catch (error) {
+      console.error("Error sending diet plan:", error);
+      res.status(500).json({ message: "Failed to send diet plan" });
+    }
+  });
+
   // Set up file upload directory
   const uploadsDir = path.join(process.cwd(), 'uploads');
   if (!fs.existsSync(uploadsDir)) {
