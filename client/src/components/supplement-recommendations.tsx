@@ -289,7 +289,10 @@ export function SupplementRecommendations({ patientId, isProvider }: SupplementR
                     </DialogDescription>
                   </DialogHeader>
                   <Form {...affiliateForm}>
-                    <form onSubmit={affiliateForm.handleSubmit((data) => saveAffiliateSettings.mutate(data))} className="space-y-4">
+                    <form onSubmit={affiliateForm.handleSubmit((data) => {
+                      console.log("Form submit handler called with data:", data);
+                      saveAffiliateSettings.mutate(data);
+                    })} className="space-y-4">
                       <FormField
                         control={affiliateForm.control}
                         name="thorneAffiliateId"
@@ -354,12 +357,17 @@ export function SupplementRecommendations({ patientId, isProvider }: SupplementR
                         )}
                       />
                       <Button 
-                        type="submit" 
+                        type="button" 
                         disabled={saveAffiliateSettings.isPending}
-                        onClick={() => {
+                        onClick={(e) => {
+                          e.preventDefault();
                           console.log("Save button clicked");
                           console.log("Form values:", affiliateForm.getValues());
                           console.log("Form errors:", affiliateForm.formState.errors);
+                          
+                          const formData = affiliateForm.getValues();
+                          console.log("Submitting form data:", formData);
+                          saveAffiliateSettings.mutate(formData);
                         }}
                       >
                         {saveAffiliateSettings.isPending ? "Saving..." : "Save Settings"}
