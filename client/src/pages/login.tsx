@@ -13,6 +13,7 @@ import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useLocation } from "wouter";
 import { Heart, Stethoscope, UserCheck, Shield } from "lucide-react";
+import logoPath from "@assets/Logo-1_1752362928812.png";
 
 const loginSchema = z.object({
   email: z.string().email("Please enter a valid email"),
@@ -163,7 +164,7 @@ export default function Login() {
         <div className="text-center mb-8">
           <div className="flex items-center justify-center mb-4">
             <img 
-              src="/dna-diet-club-logo.png" 
+              src={logoPath} 
               alt="DNA Diet Club" 
               className="h-16 w-auto object-contain"
             />
