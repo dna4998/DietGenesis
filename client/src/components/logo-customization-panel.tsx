@@ -399,9 +399,31 @@ export default function LogoCustomizationPanel({ onLogoChange, onSettingsChange 
               </CardHeader>
               <CardContent>
                 <div className="space-y-6">
-                  {/* Different size previews */}
+                  {/* Current uploaded logo preview */}
+                  {uploadedLogo && (
+                    <div className="space-y-4">
+                      <div className="text-sm font-medium text-gray-700">Current Logo</div>
+                      <div 
+                        className="border rounded-lg p-4 flex items-center justify-center"
+                        style={{
+                          backgroundColor: settings.backgroundColor,
+                          borderRadius: `${settings.borderRadius}px`,
+                          padding: `${settings.padding}px`,
+                          boxShadow: settings.shadow ? '0 4px 6px -1px rgba(0, 0, 0, 0.1)' : 'none'
+                        }}
+                      >
+                        <img 
+                          src={uploadedLogo} 
+                          alt="Current logo" 
+                          className="max-h-20 w-auto object-contain"
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Live preview with FreshLogo component */}
                   <div className="space-y-4">
-                    <div className="text-sm font-medium text-gray-700">Header Preview</div>
+                    <div className="text-sm font-medium text-gray-700">Live Preview</div>
                     <div 
                       className="border rounded-lg p-4 flex items-center justify-center"
                       style={{
@@ -421,39 +443,32 @@ export default function LogoCustomizationPanel({ onLogoChange, onSettingsChange 
                     </div>
                   </div>
 
+                  {/* Size comparison preview */}
                   <div className="space-y-4">
-                    <div className="text-sm font-medium text-gray-700">Login Preview</div>
-                    <div 
-                      className="border rounded-lg p-4 flex items-center justify-center"
-                      style={{
-                        backgroundColor: settings.backgroundColor,
-                        borderRadius: `${settings.borderRadius}px`,
-                        padding: `${settings.padding}px`,
-                        boxShadow: settings.shadow ? '0 4px 6px -1px rgba(0, 0, 0, 0.1)' : 'none'
-                      }}
-                    >
-                      <div style={{ color: settings.titleColor }}>
-                        <FreshLogo
-                          title={settings.title}
-                          size="login"
-                          showTitle={settings.showTitle}
-                        />
+                    <div className="text-sm font-medium text-gray-700">Size Comparison</div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="border rounded-lg p-2 flex items-center justify-center">
+                        <div className="text-center">
+                          <div className="text-xs text-gray-500 mb-1">Header</div>
+                          <FreshLogo
+                            title={settings.title}
+                            size="md"
+                            showTitle={settings.showTitle}
+                          />
+                        </div>
+                      </div>
+                      <div className="border rounded-lg p-2 flex items-center justify-center">
+                        <div className="text-center">
+                          <div className="text-xs text-gray-500 mb-1">Login</div>
+                          <FreshLogo
+                            title={settings.title}
+                            size="login"
+                            showTitle={settings.showTitle}
+                          />
+                        </div>
                       </div>
                     </div>
                   </div>
-
-                  {uploadedLogo && (
-                    <div className="space-y-2">
-                      <div className="text-sm font-medium text-gray-700">Uploaded Logo</div>
-                      <div className="border rounded-lg p-4 flex items-center justify-center">
-                        <img 
-                          src={uploadedLogo} 
-                          alt="Uploaded logo" 
-                          className="max-h-32 w-auto object-contain"
-                        />
-                      </div>
-                    </div>
-                  )}
                 </div>
               </CardContent>
             </Card>
