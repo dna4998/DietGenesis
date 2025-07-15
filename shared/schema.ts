@@ -164,6 +164,37 @@ export const auditLogs = pgTable("audit_logs", {
   timestamp: timestamp("timestamp").defaultNow(),
 });
 
+// Supplement recommendations table
+export const supplementRecommendations = pgTable("supplement_recommendations", {
+  id: serial("id").primaryKey(),
+  patientId: integer("patient_id").notNull().references(() => patients.id),
+  providerId: integer("provider_id").notNull().references(() => providers.id),
+  thorneProductId: text("thorne_product_id").notNull(),
+  productName: text("product_name").notNull(),
+  dosage: text("dosage").notNull(),
+  instructions: text("instructions").notNull(),
+  duration: text("duration").notNull(), // e.g., "3 months", "6 weeks"
+  reason: text("reason").notNull(), // Why this supplement was recommended
+  priority: text("priority").notNull().default("medium"), // "high", "medium", "low"
+  affiliateUrl: text("affiliate_url").notNull(), // Your practice's affiliate link
+  productPrice: decimal("product_price", { precision: 8, scale: 2 }),
+  isActive: boolean("is_active").default(true).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// Provider affiliate settings table
+export const providerAffiliateSettings = pgTable("provider_affiliate_settings", {
+  id: serial("id").primaryKey(),
+  providerId: integer("provider_id").notNull().references(() => providers.id),
+  thorneAffiliateId: text("thorne_affiliate_id").notNull(),
+  affiliateCode: text("affiliate_code").notNull(),
+  practiceUrl: text("practice_url"), // Custom practice URL from Thorne
+  trackingEnabled: boolean("tracking_enabled").default(true).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 export const insertHipaaConsentSchema = createInsertSchema(hipaaConsents).omit({
   id: true,
   createdAt: true,
@@ -174,7 +205,23 @@ export const insertAuditLogSchema = createInsertSchema(auditLogs).omit({
   timestamp: true,
 });
 
+export const insertSupplementRecommendationSchema = createInsertSchema(supplementRecommendations).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertProviderAffiliateSettingsSchema = createInsertSchema(providerAffiliateSettings).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 export type HipaaConsent = typeof hipaaConsents.$inferSelect;
 export type InsertHipaaConsent = z.infer<typeof insertHipaaConsentSchema>;
 export type AuditLog = typeof auditLogs.$inferSelect;
 export type InsertAuditLog = z.infer<typeof insertAuditLogSchema>;
+export type SupplementRecommendation = typeof supplementRecommendations.$inferSelect;
+export type InsertSupplementRecommendation = z.infer<typeof insertSupplementRecommendationSchema>;
+export type ProviderAffiliateSettings = typeof providerAffiliateSettings.$inferSelect;
+export type InsertProviderAffiliateSettings = z.infer<typeof insertProviderAffiliateSettingsSchema>;

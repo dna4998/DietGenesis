@@ -1,10 +1,11 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Brain, Send, TrendingUp, Upload, Utensils, Play } from "lucide-react";
+import { Brain, Send, TrendingUp, Upload, Utensils, Play, Pill } from "lucide-react";
 import SendMessageModal from "@/components/send-message-modal";
 import MedicalDocumentUpload from "@/components/medical-document-upload";
 import DietPlanGenerator from "@/components/diet-plan-generator";
 import { VideoExercisePlanner } from "@/components/video-exercise-planner";
+import { SupplementRecommendations } from "@/components/supplement-recommendations";
 import type { Patient } from "@shared/schema";
 import { useState } from "react";
 
@@ -19,6 +20,7 @@ export default function ProviderPatientCard({ patient, onUpdate, onAIAnalysis, o
   const [lastClicked, setLastClicked] = useState<string | null>(null);
   const [showDietPlanGenerator, setShowDietPlanGenerator] = useState(false);
   const [showExercisePlanner, setShowExercisePlanner] = useState(false);
+  const [showSupplementRecommendations, setShowSupplementRecommendations] = useState(false);
   
   return (
     <div className="bg-white shadow-sm border border-gray-200 rounded-lg hover:shadow-md transition-shadow">
@@ -124,6 +126,13 @@ export default function ProviderPatientCard({ patient, onUpdate, onAIAnalysis, o
           >
             <Play className="w-4 h-4" />
           </button>
+          <button
+            className="border border-gray-300 hover:bg-gray-50 px-3 py-2 rounded-md transition-colors"
+            onClick={() => setShowSupplementRecommendations(true)}
+            title="Supplement Recommendations"
+          >
+            <Pill className="w-4 h-4" />
+          </button>
         </div>
       </div>
       
@@ -143,6 +152,22 @@ export default function ProviderPatientCard({ patient, onUpdate, onAIAnalysis, o
             className="mt-4"
           >
             Close Exercise Planner
+          </Button>
+        </div>
+      )}
+      
+      {showSupplementRecommendations && (
+        <div className="border-t border-gray-200 p-6">
+          <SupplementRecommendations 
+            patientId={patient.id} 
+            isProvider={true}
+          />
+          <Button 
+            variant="outline" 
+            onClick={() => setShowSupplementRecommendations(false)}
+            className="mt-4"
+          >
+            Close Supplement Recommendations
           </Button>
         </div>
       )}

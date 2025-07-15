@@ -15,6 +15,8 @@ import { getDailyHealthTip } from "./health-tips";
 import { generateDemoHealthPrediction } from "./health-prediction";
 import { dexcomService, isDexcomConfigured } from "./dexcom-integration";
 import logoRoutes from "./logo-routes";
+import { generateSupplementRecommendations, getThorneProductById, searchThorneProducts, calculateMonthlyCost } from "./thorne-supplements";
+import { insertSupplementRecommendationSchema, insertProviderAffiliateSettingsSchema } from "@shared/schema";
 import { z } from "zod";
 
 import { AuthenticatedRequest, requireAuth, requireProvider, requireSubscription, createSession, deleteSession, sessionMiddleware } from "./auth";
@@ -1497,6 +1499,183 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Logo customization routes
   app.use('/api/logo', logoRoutes);
+
+  // Thorne Supplement Routes
+  
+  // Set up affiliate settings for provider
+  app.post('/api/provider/affiliate-settings', requireAuth, requireProvider, async (req: AuthenticatedRequest, res) => {
+    try {
+      const { thorneAffiliateId, affiliateCode, practiceUrl, trackingEnabled } = req.body;
+      
+      const validation = insertProviderAffiliateSettingsSchema.parse({
+        providerId: req.user!.id,
+        thorneAffiliateId,
+        affiliateCode,
+        practiceUrl,
+        trackingEnabled,
+      });
+
+      // Check if settings already exist
+      const existing = await storage.getProviderAffiliateSettings(req.user!.id);
+      
+      let settings;
+      if (existing) {
+        settings = await storage.updateProviderAffiliateSettings(req.user!.id, validation);
+      } else {
+        settings = await storage.createProviderAffiliateSettings(validation);
+      }
+
+      res.json({ settings });
+    } catch (error) {
+      console.error('Error setting affiliate settings:', error);
+      res.status(500).json({ message: 'Failed to save affiliate settings' });
+    }
+  });
+
+  // Get provider affiliate settings
+  app.get('/api/provider/affiliate-settings', requireAuth, requireProvider, async (req: AuthenticatedRequest, res) => {
+    try {
+      const settings = await storage.getProviderAffiliateSettings(req.user!.id);
+      res.json({ settings });
+    } catch (error) {
+      console.error('Error getting affiliate settings:', error);
+      res.status(500).json({ message: 'Failed to get affiliate settings' });
+    }
+  });
+
+  // Generate AI supplement recommendations for a patient
+  app.post('/api/patients/:id/supplement-recommendations', requireAuth, requireProvider, async (req: AuthenticatedRequest, res) => {
+    try {
+      const patientId = parseInt(req.params.id);
+      const { specificConcerns } = req.body;
+
+      const patient = await storage.getPatient(patientId);
+      if (!patient) {
+        return res.status(404).json({ message: 'Patient not found' });
+      }
+
+      const affiliateSettings = await storage.getProviderAffiliateSettings(req.user!.id);
+      if (!affiliateSettings) {
+        return res.status(400).json({ message: 'Please set up your Thorne affiliate settings first' });
+      }
+
+      const recommendations = await generateSupplementRecommendations(
+        patient,
+        affiliateSettings,
+        specificConcerns
+      );
+
+      // Save recommendations to database
+      const savedRecommendations = await Promise.all(
+        recommendations.map(rec => storage.createSupplementRecommendation(rec))
+      );
+
+      const totalMonthlyCost = calculateMonthlyCost(savedRecommendations);
+
+      res.json({ 
+        recommendations: savedRecommendations,
+        totalMonthlyCost,
+        affiliateInfo: {
+          practiceUrl: affiliateSettings.practiceUrl,
+          affiliateCode: affiliateSettings.affiliateCode
+        }
+      });
+    } catch (error) {
+      console.error('Error generating supplement recommendations:', error);
+      res.status(500).json({ message: 'Failed to generate recommendations' });
+    }
+  });
+
+  // Get supplement recommendations for a patient
+  app.get('/api/patients/:id/supplement-recommendations', requireAuth, async (req: AuthenticatedRequest, res) => {
+    try {
+      const patientId = parseInt(req.params.id);
+
+      // Allow patients to see their own recommendations or providers to see any
+      if (req.user!.type === 'patient' && req.user!.id !== patientId) {
+        return res.status(403).json({ message: 'Access denied' });
+      }
+
+      const recommendations = await storage.getSupplementRecommendationsForPatient(patientId);
+      const totalMonthlyCost = calculateMonthlyCost(recommendations);
+
+      res.json({ 
+        recommendations,
+        totalMonthlyCost 
+      });
+    } catch (error) {
+      console.error('Error getting supplement recommendations:', error);
+      res.status(500).json({ message: 'Failed to get recommendations' });
+    }
+  });
+
+  // Update a supplement recommendation
+  app.patch('/api/supplement-recommendations/:id', requireAuth, requireProvider, async (req: AuthenticatedRequest, res) => {
+    try {
+      const recommendationId = parseInt(req.params.id);
+      const updates = req.body;
+
+      const updated = await storage.updateSupplementRecommendation(recommendationId, updates);
+      if (!updated) {
+        return res.status(404).json({ message: 'Recommendation not found' });
+      }
+
+      res.json({ recommendation: updated });
+    } catch (error) {
+      console.error('Error updating supplement recommendation:', error);
+      res.status(500).json({ message: 'Failed to update recommendation' });
+    }
+  });
+
+  // Deactivate a supplement recommendation
+  app.delete('/api/supplement-recommendations/:id', requireAuth, requireProvider, async (req: AuthenticatedRequest, res) => {
+    try {
+      const recommendationId = parseInt(req.params.id);
+
+      const success = await storage.deactivateSupplementRecommendation(recommendationId);
+      if (!success) {
+        return res.status(404).json({ message: 'Recommendation not found' });
+      }
+
+      res.json({ message: 'Recommendation deactivated' });
+    } catch (error) {
+      console.error('Error deactivating supplement recommendation:', error);
+      res.status(500).json({ message: 'Failed to deactivate recommendation' });
+    }
+  });
+
+  // Search Thorne products
+  app.get('/api/thorne/products/search', requireAuth, requireProvider, async (req: AuthenticatedRequest, res) => {
+    try {
+      const { q } = req.query;
+      if (!q || typeof q !== 'string') {
+        return res.status(400).json({ message: 'Search query required' });
+      }
+
+      const products = searchThorneProducts(q);
+      res.json({ products });
+    } catch (error) {
+      console.error('Error searching Thorne products:', error);
+      res.status(500).json({ message: 'Failed to search products' });
+    }
+  });
+
+  // Get specific Thorne product details
+  app.get('/api/thorne/products/:id', requireAuth, requireProvider, async (req: AuthenticatedRequest, res) => {
+    try {
+      const { id } = req.params;
+      const product = getThorneProductById(id);
+      
+      if (!product) {
+        return res.status(404).json({ message: 'Product not found' });
+      }
+
+      res.json({ product });
+    } catch (error) {
+      console.error('Error getting Thorne product:', error);
+      res.status(500).json({ message: 'Failed to get product' });
+    }
+  });
 
   const httpServer = createServer(app);
   return httpServer;

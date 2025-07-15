@@ -5,6 +5,8 @@ import {
   dexcomData,
   hipaaConsents,
   auditLogs,
+  supplementRecommendations,
+  providerAffiliateSettings,
   type Patient,
   type Provider,
   type Message,
@@ -18,6 +20,10 @@ import {
   type InsertHipaaConsent,
   type AuditLog,
   type InsertAuditLog,
+  type SupplementRecommendation,
+  type InsertSupplementRecommendation,
+  type ProviderAffiliateSettings,
+  type InsertProviderAffiliateSettings,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and } from "drizzle-orm";
@@ -75,6 +81,17 @@ export interface IStorage {
   // Audit Log operations
   createAuditLog(logData: InsertAuditLog): Promise<AuditLog>;
   getAuditLogsForUser(userId: number, userType: string): Promise<AuditLog[]>;
+
+  // Supplement Recommendation operations
+  createSupplementRecommendation(recommendation: InsertSupplementRecommendation): Promise<SupplementRecommendation>;
+  getSupplementRecommendationsForPatient(patientId: number): Promise<SupplementRecommendation[]>;
+  updateSupplementRecommendation(id: number, updates: Partial<InsertSupplementRecommendation>): Promise<SupplementRecommendation | undefined>;
+  deactivateSupplementRecommendation(id: number): Promise<boolean>;
+
+  // Provider Affiliate Settings operations
+  createProviderAffiliateSettings(settings: InsertProviderAffiliateSettings): Promise<ProviderAffiliateSettings>;
+  getProviderAffiliateSettings(providerId: number): Promise<ProviderAffiliateSettings | undefined>;
+  updateProviderAffiliateSettings(providerId: number, updates: Partial<InsertProviderAffiliateSettings>): Promise<ProviderAffiliateSettings | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -299,6 +316,63 @@ export class DatabaseStorage implements IStorage {
       ))
       .orderBy(desc(auditLogs.timestamp))
       .limit(100);
+  }
+
+  // Supplement Recommendation operations
+  async createSupplementRecommendation(recommendation: InsertSupplementRecommendation): Promise<SupplementRecommendation> {
+    const [created] = await db
+      .insert(supplementRecommendations)
+      .values(recommendation)
+      .returning();
+    return created;
+  }
+
+  async getSupplementRecommendationsForPatient(patientId: number): Promise<SupplementRecommendation[]> {
+    const recommendations = await db.select().from(supplementRecommendations)
+      .where(and(eq(supplementRecommendations.patientId, patientId), eq(supplementRecommendations.isActive, true)))
+      .orderBy(desc(supplementRecommendations.createdAt));
+    return recommendations;
+  }
+
+  async updateSupplementRecommendation(id: number, updates: Partial<InsertSupplementRecommendation>): Promise<SupplementRecommendation | undefined> {
+    const [updated] = await db
+      .update(supplementRecommendations)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(supplementRecommendations.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deactivateSupplementRecommendation(id: number): Promise<boolean> {
+    const result = await db
+      .update(supplementRecommendations)
+      .set({ isActive: false, updatedAt: new Date() })
+      .where(eq(supplementRecommendations.id, id));
+    return result.rowCount > 0;
+  }
+
+  // Provider Affiliate Settings operations
+  async createProviderAffiliateSettings(settings: InsertProviderAffiliateSettings): Promise<ProviderAffiliateSettings> {
+    const [created] = await db
+      .insert(providerAffiliateSettings)
+      .values(settings)
+      .returning();
+    return created;
+  }
+
+  async getProviderAffiliateSettings(providerId: number): Promise<ProviderAffiliateSettings | undefined> {
+    const [settings] = await db.select().from(providerAffiliateSettings)
+      .where(eq(providerAffiliateSettings.providerId, providerId));
+    return settings;
+  }
+
+  async updateProviderAffiliateSettings(providerId: number, updates: Partial<InsertProviderAffiliateSettings>): Promise<ProviderAffiliateSettings | undefined> {
+    const [updated] = await db
+      .update(providerAffiliateSettings)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(providerAffiliateSettings.providerId, providerId))
+      .returning();
+    return updated;
   }
 }
 
