@@ -233,6 +233,8 @@ export function SupplementRecommendations({ patientId, isProvider }: SupplementR
   console.log("Loading state:", loadingRecommendations);
   console.log("Recommendations data:", recommendationsData);
   console.log("Affiliate settings:", affiliateSettings);
+  console.log("Is provider:", isProvider);
+  console.log("Recommendations array:", recommendations);
 
   // Auto-save affiliate settings if not already configured
   React.useEffect(() => {
@@ -453,6 +455,29 @@ export function SupplementRecommendations({ patientId, isProvider }: SupplementR
         </div>
       </CardHeader>
       <CardContent>
+        {/* Debug panel */}
+        <div className="bg-gray-50 p-3 mb-4 rounded-lg text-xs">
+          <h4 className="font-semibold mb-2">Debug Info:</h4>
+          <div>Patient ID: {patientId}</div>
+          <div>Is Provider: {isProvider.toString()}</div>
+          <div>Loading: {loadingRecommendations.toString()}</div>
+          <div>Recommendations count: {recommendations.length}</div>
+          <div>Has affiliate settings: {affiliateSettings?.settings ? 'Yes' : 'No'}</div>
+          
+          {/* Test link */}
+          <div className="mt-3 p-2 bg-blue-50 rounded">
+            <p className="font-medium mb-1">Test Thorne Link:</p>
+            <a 
+              href="https://www.thorne.com/login" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-blue-600 hover:underline"
+            >
+              Click here to test Thorne login page
+            </a>
+          </div>
+        </div>
+        
         {!isProvider || !affiliateSettings?.settings ? (
           <Alert>
             <AlertDescription>
@@ -510,56 +535,39 @@ export function SupplementRecommendations({ patientId, isProvider }: SupplementR
                       <div><strong>Frequency:</strong> {rec.frequency}</div>
                       <div><strong>Duration:</strong> {rec.duration}</div>
                       <div className="flex flex-col gap-2 mt-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="w-fit"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            console.log('Thorne button clicked, affiliateUrl:', rec.affiliateUrl);
-                            const url = rec.affiliateUrl || 'https://www.thorne.com/login';
-                            console.log('Opening URL:', url);
-                            
-                            // Try multiple methods to open the URL
-                            const newWindow = window.open(url, '_blank', 'noopener,noreferrer');
-                            
-                            if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
-                              console.log('Popup blocked, trying alternative methods');
-                              
-                              // Method 2: Create a link and click it
-                              const link = document.createElement('a');
-                              link.href = url;
-                              link.target = '_blank';
-                              link.rel = 'noopener noreferrer';
-                              document.body.appendChild(link);
-                              link.click();
-                              document.body.removeChild(link);
-                              
-                              console.log('Alternative method attempted');
-                            } else {
-                              console.log('Window opened successfully');
-                            }
-                          }}
-                          title="Opens Thorne login page - log in to your professional account to access products with affiliate tracking"
+                        {/* Simple direct link approach */}
+                        <a
+                          href="https://www.thorne.com/login"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-center text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:ring-4 focus:outline-none focus:ring-blue-300 w-fit"
                         >
-                          <ExternalLink className="h-4 w-4 mr-2" />
+                          <ExternalLink className="h-4 w-4" />
                           Login to Thorne Professional Account
-                        </Button>
+                        </a>
+                        
+                        {/* Test button for debugging */}
+                        <button
+                          onClick={() => {
+                            console.log('Test button clicked');
+                            alert('Button is working. Opening Thorne login page...');
+                            setTimeout(() => {
+                              window.open('https://www.thorne.com/login', '_blank');
+                            }, 100);
+                          }}
+                          className="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded hover:bg-blue-200 w-fit"
+                        >
+                          Test Button (Click to verify)
+                        </button>
+                        
                         <div className="text-xs text-gray-500 space-y-1">
                           <p>💡 After logging in:</p>
                           <p>1. Search for "{rec.productName}"</p>
                           <p>2. Use your professional account's affiliate link</p>
                           <p>3. Access your dispensary tools for patient recommendations</p>
                           <p className="mt-2">
-                            <strong>Direct link:</strong> 
-                            <a 
-                              href={rec.affiliateUrl || 'https://www.thorne.com/login'} 
-                              target="_blank" 
-                              rel="noopener noreferrer"
-                              className="text-blue-600 hover:underline ml-1"
-                            >
-                              thorne.com/login
-                            </a>
+                            <strong>Direct URL:</strong> 
+                            <span className="text-blue-600 font-mono text-xs">https://www.thorne.com/login</span>
                           </p>
                         </div>
                       </div>
