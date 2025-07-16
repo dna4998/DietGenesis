@@ -26,6 +26,8 @@ export const patients = pgTable("patients", {
   subscriptionStatus: text("subscription_status").notNull().default('inactive'), // 'active', 'inactive', 'cancelled'
   subscriptionPlan: text("subscription_plan"), // 'monthly', 'yearly'
   paypalSubscriptionId: text("paypal_subscription_id"),
+  stripeCustomerId: text("stripe_customer_id"),
+  stripeSubscriptionId: text("stripe_subscription_id"),
   subscriptionStartDate: timestamp("subscription_start_date"),
   subscriptionEndDate: timestamp("subscription_end_date"),
   dexcomAccessToken: text("dexcom_access_token"),
@@ -98,6 +100,8 @@ export const updatePatientSchema = createInsertSchema(patients).omit({
   subscriptionStatus: true,
   subscriptionPlan: true,
   paypalSubscriptionId: true,
+  stripeCustomerId: true,
+  stripeSubscriptionId: true,
   subscriptionStartDate: true,
   subscriptionEndDate: true,
 }).partial();

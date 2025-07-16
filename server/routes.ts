@@ -1111,6 +1111,55 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.redirect(`/patient-dashboard?subscription=cancelled`);
   });
 
+  // Handle Stripe subscription success
+  app.get("/api/patients/:id/subscription/stripe/success", async (req, res) => {
+    try {
+      const patientId = parseInt(req.params.id);
+      const { session_id } = req.query;
+
+      if (!session_id) {
+        return res.status(400).json({ message: "Missing session ID" });
+      }
+
+      if (!process.env.STRIPE_SECRET_KEY) {
+        // Demo mode - just redirect to success
+        res.redirect(`/patient-dashboard?subscription=success`);
+        return;
+      }
+
+      // Verify the session with Stripe
+      const Stripe = require('stripe');
+      const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+      
+      const session = await stripe.checkout.sessions.retrieve(session_id as string);
+      
+      if (session.payment_status === 'paid') {
+        // Get subscription details
+        const subscription = await stripe.subscriptions.retrieve(session.subscription as string);
+        
+        // Update patient subscription status
+        const subscriptionEndDate = new Date(subscription.current_period_end * 1000);
+        const plan = session.metadata?.plan || 'monthly';
+
+        await storage.updatePatientSubscription(patientId, {
+          subscriptionStatus: 'active',
+          subscriptionPlan: plan,
+          stripeSubscriptionId: subscription.id,
+          subscriptionStartDate: new Date(subscription.current_period_start * 1000),
+          subscriptionEndDate
+        });
+
+        // Redirect to patient dashboard with success message
+        res.redirect(`/patient-dashboard?subscription=success`);
+      } else {
+        res.redirect(`/patient-dashboard?subscription=failed`);
+      }
+    } catch (error) {
+      console.error("Error handling Stripe subscription success:", error);
+      res.redirect(`/patient-dashboard?subscription=error`);
+    }
+  });
+
   // Create Stripe subscription for patient
   app.post("/api/patients/:id/subscription/stripe", async (req, res) => {
     try {
@@ -1142,17 +1191,65 @@ export async function registerRoutes(app: Express): Promise<Server> {
         res.json({ 
           subscriptionId: 'demo_stripe_subscription_' + Date.now(),
           plan: plan,
+          checkoutUrl: `/patient-dashboard?subscription=success`,
           message: 'Demo Stripe subscription created - redirecting to success page'
         });
         return;
       }
 
-      // Real Stripe implementation would go here
-      // For now, return demo mode response
+      // Real Stripe implementation
+      const Stripe = require('stripe');
+      const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+
+      // Create or retrieve customer
+      let customerId = patient.stripeCustomerId;
+      if (!customerId) {
+        const customer = await stripe.customers.create({
+          email: patient.email,
+          name: patient.name,
+          metadata: {
+            patientId: patientId.toString()
+          }
+        });
+        customerId = customer.id;
+        
+        // Update patient with Stripe customer ID
+        await storage.updatePatient(patientId, { stripeCustomerId: customerId });
+      }
+
+      // Create checkout session
+      const session = await stripe.checkout.sessions.create({
+        customer: customerId,
+        payment_method_types: ['card'],
+        line_items: [
+          {
+            price_data: {
+              currency: 'usd',
+              product_data: {
+                name: 'DNA Diet Club Subscription',
+                description: plan === 'monthly' ? 'Monthly subscription' : 'Yearly subscription (Save 17%)'
+              },
+              unit_amount: plan === 'monthly' ? 499 : 5000, // $4.99 or $50.00
+              recurring: {
+                interval: plan === 'monthly' ? 'month' : 'year'
+              }
+            },
+            quantity: 1
+          }
+        ],
+        mode: 'subscription',
+        success_url: `${req.protocol}://${req.get('host')}/api/patients/${patientId}/subscription/stripe/success?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${req.protocol}://${req.get('host')}/patient-dashboard?subscription=cancelled`,
+        metadata: {
+          patientId: patientId.toString(),
+          plan: plan
+        }
+      });
+
       res.json({ 
-        subscriptionId: 'demo_stripe_subscription_' + Date.now(),
-        plan: plan,
-        message: 'Stripe integration in development'
+        subscriptionId: session.id,
+        checkoutUrl: session.url,
+        plan: plan
       });
     } catch (error: any) {
       console.error('Stripe subscription error:', error);
