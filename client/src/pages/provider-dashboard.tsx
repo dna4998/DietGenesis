@@ -227,23 +227,28 @@ export default function ProviderDashboard() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="mb-8 flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Provider Dashboard</h1>
-          <p className="mt-2 text-gray-600">Manage patient care plans and monitor progress</p>
-        </div>
-        <div className="flex gap-3">
-          <Button 
-            onClick={() => setShowPatientView(!showPatientView)} 
-            variant={showPatientView ? "default" : "outline"}
-            className="flex items-center gap-2"
-          >
-            🎉 {showPatientView ? "Back to Provider" : "View Patient Celebrations"}
-          </Button>
-          <Button onClick={() => setShowAddPatient(true)} className="flex items-center gap-2">
-            <Plus className="h-4 w-4" />
-            Add New Patient
-          </Button>
+      <div className="mb-8">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Provider Dashboard</h1>
+            <p className="mt-2 text-gray-600">Manage patient care plans and monitor progress</p>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+            <Button 
+              onClick={() => setShowPatientView(!showPatientView)} 
+              variant={showPatientView ? "default" : "outline"}
+              className="flex items-center gap-2 w-full sm:w-auto"
+            >
+              🎉 {showPatientView ? "Back to Provider" : "View Patient Celebrations"}
+            </Button>
+            <Button 
+              onClick={() => setShowAddPatient(true)} 
+              className="flex items-center gap-2 bg-medical-blue hover:bg-blue-700 text-white w-full sm:w-auto"
+            >
+              <Plus className="h-4 w-4" />
+              Add New Patient
+            </Button>
+          </div>
         </div>
       </div>
 
