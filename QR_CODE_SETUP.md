@@ -76,8 +76,16 @@ Support: [Your Contact Info]
 3. **Patient consultations** - show QR during appointments
 4. **Follow-up care** - include in patient communication
 
-## Example QR Code Content:
-Your deployed URL will be something like:
-`https://dna-diet-club-username.replit.app/login`
+## Your Actual Deployed URLs:
+
+### Patient Access:
+`https://diet-genesis-dnadietclub4998.replit.app/login`
+
+### Provider Dashboard:
+`https://diet-genesis-dnadietclub4998.replit.app/provider-dashboard`
+
+### Demo Patient Credentials:
+- Email: john.doe@email.com
+- Password: password123
 
 This creates an instant mobile health platform for your patients with professional medical-grade features and HIPAA compliance.
