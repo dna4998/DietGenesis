@@ -215,7 +215,6 @@ export default function Login() {
             Personalized health and wellness platform
           </p>
         </header>
-        </div>
 
         <Card className="w-full max-w-2xl mx-auto">
           <CardHeader>
@@ -602,6 +601,7 @@ export default function Login() {
                 </Form>
               </TabsContent>
             </Tabs>
+            </AccessibleLoading>
           </CardContent>
         </Card>
 
@@ -609,6 +609,6 @@ export default function Login() {
           <p>© 2025 DNA Diet Club. Personalized health management platform.</p>
         </div>
       </div>
-    </div>
+    </main>
   );
 }
