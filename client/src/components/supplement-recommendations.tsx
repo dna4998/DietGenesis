@@ -451,6 +451,21 @@ export function SupplementRecommendations({ patientId, isProvider }: SupplementR
         </div>
       </CardHeader>
       <CardContent>
+        {/* Test Thorne Link - Always Visible */}
+        <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+          <h4 className="font-semibold text-blue-800 mb-2">Thorne Professional Access</h4>
+          <a
+            href="https://www.thorne.com/login"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-center text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:ring-4 focus:outline-none focus:ring-blue-300 w-fit"
+          >
+            <ExternalLink className="h-4 w-4" />
+            Login to Thorne Professional Account
+          </a>
+          <p className="text-sm text-blue-600 mt-2">Access your professional account to manage supplement recommendations</p>
+        </div>
+        
         {!isProvider || !affiliateSettings?.settings ? (
           <Alert>
             <AlertDescription>
