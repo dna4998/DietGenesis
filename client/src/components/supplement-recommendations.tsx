@@ -514,11 +514,30 @@ export function SupplementRecommendations({ patientId, isProvider }: SupplementR
                           variant="outline"
                           size="sm"
                           className="w-fit"
-                          onClick={() => {
-                            if (rec.affiliateUrl) {
-                              window.open(rec.affiliateUrl, '_blank');
+                          onClick={(e) => {
+                            e.preventDefault();
+                            console.log('Thorne button clicked, affiliateUrl:', rec.affiliateUrl);
+                            const url = rec.affiliateUrl || 'https://www.thorne.com/login';
+                            console.log('Opening URL:', url);
+                            
+                            // Try multiple methods to open the URL
+                            const newWindow = window.open(url, '_blank', 'noopener,noreferrer');
+                            
+                            if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
+                              console.log('Popup blocked, trying alternative methods');
+                              
+                              // Method 2: Create a link and click it
+                              const link = document.createElement('a');
+                              link.href = url;
+                              link.target = '_blank';
+                              link.rel = 'noopener noreferrer';
+                              document.body.appendChild(link);
+                              link.click();
+                              document.body.removeChild(link);
+                              
+                              console.log('Alternative method attempted');
                             } else {
-                              window.open('https://www.thorne.com/login', '_blank');
+                              console.log('Window opened successfully');
                             }
                           }}
                           title="Opens Thorne login page - log in to your professional account to access products with affiliate tracking"
@@ -531,6 +550,17 @@ export function SupplementRecommendations({ patientId, isProvider }: SupplementR
                           <p>1. Search for "{rec.productName}"</p>
                           <p>2. Use your professional account's affiliate link</p>
                           <p>3. Access your dispensary tools for patient recommendations</p>
+                          <p className="mt-2">
+                            <strong>Direct link:</strong> 
+                            <a 
+                              href={rec.affiliateUrl || 'https://www.thorne.com/login'} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="text-blue-600 hover:underline ml-1"
+                            >
+                              thorne.com/login
+                            </a>
+                          </p>
                         </div>
                       </div>
                     </div>
