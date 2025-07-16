@@ -9,6 +9,10 @@ import DexcomIntegration from "@/components/dexcom-integration";
 import HealthStatusIndicator from "@/components/health-status-indicator";
 import ThemeDemoControls from "@/components/theme-demo-controls";
 import MobilePreview from "@/components/mobile-optimizations";
+import CelebrationTrigger, { useCelebrationTrigger } from "@/components/celebration-trigger";
+import ProgressCelebration from "@/components/progress-celebration";
+import ProgressCard from "@/components/progress-card";
+import { useProgressCelebration } from "@/hooks/use-progress-celebration";
 
 import { Skeleton } from "@/components/ui/skeleton";
 import type { Patient } from "@shared/schema";
@@ -20,6 +24,10 @@ interface PatientDashboardProps {
 export default function PatientDashboard({ selectedPatientId }: PatientDashboardProps) {
   const { toast } = useToast();
   const [localPatient, setLocalPatient] = useState<Patient | null>(null);
+  
+  // Celebration hooks
+  const { showCelebration, celebrationData, triggerCelebration, closeCelebration } = useProgressCelebration();
+  const { lastTriggeredAchievement, handleCelebrationTriggered, requestNotificationPermission } = useCelebrationTrigger(localPatient || {} as Patient);
 
   // Check for subscription status in URL parameters
   useEffect(() => {
@@ -33,6 +41,14 @@ export default function PatientDashboard({ selectedPatientId }: PatientDashboard
       });
       // Clean up URL parameters
       window.history.replaceState({}, document.title, window.location.pathname);
+      
+      // Request notification permission and trigger celebration
+      requestNotificationPermission();
+      setTimeout(() => {
+        if (localPatient) {
+          triggerCelebration(localPatient);
+        }
+      }, 1000);
     } else if (subscriptionStatus === 'cancelled') {
       toast({
         title: "Subscription Cancelled",
@@ -42,7 +58,12 @@ export default function PatientDashboard({ selectedPatientId }: PatientDashboard
       // Clean up URL parameters
       window.history.replaceState({}, document.title, window.location.pathname);
     }
-  }, [toast]);
+  }, [toast, localPatient, triggerCelebration, requestNotificationPermission]);
+
+  // Request notification permission on first load
+  useEffect(() => {
+    requestNotificationPermission();
+  }, [requestNotificationPermission]);
 
   const { data: patient, isLoading, error } = useQuery<Patient>({
     queryKey: ["/api/patients", selectedPatientId],
@@ -103,7 +124,13 @@ export default function PatientDashboard({ selectedPatientId }: PatientDashboard
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative">
+      {/* Celebration Trigger - Auto-detects achievements */}
+      <CelebrationTrigger 
+        patient={displayPatient} 
+        onCelebrationTriggered={handleCelebrationTriggered}
+      />
+      
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-foreground">Welcome back, {displayPatient.name}</h1>
         <p className="mt-2 text-muted-foreground">Last visit: {displayPatient.lastVisit}</p>
@@ -132,11 +159,12 @@ export default function PatientDashboard({ selectedPatientId }: PatientDashboard
         <HealthTipsWidget patient={displayPatient} />
       </div>
 
-      {/* Simplified Patient View - Demographics and Messages Only */}
+      {/* Enhanced Patient View with Progress Celebrations */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         {/* Patient Demographics and Health Info */}
         <div className="space-y-6">
           <HealthMetricsCard patient={displayPatient} />
+          <ProgressCard patient={displayPatient} />
           <SimpleSubscriptionCard patient={displayPatient} />
         </div>
         
@@ -146,6 +174,14 @@ export default function PatientDashboard({ selectedPatientId }: PatientDashboard
           <DexcomIntegration patientId={displayPatient.id} />
         </div>
       </div>
+
+      {/* Progress Celebration Modal */}
+      {showCelebration && (
+        <ProgressCelebration
+          patient={celebrationData}
+          onClose={closeCelebration}
+        />
+      )}
     </div>
   );
 }
