@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
+import PatientDashboard from "./patient-dashboard";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -44,6 +45,7 @@ export default function ProviderDashboard() {
   const [showAIAnalysis, setShowAIAnalysis] = useState(false);
   const [showHealthPrediction, setShowHealthPrediction] = useState(false);
   const [showAddPatient, setShowAddPatient] = useState(false);
+  const [showPatientView, setShowPatientView] = useState(false);
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
   const { toast } = useToast();
 
@@ -230,10 +232,19 @@ export default function ProviderDashboard() {
           <h1 className="text-3xl font-bold text-gray-900">Provider Dashboard</h1>
           <p className="mt-2 text-gray-600">Manage patient care plans and monitor progress</p>
         </div>
-        <Button onClick={() => setShowAddPatient(true)} className="flex items-center gap-2">
-          <Plus className="h-4 w-4" />
-          Add New Patient
-        </Button>
+        <div className="flex gap-3">
+          <Button 
+            onClick={() => setShowPatientView(!showPatientView)} 
+            variant={showPatientView ? "default" : "outline"}
+            className="flex items-center gap-2"
+          >
+            🎉 {showPatientView ? "Back to Provider" : "View Patient Celebrations"}
+          </Button>
+          <Button onClick={() => setShowAddPatient(true)} className="flex items-center gap-2">
+            <Plus className="h-4 w-4" />
+            Add New Patient
+          </Button>
+        </div>
       </div>
 
       <div className="mb-6">
@@ -261,24 +272,55 @@ export default function ProviderDashboard() {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Button variant="outline" className="h-auto p-4 flex flex-col items-center space-y-2">
+              <Button 
+                variant="outline" 
+                className="h-auto p-4 flex flex-col items-center space-y-2 hover:bg-blue-50 hover:border-blue-300"
+                onClick={() => patients?.[0] && handleAIAnalysisClick(patients[0])}
+                disabled={!patients?.length}
+              >
                 <span className="text-2xl">🩺</span>
                 <span>AI Analysis</span>
+                <span className="text-xs text-gray-500">Lab results & gut biome</span>
               </Button>
-              <Button variant="outline" className="h-auto p-4 flex flex-col items-center space-y-2">
+              <Button 
+                variant="outline" 
+                className="h-auto p-4 flex flex-col items-center space-y-2 hover:bg-green-50 hover:border-green-300"
+                onClick={() => patients?.[0] && handleHealthPredictionClick(patients[0])}
+                disabled={!patients?.length}
+              >
                 <span className="text-2xl">📊</span>
                 <span>Health Predictions</span>
+                <span className="text-xs text-gray-500">Risk assessment & trends</span>
               </Button>
-              <Button variant="outline" className="h-auto p-4 flex flex-col items-center space-y-2">
+              <Button 
+                variant="outline" 
+                className="h-auto p-4 flex flex-col items-center space-y-2 hover:bg-purple-50 hover:border-purple-300"
+                onClick={() => patients?.[0] && handleUpdateClick(patients[0])}
+                disabled={!patients?.length}
+              >
                 <span className="text-2xl">💬</span>
                 <span>Patient Messaging</span>
+                <span className="text-xs text-gray-500">Send plans & documents</span>
               </Button>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {patients && patients.length > 0 ? (
+      {/* Patient Celebration Demo View */}
+      {showPatientView && patients && patients.length > 0 && (
+        <div className="mb-8">
+          <div className="bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-lg p-6 mb-6">
+            <h2 className="text-xl font-semibold text-purple-800 mb-2">🎉 Patient Celebration Demo</h2>
+            <p className="text-purple-600">
+              This shows how patients see their progress with animated celebrations, achievement badges, and milestone notifications.
+            </p>
+          </div>
+          <PatientDashboard selectedPatientId={patients[0].id} />
+        </div>
+      )}
+
+      {!showPatientView && patients && patients.length > 0 ? (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {patients.map(patient => (
             <Suspense key={patient.id} fallback={<Skeleton className="h-96" />}>
