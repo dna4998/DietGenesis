@@ -518,17 +518,20 @@ export function SupplementRecommendations({ patientId, isProvider }: SupplementR
                             if (rec.affiliateUrl) {
                               window.open(rec.affiliateUrl, '_blank');
                             } else {
-                              window.open('https://www.thorne.com', '_blank');
+                              window.open('https://www.thorne.com/login', '_blank');
                             }
                           }}
-                          title="Opens Thorne.com with affiliate tracking - search for the specific product on the site"
+                          title="Opens Thorne login page - log in to your professional account to access products with affiliate tracking"
                         >
                           <ExternalLink className="h-4 w-4 mr-2" />
-                          Order from Thorne (with affiliate tracking)
+                          Login to Thorne Professional Account
                         </Button>
-                        <p className="text-xs text-gray-500">
-                          💡 Tip: Search for "{rec.productName}" on the Thorne website
-                        </p>
+                        <div className="text-xs text-gray-500 space-y-1">
+                          <p>💡 After logging in:</p>
+                          <p>1. Search for "{rec.productName}"</p>
+                          <p>2. Use your professional account's affiliate link</p>
+                          <p>3. Access your dispensary tools for patient recommendations</p>
+                        </div>
                       </div>
                     </div>
                   </CardContent>

@@ -240,17 +240,16 @@ export function generateAffiliateUrl(
   productId: string, 
   affiliateSettings: ProviderAffiliateSettings
 ): string {
-  // Since the exact Thorne affiliate URL format isn't publicly available,
-  // we'll direct users to the main Thorne website with affiliate tracking
-  // The affiliate ID will be embedded in the URL for tracking
+  // Direct users to the Thorne login page where they can access their professional account
+  // and generate proper affiliate links for specific products
   const masterAffiliateId = "PR115297";
   
   // If provider has custom settings, use their affiliate ID; otherwise use the master link
   const affiliateId = affiliateSettings.thorneAffiliateId || masterAffiliateId;
   
-  // For now, direct users to the main Thorne website with affiliate tracking
-  // In a real implementation, the provider would have access to their specific affiliate URLs
-  return `https://www.thorne.com?ref=${affiliateId}`;
+  // Direct users to Thorne login page so they can access their professional account
+  // and find specific products with their affiliate tracking
+  return `https://www.thorne.com/login`;
 }
 
 // AI-powered supplement recommendations
