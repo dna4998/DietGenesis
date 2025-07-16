@@ -18,6 +18,7 @@ import logoRoutes from "./logo-routes";
 import { generateSupplementRecommendations, getThorneProductById, searchThorneProducts, calculateMonthlyCost } from "./thorne-supplements";
 import { insertSupplementRecommendationSchema, insertProviderAffiliateSettingsSchema } from "@shared/schema";
 import { z } from "zod";
+import { sendPatientWelcomeEmail } from "./email-service";
 
 import { AuthenticatedRequest, requireAuth, requireProvider, requireSubscription, createSession, deleteSession, sessionMiddleware } from "./auth";
 
@@ -196,15 +197,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Create new patient
-  app.post("/api/patients", async (req, res) => {
+  app.post("/api/patients", requireAuth, requireProvider, async (req: AuthenticatedRequest, res) => {
     try {
       const validatedData = insertPatientSchema.parse(req.body);
       const patient = await storage.createPatient(validatedData);
-      res.status(201).json(patient);
+      
+      // Get provider information
+      const provider = await storage.getProvider(req.user!.id);
+      if (!provider) {
+        return res.status(400).json({ message: "Provider not found" });
+      }
+
+      // Send welcome email with login credentials
+      const appUrl = process.env.NODE_ENV === 'production' 
+        ? `https://${process.env.REPLIT_SLUG}.${process.env.REPLIT_CLUSTER}.replit.app`
+        : 'http://localhost:5000';
+
+      const emailSent = await sendPatientWelcomeEmail({
+        patientName: patient.name,
+        patientEmail: patient.email,
+        loginEmail: patient.email,
+        password: validatedData.password, // Use the raw password before hashing
+        appUrl: appUrl,
+        providerName: provider.name
+      });
+
+      res.status(201).json({ 
+        ...patient, 
+        emailSent,
+        message: emailSent 
+          ? "Patient created successfully. Welcome email sent." 
+          : "Patient created successfully. Email notification could not be sent."
+      });
     } catch (error) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ message: "Invalid patient data", errors: error.errors });
       }
+      console.error("Error creating patient:", error);
       res.status(500).json({ message: "Failed to create patient" });
     }
   });

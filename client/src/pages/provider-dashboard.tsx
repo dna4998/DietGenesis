@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { queryClient } from "@/lib/queryClient";
@@ -26,6 +27,7 @@ const createPatientSchema = z.object({
   bodyFat: z.number().min(1).max(50),
   bodyFatGoal: z.number().min(1).max(50),
   bloodPressure: z.string().min(1, "Blood pressure is required"),
+  sendWelcomeEmail: z.boolean().default(true),
 });
 
 type CreatePatientForm = z.infer<typeof createPatientSchema>;
@@ -57,6 +59,7 @@ export default function ProviderDashboard() {
       bodyFat: 20,
       bodyFatGoal: 15,
       bloodPressure: "120/80",
+      sendWelcomeEmail: true,
     },
   });
 
@@ -99,32 +102,29 @@ export default function ProviderDashboard() {
   });
 
   const createPatientMutation = useMutation({
-    mutationFn: async (patientData: {
-      name: string;
-      email: string;
-      password: string;
-      age: number;
-      weight: number;
-      weightGoal: number;
-      bodyFat: number;
-      bodyFatGoal: number;
-      bloodPressure: string;
-    }) => {
+    mutationFn: async (patientData: CreatePatientForm) => {
       const response = await apiRequest("POST", "/api/patients", patientData);
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (responseData: any) => {
       queryClient.invalidateQueries({ queryKey: ["/api/patients"] });
       setShowAddPatient(false);
+      form.reset();
+      
+      // Show success message with email status
+      const emailStatus = responseData.emailSent 
+        ? "Welcome email with login credentials sent successfully!" 
+        : "Patient created but welcome email could not be sent.";
+      
       toast({
-        title: "Success",
-        description: "New patient added successfully",
+        title: "Patient Added Successfully",
+        description: `${responseData.name} has been added to your patient list. ${emailStatus}`,
       });
     },
-    onError: () => {
+    onError: (error: any) => {
       toast({
-        title: "Error",
-        description: "Failed to add patient. Please try again.",
+        title: "Error Creating Patient",
+        description: error.message || "Failed to add patient. Please try again.",
         variant: "destructive",
       });
     },
@@ -497,6 +497,29 @@ export default function ProviderDashboard() {
                       <Input placeholder="120/80" {...field} />
                     </FormControl>
                     <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="sendWelcomeEmail"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel>
+                        Send welcome email with login credentials
+                      </FormLabel>
+                      <p className="text-sm text-muted-foreground">
+                        Automatically email the patient their login details and app access link
+                      </p>
+                    </div>
                   </FormItem>
                 )}
               />
