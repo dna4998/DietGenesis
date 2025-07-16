@@ -230,11 +230,7 @@ export function SupplementRecommendations({ patientId, isProvider }: SupplementR
     }
   };
 
-  console.log("Loading state:", loadingRecommendations);
-  console.log("Recommendations data:", recommendationsData);
-  console.log("Affiliate settings:", affiliateSettings);
-  console.log("Is provider:", isProvider);
-  console.log("Recommendations array:", recommendations);
+
 
   // Auto-save affiliate settings if not already configured
   React.useEffect(() => {
@@ -455,29 +451,6 @@ export function SupplementRecommendations({ patientId, isProvider }: SupplementR
         </div>
       </CardHeader>
       <CardContent>
-        {/* Debug panel */}
-        <div className="bg-gray-50 p-3 mb-4 rounded-lg text-xs">
-          <h4 className="font-semibold mb-2">Debug Info:</h4>
-          <div>Patient ID: {patientId}</div>
-          <div>Is Provider: {isProvider.toString()}</div>
-          <div>Loading: {loadingRecommendations.toString()}</div>
-          <div>Recommendations count: {recommendations.length}</div>
-          <div>Has affiliate settings: {affiliateSettings?.settings ? 'Yes' : 'No'}</div>
-          
-          {/* Test link */}
-          <div className="mt-3 p-2 bg-blue-50 rounded">
-            <p className="font-medium mb-1">Test Thorne Link:</p>
-            <a 
-              href="https://www.thorne.com/login" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="text-blue-600 hover:underline"
-            >
-              Click here to test Thorne login page
-            </a>
-          </div>
-        </div>
-        
         {!isProvider || !affiliateSettings?.settings ? (
           <Alert>
             <AlertDescription>
@@ -535,7 +508,7 @@ export function SupplementRecommendations({ patientId, isProvider }: SupplementR
                       <div><strong>Frequency:</strong> {rec.frequency}</div>
                       <div><strong>Duration:</strong> {rec.duration}</div>
                       <div className="flex flex-col gap-2 mt-2">
-                        {/* Simple direct link approach */}
+                        {/* Working Thorne login link */}
                         <a
                           href="https://www.thorne.com/login"
                           target="_blank"
@@ -545,20 +518,6 @@ export function SupplementRecommendations({ patientId, isProvider }: SupplementR
                           <ExternalLink className="h-4 w-4" />
                           Login to Thorne Professional Account
                         </a>
-                        
-                        {/* Test button for debugging */}
-                        <button
-                          onClick={() => {
-                            console.log('Test button clicked');
-                            alert('Button is working. Opening Thorne login page...');
-                            setTimeout(() => {
-                              window.open('https://www.thorne.com/login', '_blank');
-                            }, 100);
-                          }}
-                          className="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded hover:bg-blue-200 w-fit"
-                        >
-                          Test Button (Click to verify)
-                        </button>
                         
                         <div className="text-xs text-gray-500 space-y-1">
                           <p>💡 After logging in:</p>
