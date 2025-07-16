@@ -3,10 +3,32 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { queryClient } from "@/lib/queryClient";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { Plus } from "lucide-react";
 import type { Patient } from "@shared/schema";
+
+// Form schema for creating new patients
+const createPatientSchema = z.object({
+  name: z.string().min(1, "Name is required"),
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+  age: z.number().min(1).max(120),
+  weight: z.number().min(1),
+  weightGoal: z.number().min(1),
+  bodyFat: z.number().min(1).max(50),
+  bodyFatGoal: z.number().min(1).max(50),
+  bloodPressure: z.string().min(1, "Blood pressure is required"),
+});
+
+type CreatePatientForm = z.infer<typeof createPatientSchema>;
 
 // Lazy load components to prevent initial loading issues
 import { lazy, Suspense } from "react";
@@ -19,8 +41,24 @@ export default function ProviderDashboard() {
   const [showPlanForm, setShowPlanForm] = useState(false);
   const [showAIAnalysis, setShowAIAnalysis] = useState(false);
   const [showHealthPrediction, setShowHealthPrediction] = useState(false);
+  const [showAddPatient, setShowAddPatient] = useState(false);
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
   const { toast } = useToast();
+
+  const form = useForm<CreatePatientForm>({
+    resolver: zodResolver(createPatientSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      password: "",
+      age: 30,
+      weight: 150,
+      weightGoal: 140,
+      bodyFat: 20,
+      bodyFatGoal: 15,
+      bloodPressure: "120/80",
+    },
+  });
 
   const { data: patients, isLoading, error } = useQuery<Patient[]>({
     queryKey: ["/api/patients"],
@@ -55,6 +93,38 @@ export default function ProviderDashboard() {
       toast({
         title: "Error",
         description: "Failed to update patient plans. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const createPatientMutation = useMutation({
+    mutationFn: async (patientData: {
+      name: string;
+      email: string;
+      password: string;
+      age: number;
+      weight: number;
+      weightGoal: number;
+      bodyFat: number;
+      bodyFatGoal: number;
+      bloodPressure: string;
+    }) => {
+      const response = await apiRequest("POST", "/api/patients", patientData);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/patients"] });
+      setShowAddPatient(false);
+      toast({
+        title: "Success",
+        description: "New patient added successfully",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to add patient. Please try again.",
         variant: "destructive",
       });
     },
@@ -107,6 +177,15 @@ export default function ProviderDashboard() {
     setSelectedPatient(null);
   };
 
+  const handleAddPatient = (data: CreatePatientForm) => {
+    createPatientMutation.mutate(data);
+  };
+
+  const handleAddPatientCancel = () => {
+    setShowAddPatient(false);
+    form.reset();
+  };
+
   if (isLoading) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -146,9 +225,15 @@ export default function ProviderDashboard() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Provider Dashboard</h1>
-        <p className="mt-2 text-gray-600">Manage patient care plans and monitor progress</p>
+      <div className="mb-8 flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Provider Dashboard</h1>
+          <p className="mt-2 text-gray-600">Manage patient care plans and monitor progress</p>
+        </div>
+        <Button onClick={() => setShowAddPatient(true)} className="flex items-center gap-2">
+          <Plus className="h-4 w-4" />
+          Add New Patient
+        </Button>
       </div>
 
       <div className="mb-6">
@@ -254,6 +339,180 @@ export default function ProviderDashboard() {
           </div>
         </div>
       )}
+
+      {/* Add Patient Dialog */}
+      <Dialog open={showAddPatient} onOpenChange={setShowAddPatient}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Add New Patient</DialogTitle>
+          </DialogHeader>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(handleAddPatient)} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Full Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="John Doe" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email</FormLabel>
+                      <FormControl>
+                        <Input placeholder="john@example.com" type="email" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Password</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Password" type="password" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="age"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Age</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="number" 
+                          placeholder="30" 
+                          {...field}
+                          onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="weight"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Weight (lbs)</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="number" 
+                          placeholder="150" 
+                          {...field}
+                          onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="weightGoal"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Weight Goal (lbs)</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="number" 
+                          placeholder="140" 
+                          {...field}
+                          onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="bodyFat"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Body Fat (%)</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="number" 
+                          placeholder="20" 
+                          {...field}
+                          onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="bodyFatGoal"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Body Fat Goal (%)</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="number" 
+                          placeholder="15" 
+                          {...field}
+                          onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <FormField
+                control={form.control}
+                name="bloodPressure"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Blood Pressure</FormLabel>
+                    <FormControl>
+                      <Input placeholder="120/80" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <div className="flex justify-end space-x-2 pt-4">
+                <Button type="button" variant="outline" onClick={handleAddPatientCancel}>
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={createPatientMutation.isPending}>
+                  {createPatientMutation.isPending ? "Adding..." : "Add Patient"}
+                </Button>
+              </div>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
