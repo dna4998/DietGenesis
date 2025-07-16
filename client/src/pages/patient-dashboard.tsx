@@ -12,6 +12,7 @@ import MobilePreview from "@/components/mobile-optimizations";
 import CelebrationTrigger, { useCelebrationTrigger } from "@/components/celebration-trigger";
 import ProgressCelebration from "@/components/progress-celebration";
 import ProgressCard from "@/components/progress-card";
+import WeightProgressChart from "@/components/weight-progress-chart";
 import { useProgressCelebration } from "@/hooks/use-progress-celebration";
 
 import { Skeleton } from "@/components/ui/skeleton";
@@ -173,6 +174,11 @@ export default function PatientDashboard({ selectedPatientId }: PatientDashboard
           <MessagingCard patient={displayPatient} />
           <DexcomIntegration patientId={displayPatient.id} />
         </div>
+      </div>
+
+      {/* Weight Progress Visualization */}
+      <div className="mb-8">
+        <WeightProgressChart patient={displayPatient} />
       </div>
 
       {/* Progress Celebration Modal */}
