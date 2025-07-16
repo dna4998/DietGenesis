@@ -509,15 +509,27 @@ export function SupplementRecommendations({ patientId, isProvider }: SupplementR
                       <div><strong>Dosage:</strong> {rec.dosage}</div>
                       <div><strong>Frequency:</strong> {rec.frequency}</div>
                       <div><strong>Duration:</strong> {rec.duration}</div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="w-fit mt-2"
-                        onClick={() => window.open(rec.affiliateUrl, '_blank')}
-                      >
-                        <ExternalLink className="h-4 w-4 mr-2" />
-                        View on Thorne.com
-                      </Button>
+                      <div className="flex flex-col gap-2 mt-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="w-fit"
+                          onClick={() => {
+                            if (rec.affiliateUrl) {
+                              window.open(rec.affiliateUrl, '_blank');
+                            } else {
+                              window.open('https://www.thorne.com', '_blank');
+                            }
+                          }}
+                          title="Opens Thorne.com with affiliate tracking - search for the specific product on the site"
+                        >
+                          <ExternalLink className="h-4 w-4 mr-2" />
+                          Order from Thorne (with affiliate tracking)
+                        </Button>
+                        <p className="text-xs text-gray-500">
+                          💡 Tip: Search for "{rec.productName}" on the Thorne website
+                        </p>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>

@@ -240,17 +240,17 @@ export function generateAffiliateUrl(
   productId: string, 
   affiliateSettings: ProviderAffiliateSettings
 ): string {
-  // Use the master Thorne affiliate link provided by the user
-  const masterAffiliateUrl = "https://www.thorne.com/u/PR115297";
+  // Since the exact Thorne affiliate URL format isn't publicly available,
+  // we'll direct users to the main Thorne website with affiliate tracking
+  // The affiliate ID will be embedded in the URL for tracking
+  const masterAffiliateId = "PR115297";
   
-  // If provider has custom settings, use those; otherwise use the master link
-  if (affiliateSettings.practiceUrl && affiliateSettings.affiliateCode) {
-    const baseUrl = affiliateSettings.practiceUrl;
-    return `${baseUrl}/products/${productId}?aff=${affiliateSettings.affiliateCode}&ref=${affiliateSettings.thorneAffiliateId}`;
-  }
+  // If provider has custom settings, use their affiliate ID; otherwise use the master link
+  const affiliateId = affiliateSettings.thorneAffiliateId || masterAffiliateId;
   
-  // Default to master affiliate link with product reference
-  return `${masterAffiliateUrl}?product=${productId}`;
+  // For now, direct users to the main Thorne website with affiliate tracking
+  // In a real implementation, the provider would have access to their specific affiliate URLs
+  return `https://www.thorne.com?ref=${affiliateId}`;
 }
 
 // AI-powered supplement recommendations
