@@ -27,14 +27,14 @@ export default function SupplementsCard({ patient }: SupplementsCardProps) {
               const colorScheme = colors[idx % colors.length];
               
               return (
-                <div key={idx} className={`flex items-center justify-between p-3 ${colorScheme.bg} border ${colorScheme.border} rounded-lg transform hover:scale-105 transition-all shadow-sm`}>
+                <div key={idx} className={`flex items-center justify-between p-3 ${colorScheme.bg} border ${colorScheme.border} rounded-lg transform hover:scale-105 transition-all shadow-lg hover:shadow-xl`}>
                   <div>
                     <div className={`font-medium ${colorScheme.text}`}>{supplement}</div>
                     <div className={`text-sm ${colorScheme.subtext}`}>Take as directed on label</div>
                   </div>
                   <Button
                     size="sm"
-                    className={`${colorScheme.button} text-white shadow-md`}
+                    className={`${colorScheme.button} text-white shadow-lg hover:shadow-xl`}
                     onClick={() => window.open(`https://www.thorne.com/u/PR115297`, '_blank')}
                   >
                     <span className="flex items-center gap-1">

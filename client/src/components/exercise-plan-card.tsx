@@ -25,9 +25,9 @@ export default function ExercisePlanCard({ patient }: ExercisePlanCardProps) {
           <div className="grid gap-3">
             <button 
               onClick={() => window.open("https://apps.apple.com/us/app/fiton-fitness-workout-plans/id1442473191", "_blank")}
-              className="flex items-center p-3 bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 rounded-lg hover:from-blue-100 hover:to-blue-200 transition-all cursor-pointer transform hover:scale-105"
+              className="flex items-center p-3 bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 rounded-lg hover:from-blue-100 hover:to-blue-200 transition-all cursor-pointer transform hover:scale-105 shadow-lg hover:shadow-xl"
             >
-              <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg flex items-center justify-center mr-3 shadow-md">
+              <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg flex items-center justify-center mr-3 shadow-lg">
                 <Play className="text-white w-4 h-4" />
               </div>
               <div className="flex-1">
@@ -38,9 +38,9 @@ export default function ExercisePlanCard({ patient }: ExercisePlanCardProps) {
             </button>
             <button 
               onClick={() => window.open("https://apps.apple.com/us/app/nike-training-club/id301521403", "_blank")}
-              className="flex items-center p-3 bg-gradient-to-r from-green-50 to-green-100 border border-green-200 rounded-lg hover:from-green-100 hover:to-green-200 transition-all cursor-pointer transform hover:scale-105"
+              className="flex items-center p-3 bg-gradient-to-r from-green-50 to-green-100 border border-green-200 rounded-lg hover:from-green-100 hover:to-green-200 transition-all cursor-pointer transform hover:scale-105 shadow-lg hover:shadow-xl"
             >
-              <div className="w-10 h-10 bg-gradient-to-r from-green-500 to-green-600 rounded-lg flex items-center justify-center mr-3 shadow-md">
+              <div className="w-10 h-10 bg-gradient-to-r from-green-500 to-green-600 rounded-lg flex items-center justify-center mr-3 shadow-lg">
                 <Play className="text-white w-4 h-4" />
               </div>
               <div className="flex-1">
@@ -51,9 +51,9 @@ export default function ExercisePlanCard({ patient }: ExercisePlanCardProps) {
             </button>
             <button 
               onClick={() => window.open("https://play.google.com/store/apps/details?id=com.jnj.sevenminuteworkout", "_blank")}
-              className="flex items-center p-3 bg-gradient-to-r from-purple-50 to-purple-100 border border-purple-200 rounded-lg hover:from-purple-100 hover:to-purple-200 transition-all cursor-pointer transform hover:scale-105"
+              className="flex items-center p-3 bg-gradient-to-r from-purple-50 to-purple-100 border border-purple-200 rounded-lg hover:from-purple-100 hover:to-purple-200 transition-all cursor-pointer transform hover:scale-105 shadow-lg hover:shadow-xl"
             >
-              <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg flex items-center justify-center mr-3 shadow-md">
+              <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg flex items-center justify-center mr-3 shadow-lg">
                 <Play className="text-white w-4 h-4" />
               </div>
               <div className="flex-1">
