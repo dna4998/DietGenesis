@@ -114,6 +114,8 @@ Preferred communication style: Simple, everyday language.
 ✓ **Dual Payment System** - Both PayPal and Stripe payment options for maximum patient accessibility and payment preference flexibility
 ✓ **Professional Payment Flow** - Secure checkout pages, automatic subscription activation, email receipts, and real-time payment tracking
 ✓ **Payment Dashboard Integration** - Stripe customer IDs and subscription tracking integrated with patient database for seamless billing management
+✓ **Fixed Exercise Video Buttons** - Updated sample patient exercise buttons to connect to FitOn, Nike Training Club, and J&J 7 Minute Workout apps
+✓ **Working Supplement Buttons** - Thorne supplement buttons properly connect to professional login and affiliate tracking system
 
 ## System Architecture
 

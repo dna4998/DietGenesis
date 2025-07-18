@@ -23,36 +23,45 @@ export default function ExercisePlanCard({ patient }: ExercisePlanCardProps) {
         <div className="space-y-3">
           <h4 className="font-medium text-gray-900">Recommended Videos:</h4>
           <div className="grid gap-3">
-            <a 
-              href="https://www.youtube.com/watch?v=R2_Mn-qRKjA" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="flex items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+            <button 
+              onClick={() => window.open("https://apps.apple.com/us/app/fiton-fitness-workout-plans/id1442473191", "_blank")}
+              className="flex items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
             >
-              <div className="w-10 h-10 bg-red-500 rounded-lg flex items-center justify-center mr-3">
+              <div className="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center mr-3">
                 <Play className="text-white w-4 h-4" />
               </div>
               <div className="flex-1">
                 <div className="font-medium text-gray-900">Full Body Strength Training</div>
-                <div className="text-sm text-gray-600">Beginner-friendly workout • 25 minutes</div>
+                <div className="text-sm text-gray-600">FitOn App • Free workouts • 25 minutes</div>
               </div>
               <ExternalLink className="w-4 h-4 text-gray-400" />
-            </a>
-            <a 
-              href="https://www.youtube.com/watch?v=ml6cT4AZdqI" 
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+            </button>
+            <button 
+              onClick={() => window.open("https://apps.apple.com/us/app/nike-training-club/id301521403", "_blank")}
+              className="flex items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
             >
-              <div className="w-10 h-10 bg-red-500 rounded-lg flex items-center justify-center mr-3">
+              <div className="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center mr-3">
                 <Play className="text-white w-4 h-4" />
               </div>
               <div className="flex-1">
                 <div className="font-medium text-gray-900">HIIT Cardio Workout</div>
-                <div className="text-sm text-gray-600">High-intensity training • 20 minutes</div>
+                <div className="text-sm text-gray-600">Nike Training Club • Free • 20 minutes</div>
               </div>
               <ExternalLink className="w-4 h-4 text-gray-400" />
-            </a>
+            </button>
+            <button 
+              onClick={() => window.open("https://play.google.com/store/apps/details?id=com.jnj.sevenminuteworkout", "_blank")}
+              className="flex items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
+            >
+              <div className="w-10 h-10 bg-purple-500 rounded-lg flex items-center justify-center mr-3">
+                <Play className="text-white w-4 h-4" />
+              </div>
+              <div className="flex-1">
+                <div className="font-medium text-gray-900">7-Minute Scientific Workout</div>
+                <div className="text-sm text-gray-600">J&J Official App • Free • 7 minutes</div>
+              </div>
+              <ExternalLink className="w-4 h-4 text-gray-400" />
+            </button>
           </div>
         </div>
       </CardContent>
