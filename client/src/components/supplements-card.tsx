@@ -25,17 +25,12 @@ export default function SupplementsCard({ patient }: SupplementsCardProps) {
                 <Button
                   size="sm"
                   className="bg-purple-600 text-white hover:bg-purple-700"
-                  asChild
+                  onClick={() => window.open(`https://www.thorne.com/u/PR115297`, '_blank')}
                 >
-                  <a 
-                    href={`https://www.thorne.com/search?q=${encodeURIComponent(supplement)}`} 
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-1"
-                  >
+                  <span className="flex items-center gap-1">
                     Order
                     <ExternalLink className="w-3 h-3" />
-                  </a>
+                  </span>
                 </Button>
               </div>
             ))
