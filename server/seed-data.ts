@@ -25,7 +25,15 @@ export async function seedDatabase() {
         weightGoal: "170.00",
         bodyFat: "22.0",
         bodyFatGoal: "15.0",
-        bloodPressure: "125/80"
+        bloodPressure: "125/80",
+        insulinResistance: true,
+        lastVisit: "2024-01-15",
+        dietPlan: "Mediterranean diet with intermittent fasting",
+        exercisePlan: "3x strength training, 2x cardio per week",
+        supplements: ["Omega-3", "Vitamin D3", "Magnesium"],
+        adherence: 85,
+        weightLoss: "8.5",
+        bloodSugar: "Borderline"
       },
       {
         name: "Sarah Wilson",
@@ -36,7 +44,15 @@ export async function seedDatabase() {
         weightGoal: "135.00",
         bodyFat: "25.0",
         bodyFatGoal: "20.0",
-        bloodPressure: "118/75"
+        bloodPressure: "118/75",
+        insulinResistance: false,
+        lastVisit: "2024-01-10",
+        dietPlan: "Low-carb ketogenic diet",
+        exercisePlan: "HIIT workouts 4x per week",
+        supplements: ["Berberine", "Chromium", "Alpha-lipoic acid"],
+        adherence: 92,
+        weightLoss: "3.2",
+        bloodSugar: "Normal"
       }
     ];
 

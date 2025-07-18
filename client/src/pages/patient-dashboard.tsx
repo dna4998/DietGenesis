@@ -13,6 +13,8 @@ import CelebrationTrigger, { useCelebrationTrigger } from "@/components/celebrat
 import ProgressCelebration from "@/components/progress-celebration";
 import ProgressCard from "@/components/progress-card";
 import WeightProgressChart from "@/components/weight-progress-chart";
+import ExercisePlanCard from "@/components/exercise-plan-card";
+import SupplementsCard from "@/components/supplements-card";
 import { useProgressCelebration } from "@/hooks/use-progress-celebration";
 
 import { Skeleton } from "@/components/ui/skeleton";
@@ -174,6 +176,12 @@ export default function PatientDashboard({ selectedPatientId }: PatientDashboard
           <MessagingCard patient={displayPatient} />
           <DexcomIntegration patientId={displayPatient.id} />
         </div>
+      </div>
+
+      {/* Exercise and Supplement Cards */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <ExercisePlanCard patient={displayPatient} />
+        <SupplementsCard patient={displayPatient} />
       </div>
 
       {/* Weight Progress Visualization */}
