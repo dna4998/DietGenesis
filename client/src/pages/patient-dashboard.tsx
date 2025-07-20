@@ -7,8 +7,8 @@ import SimpleSubscriptionCard from "@/components/simple-subscription-card";
 import HealthTipsWidget from "@/components/health-tips-widget";
 import DexcomIntegration from "@/components/dexcom-integration";
 import HealthStatusIndicator from "@/components/health-status-indicator";
-import ThemeDemoControls from "@/components/theme-demo-controls";
-import MobilePreview from "@/components/mobile-optimizations";
+
+
 import CelebrationTrigger, { useCelebrationTrigger } from "@/components/celebration-trigger";
 import ProgressCelebration from "@/components/progress-celebration";
 import ProgressCard from "@/components/progress-card";
@@ -141,16 +141,10 @@ export default function PatientDashboard({ selectedPatientId }: PatientDashboard
 
 
 
-      {/* Mobile Preview - shows how the app looks on mobile devices */}
-      <div className="mb-6 hidden md:block">
-        <MobilePreview patient={displayPatient} />
-      </div>
 
-      {/* Theme Demo Controls - allows users to see adaptive theming in action */}
-      <ThemeDemoControls 
-        patient={displayPatient} 
-        onPatientUpdate={(updates) => setLocalPatient(prev => prev ? { ...prev, ...updates } : null)}
-      />
+
+
+
 
       {/* Health Status Overview - Shows adaptive theme */}
       <div className="mb-6">
@@ -190,7 +184,7 @@ export default function PatientDashboard({ selectedPatientId }: PatientDashboard
       </div>
 
       {/* Progress Celebration Modal */}
-      {showCelebration && (
+      {showCelebration && celebrationData && (
         <ProgressCelebration
           patient={celebrationData}
           onClose={closeCelebration}
