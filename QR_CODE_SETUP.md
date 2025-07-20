@@ -79,10 +79,12 @@ Support: [Your Contact Info]
 ## Your Actual Deployed URLs:
 
 ### Patient Access:
-`https://diet-genesis-dnadietclub4998.replit.app/login`
+`https://[YOUR-REPLIT-URL]/login`
+(Replace [YOUR-REPLIT-URL] with your actual deployed Replit URL)
 
 ### Provider Dashboard:
-`https://diet-genesis-dnadietclub4998.replit.app/provider-dashboard`
+`https://[YOUR-REPLIT-URL]/provider-dashboard`
+(Replace [YOUR-REPLIT-URL] with your actual deployed Replit URL)
 
 ### Demo Patient Credentials:
 - Email: john.doe@email.com
