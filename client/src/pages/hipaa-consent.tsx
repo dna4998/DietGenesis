@@ -42,54 +42,70 @@ export default function HipaaConsent({ patientId, onComplete }: HipaaConsentProp
   const [currentSection, setCurrentSection] = useState(0);
   const [signatureValue, setSignatureValue] = useState("");
 
-  const form = useForm({
-    resolver: zodResolver(hipaaConsentSchema),
-    mode: "onChange",
-    defaultValues: {
-      patientName: "",
-      dateOfBirth: "",
-      consentToUse: false,
-      consentToDisclosure: false,
-      consentToTreatment: false,
-      consentToElectronicRecords: false,
-      consentToSecureMessaging: false,
-      rightsAcknowledgment: false,
-      privacyPolicyRead: false,
-      signature: "",
-      signatureDate: new Date().toISOString().split('T')[0],
-      witnessName: "",
-      additionalComments: "",
-    },
+  const [formData, setFormData] = useState({
+    patientName: "",
+    dateOfBirth: "",
+    consentToUse: false,
+    consentToDisclosure: false,
+    consentToTreatment: false,
+    consentToElectronicRecords: false,
+    consentToSecureMessaging: false,
+    rightsAcknowledgment: false,
+    privacyPolicyRead: false,
+    signature: "",
+    signatureDate: new Date().toISOString().split('T')[0],
+    witnessName: "",
+    additionalComments: "",
   });
 
-  // Debug form state
-  const watchedSignature = form.watch("signature");
-  console.log("Current signature value:", watchedSignature);
-  
-  useEffect(() => {
-    console.log("HIPAA form mounted, current section:", currentSection);
-  }, [currentSection]);
+  const updateFormData = (field: string, value: any) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+    console.log(`Updated ${field}:`, value);
+  };
 
-  const submitConsentMutation = useMutation({
-    mutationFn: async (data: z.infer<typeof hipaaConsentSchema>) => {
-      const response = await apiRequest("POST", `/api/patients/${patientId}/hipaa-consent`, data);
-      return response.json();
-    },
-    onSuccess: () => {
+  const handleSubmit = async () => {
+    console.log("Submitting form data:", formData);
+    
+    // Basic validation
+    if (!formData.signature || formData.signature.length < 2) {
+      toast({
+        title: "Signature Required",
+        description: "Please enter your full legal name as your electronic signature.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Check required checkboxes
+    const requiredFields = ['consentToUse', 'consentToDisclosure', 'consentToTreatment', 'consentToElectronicRecords', 'consentToSecureMessaging', 'rightsAcknowledgment', 'privacyPolicyRead'];
+    const missingFields = requiredFields.filter(field => !formData[field as keyof typeof formData]);
+    
+    if (missingFields.length > 0) {
+      toast({
+        title: "Required Consents Missing",
+        description: "Please check all required consent boxes to continue.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const response = await apiRequest("POST", `/api/patients/${patientId}/hipaa-consent`, formData);
+      await response.json();
+      
       toast({
         title: "HIPAA Consent Submitted",
         description: "Your HIPAA consent form has been successfully submitted and recorded.",
       });
       onComplete();
-    },
-    onError: (error: any) => {
+    } catch (error: any) {
       toast({
         title: "Submission Failed",
         description: error.message || "Failed to submit HIPAA consent form",
         variant: "destructive",
       });
-    },
-  });
+    }
+  };
 
   const sections = [
     {
@@ -97,32 +113,25 @@ export default function HipaaConsent({ patientId, onComplete }: HipaaConsentProp
       icon: <UserCheck className="w-5 h-5" />,
       content: (
         <div className="space-y-4">
-          <FormField
-            control={form.control}
-            name="patientName"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Full Legal Name</FormLabel>
-                <FormControl>
-                  <Input placeholder="Enter your full legal name" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="dateOfBirth"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Date of Birth</FormLabel>
-                <FormControl>
-                  <Input type="date" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Full Legal Name</label>
+            <input
+              type="text"
+              value={formData.patientName}
+              onChange={(e) => updateFormData('patientName', e.target.value)}
+              placeholder="Enter your full legal name"
+              className="w-full p-3 border border-gray-300 rounded-md focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Date of Birth</label>
+            <input
+              type="date"
+              value={formData.dateOfBirth}
+              onChange={(e) => updateFormData('dateOfBirth', e.target.value)}
+              className="w-full p-3 border border-gray-300 rounded-md focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+            />
+          </div>
         </div>
       )
     },
@@ -142,25 +151,18 @@ export default function HipaaConsent({ patientId, onComplete }: HipaaConsentProp
               <li>• Right to obtain a paper copy of this notice</li>
             </ul>
           </div>
-          <FormField
-            control={form.control}
-            name="rightsAcknowledgment"
-            render={({ field }) => (
-              <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                <FormControl>
-                  <Checkbox
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                  />
-                </FormControl>
-                <div className="space-y-1 leading-none">
-                  <FormLabel className="font-medium">
-                    I acknowledge that I have been provided with a copy of the Notice of Privacy Practices and understand my rights regarding my health information.
-                  </FormLabel>
-                </div>
-              </FormItem>
-            )}
-          />
+          <div className="flex items-start space-x-3">
+            <input
+              type="checkbox"
+              id="rightsAcknowledgment"
+              checked={formData.rightsAcknowledgment}
+              onChange={(e) => updateFormData('rightsAcknowledgment', e.target.checked)}
+              className="mt-1 h-4 w-4 text-blue-600 border-2 border-gray-300 rounded focus:ring-blue-500"
+            />
+            <label htmlFor="rightsAcknowledgment" className="text-sm font-medium text-gray-700 cursor-pointer">
+              I acknowledge that I have been provided with a copy of the Notice of Privacy Practices and understand my rights regarding my health information.
+            </label>
+          </div>
         </div>
       )
     },
@@ -176,63 +178,44 @@ export default function HipaaConsent({ patientId, onComplete }: HipaaConsentProp
               meal planning, exercise recommendations, and health monitoring through secure digital platforms.
             </p>
           </div>
-          <FormField
-            control={form.control}
-            name="consentToTreatment"
-            render={({ field }) => (
-              <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                <FormControl>
-                  <Checkbox
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                  />
-                </FormControl>
-                <div className="space-y-1 leading-none">
-                  <FormLabel className="font-medium">
-                    I consent to treatment and services provided by DNA Diet Club and its healthcare providers.
-                  </FormLabel>
-                </div>
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="consentToUse"
-            render={({ field }) => (
-              <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                <FormControl>
-                  <Checkbox
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                  />
-                </FormControl>
-                <div className="space-y-1 leading-none">
-                  <FormLabel className="font-medium">
-                    I consent to the use of my health information for treatment, payment, and healthcare operations.
-                  </FormLabel>
-                </div>
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="consentToDisclosure"
-            render={({ field }) => (
-              <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                <FormControl>
-                  <Checkbox
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                  />
-                </FormControl>
-                <div className="space-y-1 leading-none">
-                  <FormLabel className="font-medium">
-                    I consent to the disclosure of my health information to authorized healthcare providers and business associates as necessary for my care.
-                  </FormLabel>
-                </div>
-              </FormItem>
-            )}
-          />
+          <div className="flex items-start space-x-3">
+            <input
+              type="checkbox"
+              id="consentToTreatment"
+              checked={formData.consentToTreatment}
+              onChange={(e) => updateFormData('consentToTreatment', e.target.checked)}
+              className="mt-1 h-4 w-4 text-blue-600 border-2 border-gray-300 rounded focus:ring-blue-500"
+            />
+            <label htmlFor="consentToTreatment" className="text-sm font-medium text-gray-700 cursor-pointer">
+              I consent to treatment and services provided by DNA Diet Club and its healthcare providers.
+            </label>
+          </div>
+          
+          <div className="flex items-start space-x-3">
+            <input
+              type="checkbox"
+              id="consentToUse"
+              checked={formData.consentToUse}
+              onChange={(e) => updateFormData('consentToUse', e.target.checked)}
+              className="mt-1 h-4 w-4 text-blue-600 border-2 border-gray-300 rounded focus:ring-blue-500"
+            />
+            <label htmlFor="consentToUse" className="text-sm font-medium text-gray-700 cursor-pointer">
+              I consent to the use of my health information for treatment, payment, and healthcare operations.
+            </label>
+          </div>
+          
+          <div className="flex items-start space-x-3">
+            <input
+              type="checkbox"
+              id="consentToDisclosure"
+              checked={formData.consentToDisclosure}
+              onChange={(e) => updateFormData('consentToDisclosure', e.target.checked)}
+              className="mt-1 h-4 w-4 text-blue-600 border-2 border-gray-300 rounded focus:ring-blue-500"
+            />
+            <label htmlFor="consentToDisclosure" className="text-sm font-medium text-gray-700 cursor-pointer">
+              I consent to the disclosure of my health information to authorized healthcare providers and business associates as necessary for my care.
+            </label>
+          </div>
         </div>
       )
     },
@@ -248,63 +231,44 @@ export default function HipaaConsent({ patientId, onComplete }: HipaaConsentProp
               and ensure HIPAA compliance. All data is stored and transmitted using industry-standard security measures.
             </p>
           </div>
-          <FormField
-            control={form.control}
-            name="consentToElectronicRecords"
-            render={({ field }) => (
-              <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                <FormControl>
-                  <Checkbox
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                  />
-                </FormControl>
-                <div className="space-y-1 leading-none">
-                  <FormLabel className="font-medium">
-                    I consent to the use of electronic health records and digital storage of my health information.
-                  </FormLabel>
-                </div>
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="consentToSecureMessaging"
-            render={({ field }) => (
-              <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                <FormControl>
-                  <Checkbox
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                  />
-                </FormControl>
-                <div className="space-y-1 leading-none">
-                  <FormLabel className="font-medium">
-                    I consent to secure electronic messaging with my healthcare providers through the DNA Diet Club platform.
-                  </FormLabel>
-                </div>
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="privacyPolicyRead"
-            render={({ field }) => (
-              <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                <FormControl>
-                  <Checkbox
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                  />
-                </FormControl>
-                <div className="space-y-1 leading-none">
-                  <FormLabel className="font-medium">
-                    I have read and agree to the DNA Diet Club Privacy Policy and Terms of Service.
-                  </FormLabel>
-                </div>
-              </FormItem>
-            )}
-          />
+          <div className="flex items-start space-x-3">
+            <input
+              type="checkbox"
+              id="consentToElectronicRecords"
+              checked={formData.consentToElectronicRecords}
+              onChange={(e) => updateFormData('consentToElectronicRecords', e.target.checked)}
+              className="mt-1 h-4 w-4 text-blue-600 border-2 border-gray-300 rounded focus:ring-blue-500"
+            />
+            <label htmlFor="consentToElectronicRecords" className="text-sm font-medium text-gray-700 cursor-pointer">
+              I consent to the use of electronic health records and digital storage of my health information.
+            </label>
+          </div>
+          
+          <div className="flex items-start space-x-3">
+            <input
+              type="checkbox"
+              id="consentToSecureMessaging"
+              checked={formData.consentToSecureMessaging}
+              onChange={(e) => updateFormData('consentToSecureMessaging', e.target.checked)}
+              className="mt-1 h-4 w-4 text-blue-600 border-2 border-gray-300 rounded focus:ring-blue-500"
+            />
+            <label htmlFor="consentToSecureMessaging" className="text-sm font-medium text-gray-700 cursor-pointer">
+              I consent to secure electronic messaging with my healthcare providers through the DNA Diet Club platform.
+            </label>
+          </div>
+          
+          <div className="flex items-start space-x-3">
+            <input
+              type="checkbox"
+              id="privacyPolicyRead"
+              checked={formData.privacyPolicyRead}
+              onChange={(e) => updateFormData('privacyPolicyRead', e.target.checked)}
+              className="mt-1 h-4 w-4 text-blue-600 border-2 border-gray-300 rounded focus:ring-blue-500"
+            />
+            <label htmlFor="privacyPolicyRead" className="text-sm font-medium text-gray-700 cursor-pointer">
+              I have read and agree to the DNA Diet Club Privacy Policy and Terms of Service.
+            </label>
+          </div>
         </div>
       )
     },
@@ -319,69 +283,60 @@ export default function HipaaConsent({ patientId, onComplete }: HipaaConsentProp
               By providing your electronic signature below, you acknowledge that you have read, understood, and agree to all the terms and conditions outlined in this HIPAA consent form.
             </p>
           </div>
-          <div className="space-y-4 p-4 bg-white border-2 border-blue-300 rounded-lg">
+          <div className="space-y-4 p-4 bg-blue-50 border-2 border-blue-300 rounded-lg">
             <h3 className="text-lg font-bold text-blue-900">Electronic Signature Required</h3>
             
-            <label htmlFor="signature-input" className="text-base font-medium text-gray-900 block">
-              Type your full legal name below:
-            </label>
-            
-            {/* Simple textarea approach */}
-            <textarea
-              id="signature-input"
-              value={signatureValue}
-              onChange={(e) => {
-                console.log("Textarea change:", e.target.value);
-                const newValue = e.target.value;
-                setSignatureValue(newValue);
-                form.setValue("signature", newValue);
-              }}
-              placeholder="Enter your full legal name here..."
-              className="w-full min-h-[60px] text-lg p-4 border-3 border-blue-400 rounded-lg focus:border-blue-600 focus:ring-4 focus:ring-blue-200 bg-yellow-50 font-mono"
-              style={{ 
-                fontSize: '18px',
-                lineHeight: '1.5',
-                fontFamily: 'monospace',
-                backgroundColor: '#fffbeb',
-                border: '3px solid #3b82f6'
-              }}
-              autoFocus
-              rows={2}
-            />
-            
-            {/* Alternative simple input */}
-            <div className="mt-4 p-3 bg-green-50 border-2 border-green-300 rounded">
-              <label className="block text-sm font-medium text-green-800 mb-2">
-                Alternative: Type here if above doesn't work
+            <div>
+              <label className="block text-base font-medium text-gray-900 mb-2">
+                Type your full legal name as your electronic signature:
               </label>
               <input
                 type="text"
-                value={signatureValue}
+                value={formData.signature}
                 onChange={(e) => {
-                  console.log("Alternative input:", e.target.value);
-                  setSignatureValue(e.target.value);
-                  form.setValue("signature", e.target.value);
+                  console.log("Signature input:", e.target.value);
+                  updateFormData('signature', e.target.value);
                 }}
-                className="w-full p-3 text-lg border-2 border-green-400 rounded bg-white"
-                placeholder="Your full name here..."
+                placeholder="Your full legal name..."
+                className="w-full text-lg p-4 border-2 border-blue-400 rounded-md focus:border-blue-600 focus:ring-2 focus:ring-blue-200 bg-white"
+                autoFocus
+              />
+              <p className="mt-2 text-sm text-blue-700 bg-blue-100 p-2 rounded">
+                Current signature: "{formData.signature}" ({formData.signature.length} characters)
+              </p>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Signature Date</label>
+              <input
+                type="date"
+                value={formData.signatureDate}
+                onChange={(e) => updateFormData('signatureDate', e.target.value)}
+                className="w-full p-3 border border-gray-300 rounded-md focus:border-blue-500"
               />
             </div>
             
-            {/* Debug display */}
-            <div className="space-y-2">
-              <div className="p-3 bg-gray-100 rounded text-sm">
-                <strong>What you've typed:</strong> "{signatureValue}"
-              </div>
-              <div className="p-3 bg-blue-100 rounded text-sm">
-                <strong>Length:</strong> {signatureValue.length} characters
-              </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Witness Name (Optional)</label>
+              <input
+                type="text"
+                value={formData.witnessName}
+                onChange={(e) => updateFormData('witnessName', e.target.value)}
+                placeholder="Name of witness if applicable"
+                className="w-full p-3 border border-gray-300 rounded-md focus:border-blue-500"
+              />
             </div>
             
-            {form.formState.errors.signature && (
-              <div className="p-3 bg-red-100 border-2 border-red-300 rounded text-red-800">
-                Error: {form.formState.errors.signature.message}
-              </div>
-            )}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Additional Comments (Optional)</label>
+              <textarea
+                value={formData.additionalComments}
+                onChange={(e) => updateFormData('additionalComments', e.target.value)}
+                placeholder="Any additional comments or questions"
+                className="w-full p-3 border border-gray-300 rounded-md focus:border-blue-500"
+                rows={3}
+              />
+            </div>
           </div>
           <FormField
             control={form.control}
@@ -469,36 +424,33 @@ export default function HipaaConsent({ patientId, onComplete }: HipaaConsentProp
             </div>
           </CardHeader>
           <CardContent>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit((data) => submitConsentMutation.mutate(data))}>
-                {sections[currentSection].content}
+            <div>
+              {sections[currentSection].content}
+              
+              <div className="flex justify-between mt-8">
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={prevSection}
+                  disabled={currentSection === 0}
+                >
+                  Previous
+                </Button>
                 
-                <div className="flex justify-between mt-8">
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    onClick={prevSection}
-                    disabled={currentSection === 0}
-                  >
-                    Previous
+                {currentSection < sections.length - 1 ? (
+                  <Button type="button" onClick={nextSection}>
+                    Next
                   </Button>
-                  
-                  {currentSection < sections.length - 1 ? (
-                    <Button type="button" onClick={nextSection}>
-                      Next
-                    </Button>
-                  ) : (
-                    <Button 
-                      type="submit" 
-                      disabled={submitConsentMutation.isPending}
-                      className="bg-blue-600 hover:bg-blue-700"
-                    >
-                      {submitConsentMutation.isPending ? "Submitting..." : "Submit HIPAA Consent"}
-                    </Button>
-                  )}
-                </div>
-              </form>
-            </Form>
+                ) : (
+                  <Button 
+                    onClick={handleSubmit}
+                    className="bg-blue-600 hover:bg-blue-700"
+                  >
+                    Submit HIPAA Consent
+                  </Button>
+                )}
+              </div>
+            </div>
           </CardContent>
         </Card>
 
