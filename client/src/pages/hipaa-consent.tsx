@@ -319,47 +319,69 @@ export default function HipaaConsent({ patientId, onComplete }: HipaaConsentProp
               By providing your electronic signature below, you acknowledge that you have read, understood, and agree to all the terms and conditions outlined in this HIPAA consent form.
             </p>
           </div>
-          <div className="space-y-2">
-            <label className="text-base font-medium text-gray-900 block">
-              Electronic Signature (Type your full name)
+          <div className="space-y-4 p-4 bg-white border-2 border-blue-300 rounded-lg">
+            <h3 className="text-lg font-bold text-blue-900">Electronic Signature Required</h3>
+            
+            <label htmlFor="signature-input" className="text-base font-medium text-gray-900 block">
+              Type your full legal name below:
             </label>
-            <div className="relative">
+            
+            {/* Simple textarea approach */}
+            <textarea
+              id="signature-input"
+              value={signatureValue}
+              onChange={(e) => {
+                console.log("Textarea change:", e.target.value);
+                const newValue = e.target.value;
+                setSignatureValue(newValue);
+                form.setValue("signature", newValue);
+              }}
+              placeholder="Enter your full legal name here..."
+              className="w-full min-h-[60px] text-lg p-4 border-3 border-blue-400 rounded-lg focus:border-blue-600 focus:ring-4 focus:ring-blue-200 bg-yellow-50 font-mono"
+              style={{ 
+                fontSize: '18px',
+                lineHeight: '1.5',
+                fontFamily: 'monospace',
+                backgroundColor: '#fffbeb',
+                border: '3px solid #3b82f6'
+              }}
+              autoFocus
+              rows={2}
+            />
+            
+            {/* Alternative simple input */}
+            <div className="mt-4 p-3 bg-green-50 border-2 border-green-300 rounded">
+              <label className="block text-sm font-medium text-green-800 mb-2">
+                Alternative: Type here if above doesn't work
+              </label>
               <input
                 type="text"
                 value={signatureValue}
                 onChange={(e) => {
-                  console.log("Input event fired:", e.target.value);
-                  const newValue = e.target.value;
-                  setSignatureValue(newValue);
-                  form.setValue("signature", newValue, { shouldValidate: true });
-                  console.log("Updated signature state to:", newValue);
+                  console.log("Alternative input:", e.target.value);
+                  setSignatureValue(e.target.value);
+                  form.setValue("signature", e.target.value);
                 }}
-                onFocus={() => console.log("Signature input focused")}
-                onBlur={() => console.log("Signature input blurred")}
-                onKeyDown={(e) => console.log("Key pressed:", e.key)}
-                placeholder="Type your full legal name as your electronic signature"
-                className="w-full text-base p-3 border-2 border-gray-300 rounded-md focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none bg-white"
-                autoComplete="off"
-                autoFocus={currentSection === 4}
-                spellCheck={false}
-                disabled={false}
-                readOnly={false}
+                className="w-full p-3 text-lg border-2 border-green-400 rounded bg-white"
+                placeholder="Your full name here..."
               />
             </div>
-            <p className="text-sm text-gray-600 bg-gray-50 p-2 rounded">
-              Local state: "{signatureValue}"
-            </p>
-            <p className="text-sm text-blue-600 bg-blue-50 p-2 rounded">
-              Form state: "{form.watch("signature") || ""}"
-            </p>
-            {form.formState.errors.signature && (
-              <p className="text-sm text-red-600">
-                {form.formState.errors.signature.message}
-              </p>
-            )}
-            <div className="text-xs text-gray-500 bg-yellow-50 p-2 rounded">
-              Debug: Section {currentSection + 1} of 5 - Input should be editable
+            
+            {/* Debug display */}
+            <div className="space-y-2">
+              <div className="p-3 bg-gray-100 rounded text-sm">
+                <strong>What you've typed:</strong> "{signatureValue}"
+              </div>
+              <div className="p-3 bg-blue-100 rounded text-sm">
+                <strong>Length:</strong> {signatureValue.length} characters
+              </div>
             </div>
+            
+            {form.formState.errors.signature && (
+              <div className="p-3 bg-red-100 border-2 border-red-300 rounded text-red-800">
+                Error: {form.formState.errors.signature.message}
+              </div>
+            )}
           </div>
           <FormField
             control={form.control}
