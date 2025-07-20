@@ -314,33 +314,32 @@ export default function HipaaConsent({ patientId, onComplete }: HipaaConsentProp
               By providing your electronic signature below, you acknowledge that you have read, understood, and agree to all the terms and conditions outlined in this HIPAA consent form.
             </p>
           </div>
-          <FormField
-            control={form.control}
-            name="signature"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-base font-medium">Electronic Signature (Type your full name)</FormLabel>
-                <FormControl>
-                  <Input 
-                    {...field}
-                    placeholder="Type your full legal name as your electronic signature" 
-                    className="text-base p-3 border-2 border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                    autoComplete="name"
-                    autoFocus
-                    spellCheck={false}
-                    onChange={(e) => {
-                      console.log("Signature input change:", e.target.value);
-                      field.onChange(e);
-                    }}
-                  />
-                </FormControl>
-                <FormMessage />
-                <p className="text-sm text-gray-600 mt-1">
-                  Current signature: "{watchedSignature}"
-                </p>
-              </FormItem>
+          <div className="space-y-2">
+            <label className="text-base font-medium text-gray-900 block">
+              Electronic Signature (Type your full name)
+            </label>
+            <input
+              type="text"
+              value={form.watch("signature") || ""}
+              onChange={(e) => {
+                console.log("Direct input change:", e.target.value);
+                form.setValue("signature", e.target.value, { shouldValidate: true });
+              }}
+              placeholder="Type your full legal name as your electronic signature"
+              className="w-full text-base p-3 border-2 border-gray-300 rounded-md focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none"
+              autoComplete="name"
+              autoFocus
+              spellCheck={false}
+            />
+            <p className="text-sm text-gray-600">
+              Signature entered: "{form.watch("signature") || ""}"
+            </p>
+            {form.formState.errors.signature && (
+              <p className="text-sm text-red-600">
+                {form.formState.errors.signature.message}
+              </p>
             )}
-          />
+          </div>
           <FormField
             control={form.control}
             name="signatureDate"
