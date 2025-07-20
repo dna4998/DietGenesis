@@ -43,6 +43,7 @@ export default function HipaaConsent({ patientId, onComplete }: HipaaConsentProp
 
   const form = useForm({
     resolver: zodResolver(hipaaConsentSchema),
+    mode: "onChange",
     defaultValues: {
       patientName: "",
       dateOfBirth: "",
@@ -59,6 +60,10 @@ export default function HipaaConsent({ patientId, onComplete }: HipaaConsentProp
       additionalComments: "",
     },
   });
+
+  // Debug form state
+  const watchedSignature = form.watch("signature");
+  console.log("Current signature value:", watchedSignature);
 
   const submitConsentMutation = useMutation({
     mutationFn: async (data: z.infer<typeof hipaaConsentSchema>) => {
@@ -314,11 +319,25 @@ export default function HipaaConsent({ patientId, onComplete }: HipaaConsentProp
             name="signature"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Electronic Signature (Type your full name)</FormLabel>
+                <FormLabel className="text-base font-medium">Electronic Signature (Type your full name)</FormLabel>
                 <FormControl>
-                  <Input placeholder="Type your full legal name as your electronic signature" {...field} />
+                  <Input 
+                    {...field}
+                    placeholder="Type your full legal name as your electronic signature" 
+                    className="text-base p-3 border-2 border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                    autoComplete="name"
+                    autoFocus
+                    spellCheck={false}
+                    onChange={(e) => {
+                      console.log("Signature input change:", e.target.value);
+                      field.onChange(e);
+                    }}
+                  />
                 </FormControl>
                 <FormMessage />
+                <p className="text-sm text-gray-600 mt-1">
+                  Current signature: "{watchedSignature}"
+                </p>
               </FormItem>
             )}
           />
