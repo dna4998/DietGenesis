@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -40,6 +40,7 @@ export default function HipaaConsent({ patientId, onComplete }: HipaaConsentProp
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const [currentSection, setCurrentSection] = useState(0);
+  const [signatureValue, setSignatureValue] = useState("");
 
   const form = useForm({
     resolver: zodResolver(hipaaConsentSchema),
@@ -64,6 +65,10 @@ export default function HipaaConsent({ patientId, onComplete }: HipaaConsentProp
   // Debug form state
   const watchedSignature = form.watch("signature");
   console.log("Current signature value:", watchedSignature);
+  
+  useEffect(() => {
+    console.log("HIPAA form mounted, current section:", currentSection);
+  }, [currentSection]);
 
   const submitConsentMutation = useMutation({
     mutationFn: async (data: z.infer<typeof hipaaConsentSchema>) => {
@@ -318,27 +323,43 @@ export default function HipaaConsent({ patientId, onComplete }: HipaaConsentProp
             <label className="text-base font-medium text-gray-900 block">
               Electronic Signature (Type your full name)
             </label>
-            <input
-              type="text"
-              value={form.watch("signature") || ""}
-              onChange={(e) => {
-                console.log("Direct input change:", e.target.value);
-                form.setValue("signature", e.target.value, { shouldValidate: true });
-              }}
-              placeholder="Type your full legal name as your electronic signature"
-              className="w-full text-base p-3 border-2 border-gray-300 rounded-md focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none"
-              autoComplete="name"
-              autoFocus
-              spellCheck={false}
-            />
-            <p className="text-sm text-gray-600">
-              Signature entered: "{form.watch("signature") || ""}"
+            <div className="relative">
+              <input
+                type="text"
+                value={signatureValue}
+                onChange={(e) => {
+                  console.log("Input event fired:", e.target.value);
+                  const newValue = e.target.value;
+                  setSignatureValue(newValue);
+                  form.setValue("signature", newValue, { shouldValidate: true });
+                  console.log("Updated signature state to:", newValue);
+                }}
+                onFocus={() => console.log("Signature input focused")}
+                onBlur={() => console.log("Signature input blurred")}
+                onKeyDown={(e) => console.log("Key pressed:", e.key)}
+                placeholder="Type your full legal name as your electronic signature"
+                className="w-full text-base p-3 border-2 border-gray-300 rounded-md focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none bg-white"
+                autoComplete="off"
+                autoFocus={currentSection === 4}
+                spellCheck={false}
+                disabled={false}
+                readOnly={false}
+              />
+            </div>
+            <p className="text-sm text-gray-600 bg-gray-50 p-2 rounded">
+              Local state: "{signatureValue}"
+            </p>
+            <p className="text-sm text-blue-600 bg-blue-50 p-2 rounded">
+              Form state: "{form.watch("signature") || ""}"
             </p>
             {form.formState.errors.signature && (
               <p className="text-sm text-red-600">
                 {form.formState.errors.signature.message}
               </p>
             )}
+            <div className="text-xs text-gray-500 bg-yellow-50 p-2 rounded">
+              Debug: Section {currentSection + 1} of 5 - Input should be editable
+            </div>
           </div>
           <FormField
             control={form.control}
