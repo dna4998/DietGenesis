@@ -1,35 +1,14 @@
-import { useState, useEffect } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useLocation } from "wouter";
-import { Shield, FileCheck, Lock, Eye, UserCheck } from "lucide-react";
+import { Shield, FileCheck, Lock, Eye, UserCheck, FileText, PenTool } from "lucide-react";
 import FreshLogo from "@/components/fresh-logo";
 
-const hipaaConsentSchema = z.object({
-  patientName: z.string().min(2, "Patient name is required"),
-  dateOfBirth: z.string().min(1, "Date of birth is required"),
-  consentToUse: z.boolean().refine(val => val === true, "You must consent to use and disclosure"),
-  consentToDisclosure: z.boolean().refine(val => val === true, "You must consent to disclosure"),
-  consentToTreatment: z.boolean().refine(val => val === true, "You must consent to treatment"),
-  consentToElectronicRecords: z.boolean().refine(val => val === true, "You must consent to electronic records"),
-  consentToSecureMessaging: z.boolean().refine(val => val === true, "You must consent to secure messaging"),
-  rightsAcknowledgment: z.boolean().refine(val => val === true, "You must acknowledge your rights"),
-  privacyPolicyRead: z.boolean().refine(val => val === true, "You must read and accept the privacy policy"),
-  signature: z.string().min(2, "Electronic signature is required"),
-  signatureDate: z.string().min(1, "Signature date is required"),
-  witnessName: z.string().optional(),
-  additionalComments: z.string().optional(),
-});
+
 
 interface HipaaConsentProps {
   patientId: number;
@@ -338,45 +317,6 @@ export default function HipaaConsent({ patientId, onComplete }: HipaaConsentProp
               />
             </div>
           </div>
-          <FormField
-            control={form.control}
-            name="signatureDate"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Signature Date</FormLabel>
-                <FormControl>
-                  <Input type="date" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="witnessName"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Witness Name (Optional)</FormLabel>
-                <FormControl>
-                  <Input placeholder="Name of witness if applicable" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="additionalComments"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Additional Comments (Optional)</FormLabel>
-                <FormControl>
-                  <Textarea placeholder="Any additional comments or questions" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
         </div>
       )
     }
