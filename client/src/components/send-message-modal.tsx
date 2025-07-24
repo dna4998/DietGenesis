@@ -60,6 +60,11 @@ const pdfMessageSchema = z.object({
     .refine((file) => file?.size <= 5 * 1024 * 1024, "File size must be less than 5MB"),
 });
 
+type PdfMessageForm = {
+  content?: string;
+  file: File;
+};
+
 export default function SendMessageModal({ patient, providerId, trigger }: SendMessageModalProps) {
   const [open, setOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("text");
@@ -76,27 +81,24 @@ export default function SendMessageModal({ patient, providerId, trigger }: SendM
     defaultValues: { content: "", link: "", linkType: "video_link" as const },
   });
 
-  const pdfForm = useForm({
+  const pdfForm = useForm<PdfMessageForm>({
     resolver: zodResolver(pdfMessageSchema),
-    defaultValues: { content: "", file: null },
+    defaultValues: { content: "", file: undefined as any },
   });
 
-  const labResultsForm = useForm({
+  const labResultsForm = useForm<PdfMessageForm>({
     resolver: zodResolver(pdfMessageSchema),
-    defaultValues: { content: "", file: null },
+    defaultValues: { content: "", file: undefined as any },
   });
 
-  const gutBiomeForm = useForm({
+  const gutBiomeForm = useForm<PdfMessageForm>({
     resolver: zodResolver(pdfMessageSchema),
-    defaultValues: { content: "", file: null },
+    defaultValues: { content: "", file: undefined as any },
   });
 
   const sendTextMutation = useMutation({
     mutationFn: async (data: { content: string }) => {
-      return apiRequest(`/api/patients/${patient.id}/messages/text`, {
-        method: "POST",
-        body: { ...data, providerId },
-      });
+      return apiRequest("POST", `/api/patients/${patient.id}/messages/text`, { ...data, providerId });
     },
     onSuccess: () => {
       toast({ title: "Message sent successfully" });
@@ -111,10 +113,7 @@ export default function SendMessageModal({ patient, providerId, trigger }: SendM
 
   const sendLinkMutation = useMutation({
     mutationFn: async (data: { content?: string; link: string; linkType: string }) => {
-      return apiRequest(`/api/patients/${patient.id}/messages/link`, {
-        method: "POST",
-        body: { ...data, providerId },
-      });
+      return apiRequest("POST", `/api/patients/${patient.id}/messages/link`, { ...data, providerId });
     },
     onSuccess: () => {
       toast({ title: "Link sent successfully" });
@@ -128,7 +127,7 @@ export default function SendMessageModal({ patient, providerId, trigger }: SendM
   });
 
   const sendPdfMutation = useMutation({
-    mutationFn: async (data: { content?: string; file: File }) => {
+    mutationFn: async (data: PdfMessageForm) => {
       const formData = new FormData();
       formData.append("pdf", data.file);
       formData.append("providerId", providerId.toString());
@@ -159,7 +158,7 @@ export default function SendMessageModal({ patient, providerId, trigger }: SendM
   });
 
   const sendLabResultsMutation = useMutation({
-    mutationFn: async (data: { content?: string; file: File }) => {
+    mutationFn: async (data: PdfMessageForm) => {
       const formData = new FormData();
       formData.append("pdf", data.file);
       formData.append("providerId", providerId.toString());
@@ -190,7 +189,7 @@ export default function SendMessageModal({ patient, providerId, trigger }: SendM
   });
 
   const sendGutBiomeMutation = useMutation({
-    mutationFn: async (data: { content?: string; file: File }) => {
+    mutationFn: async (data: PdfMessageForm) => {
       const formData = new FormData();
       formData.append("pdf", data.file);
       formData.append("providerId", providerId.toString());
