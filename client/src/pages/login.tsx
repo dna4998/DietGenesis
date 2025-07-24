@@ -112,10 +112,14 @@ export default function Login() {
 
   const loginProviderMutation = useMutation({
     mutationFn: async (data: z.infer<typeof loginSchema>) => {
+      console.log("Attempting provider login with:", data.email);
       const response = await apiRequest("POST", "/api/login/provider", data);
-      return response.json();
+      const result = await response.json();
+      console.log("Provider login response:", result);
+      return result;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log("Provider login successful:", data);
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
       setStatusMessage("Provider login successful. Redirecting to dashboard...");
       announceToScreenReader("Provider login successful. Redirecting to dashboard.");
@@ -126,12 +130,13 @@ export default function Login() {
       setLocation("/");
     },
     onError: (error: any) => {
+      console.error("Provider login error:", error);
       const errorMessage = error.message || "Invalid email or password";
       setStatusMessage(`Provider login failed: ${errorMessage}`);
       announceToScreenReader(`Provider login failed: ${errorMessage}`);
       toast({
         title: "Login Failed",
-        description: errorMessage,
+        description: `${errorMessage}. Please try: dr.emily@dnadietclub.com / password123`,
         variant: "destructive",
       });
     },
