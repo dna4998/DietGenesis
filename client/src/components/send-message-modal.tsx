@@ -106,8 +106,13 @@ export default function SendMessageModal({ patient, providerId, trigger }: SendM
       setOpen(false);
       queryClient.invalidateQueries({ queryKey: ['/api/patients', patient.id, 'messages'] });
     },
-    onError: () => {
-      toast({ title: "Failed to send message", variant: "destructive" });
+    onError: (error: any) => {
+      console.error("Send message error:", error);
+      toast({ 
+        title: "Failed to send message", 
+        description: error?.message || "Unknown error occurred",
+        variant: "destructive" 
+      });
     },
   });
 
