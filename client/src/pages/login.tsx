@@ -120,6 +120,7 @@ export default function Login() {
     },
     onSuccess: (data) => {
       console.log("Provider login successful:", data);
+      queryClient.setQueryData(["/api/auth/user"], data.user);
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
       setStatusMessage("Provider login successful. Redirecting to dashboard...");
       announceToScreenReader("Provider login successful. Redirecting to dashboard.");
@@ -127,7 +128,7 @@ export default function Login() {
         title: "Welcome back, Doctor!",
         description: "Successfully logged in to your provider account.",
       });
-      setLocation("/");
+      setLocation("/provider-dashboard");
     },
     onError: (error: any) => {
       console.error("Provider login error:", error);
