@@ -749,13 +749,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Send a text message (requires provider authentication)
-  app.post("/api/patients/:id/messages/text", async (req, res) => {
+  app.post("/api/patients/:id/messages/text", sessionMiddleware, requireProvider, async (req: AuthenticatedRequest, res) => {
     try {
-      // Check if user is authenticated as a provider
-      if (!req.isAuthenticated() || (req.user as any).type !== 'provider') {
-        return res.status(401).json({ message: "Provider authentication required" });
-      }
-
       const patientId = parseInt(req.params.id);
       if (isNaN(patientId)) {
         return res.status(400).json({ message: "Invalid patient ID" });
