@@ -530,7 +530,7 @@ export default function Login() {
                   </form>
                 </Form>
                 <div className="text-center text-sm text-gray-600">
-                  Demo Account: dr.emily@dnadietclub.com / provider123
+                  Demo Account: dr.emily@dnadietclub.com / password123
                 </div>
               </TabsContent>
 
