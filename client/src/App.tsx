@@ -11,6 +11,7 @@ import ProviderDashboard from "@/pages/provider-dashboard";
 import HipaaConsent from "@/pages/hipaa-consent";
 import PrivacyPolicy from "@/pages/privacy-policy";
 import Login from "@/pages/login";
+import ProviderLogin from "@/pages/provider-login";
 import NotFound from "@/pages/not-found";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useQuery } from "@tanstack/react-query";
@@ -92,6 +93,7 @@ function AuthenticatedApp() {
         <main id="main-content" role="main" tabIndex={-1} className="focus:outline-none">
           <Switch>
             <Route path="/login" component={Login} />
+            <Route path="/provider-login" component={ProviderLogin} />
             <Route path="/privacy-policy" component={PrivacyPolicy} />
             <Route path="/">
               {isPatient ? (
@@ -124,7 +126,12 @@ function Router() {
   }
 
   if (!isAuthenticated) {
-    return <Login />;
+    return (
+      <Switch>
+        <Route path="/provider-login" component={ProviderLogin} />
+        <Route component={Login} />
+      </Switch>
+    );
   }
 
   return <AuthenticatedApp />;

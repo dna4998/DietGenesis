@@ -24,6 +24,36 @@ import { AuthenticatedRequest, requireAuth, requireProvider, requireSubscription
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Authentication routes
+  app.post('/api/login/provider', async (req, res) => {
+    try {
+      const { email, password } = req.body;
+      
+      if (!email || !password) {
+        return res.status(400).json({ message: 'Email and password are required' });
+      }
+
+      const provider = await storage.loginProvider(email, password);
+      if (!provider) {
+        return res.status(401).json({ message: 'Invalid credentials' });
+      }
+
+      const sessionId = await createSession(provider.id, 'provider');
+      res.cookie('sessionId', sessionId, { httpOnly: true, maxAge: 30 * 24 * 60 * 60 * 1000 });
+      
+      res.json({
+        user: {
+          id: provider.id,
+          name: provider.name,
+          email: provider.email,
+          type: 'provider',
+        },
+      });
+    } catch (error) {
+      console.error('Provider login error:', error);
+      res.status(500).json({ message: 'Login failed' });
+    }
+  });
+
   app.post('/api/register/patient', async (req, res) => {
     try {
       const { name, email, password, age, weight, weightGoal, bodyFat, bodyFatGoal, bloodPressure } = req.body;
