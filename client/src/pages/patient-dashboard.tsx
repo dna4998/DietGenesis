@@ -176,11 +176,6 @@ export default function PatientDashboard({ selectedPatientId }: PatientDashboard
 
       {/* Enhanced Patient View with Progress Celebrations */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        {/* Patient Demographics and Health Info */}
-        <div className="space-y-6">
-          <SimpleSubscriptionCard patient={displayPatient} />
-        </div>
-        
         {/* Messages from Provider */}
         <div className="space-y-6">
           <MessagingCard patient={displayPatient} />
@@ -190,6 +185,10 @@ export default function PatientDashboard({ selectedPatientId }: PatientDashboard
             providerId={7} 
             disabled={false}
           />
+        </div>
+        
+        {/* Patient Settings and Integrations */}
+        <div className="space-y-6">
           <DexcomIntegration patientId={displayPatient.id} />
           <TwoFactorSettings />
         </div>
@@ -206,6 +205,11 @@ export default function PatientDashboard({ selectedPatientId }: PatientDashboard
       {/* Weight Progress Visualization */}
       <div className="mb-8">
         <WeightProgressChart patient={displayPatient} />
+      </div>
+
+      {/* Choose Your Plan - Positioned at the bottom */}
+      <div className="mb-8">
+        <SimpleSubscriptionCard patient={displayPatient} />
       </div>
 
       {/* Progress Celebration Modal */}
