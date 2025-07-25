@@ -194,7 +194,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const sessionId = await createSession(patient.id, 'patient');
-      res.cookie('sessionId', sessionId, { httpOnly: true, maxAge: 30 * 24 * 60 * 60 * 1000 });
+      console.log(`Created patient session: ${sessionId} for patient ${patient.id}`);
+      res.cookie('sessionId', sessionId, { 
+        httpOnly: true, 
+        maxAge: 30 * 24 * 60 * 60 * 1000,
+        sameSite: 'lax', // Allow cross-site requests for development
+        secure: false // Allow non-HTTPS in development
+      });
       
       res.json({
         user: {
