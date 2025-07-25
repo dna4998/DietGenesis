@@ -11,8 +11,15 @@ export interface User {
 export function useAuth() {
   const { data: user, isLoading, error } = useQuery({
     queryKey: ["/api/auth/user"],
-    retry: false,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    retry: (failureCount, error: any) => {
+      // Retry up to 2 times for non-auth errors
+      if (error?.message?.includes('401') || error?.message?.includes('Not authenticated')) {
+        return false; // Don't retry auth errors
+      }
+      return failureCount < 2;
+    },
+    staleTime: 1 * 60 * 1000, // 1 minute
+    refetchInterval: 30 * 1000, // Refetch every 30 seconds to maintain session
   });
 
   const typedUser = user as User | undefined;

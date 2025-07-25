@@ -138,14 +138,21 @@ export function requireSubscription(req: AuthenticatedRequest, res: Response, ne
 
 // Session middleware to attach user to request
 export async function sessionMiddleware(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+  console.log("Auth check - Session ID:", req.sessionID ? "Present" : "Missing");
+  
   const sessionId = req.cookies?.sessionId;
   
   if (sessionId) {
     const user = await verifySession(sessionId);
     if (user) {
       req.user = user;
+      console.log("Auth check - User:", req.user ? `${req.user.type} ID ${req.user.id}` : "None");
     }
   }
+  
+  // Set CORS headers for session handling
+  res.header('Access-Control-Allow-Credentials', 'true');
+  res.header('Access-Control-Allow-Origin', req.headers.origin || 'http://localhost:5000');
   
   next();
 }
