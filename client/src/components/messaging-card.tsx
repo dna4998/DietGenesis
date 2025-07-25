@@ -96,11 +96,18 @@ export default function MessagingCard({ patient }: MessagingCardProps) {
               return (
                 <div 
                   key={message.id} 
-                  className={`p-4 rounded-lg border ${
+                  className={`p-4 rounded-lg border cursor-pointer hover:shadow-md transition-shadow ${
                     isFromProvider 
-                      ? (message.isRead ? 'bg-blue-50 border-blue-200' : 'bg-blue-100 border-blue-300')
-                      : 'bg-green-50 border-green-200 ml-8'
+                      ? (message.isRead ? 'bg-blue-50 border-blue-200 hover:bg-blue-100' : 'bg-blue-100 border-blue-300 hover:bg-blue-150')
+                      : 'bg-green-50 border-green-200 ml-8 hover:bg-green-100'
                   }`}
+                  onClick={() => {
+                    // Mark provider messages as read when clicked
+                    if (isFromProvider && !message.isRead) {
+                      // TODO: Add mark as read functionality
+                      console.log('Marking message as read:', message.id);
+                    }
+                  }}
                 >
                   <div className="flex items-start justify-between mb-2">
                     <div className="flex items-center gap-2">

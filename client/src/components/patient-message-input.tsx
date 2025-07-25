@@ -34,7 +34,11 @@ export default function PatientMessageInput({ patientId, providerId, disabled = 
     },
     onSuccess: (data) => {
       console.log("Message sent successfully:", data);
-      toast({ title: "Message sent to your provider!" });
+      toast({ 
+        title: "Message sent successfully!", 
+        description: "Your provider will receive your message and respond through this same system.",
+        duration: 3000
+      });
       setMessage("");
       queryClient.invalidateQueries({ queryKey: ['/api/patients', patientId, 'messages'] });
     },
@@ -60,7 +64,7 @@ export default function PatientMessageInput({ patientId, providerId, disabled = 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     console.log("Form submitted with message:", message.trim());
-    if (!message.trim() || sendMessageMutation.isPending) return;
+    if (!message.trim() || sendMessageMutation.isPending || !canSendMessages) return;
     console.log("Sending message mutation...");
     sendMessageMutation.mutate(message.trim());
   };
@@ -138,13 +142,14 @@ export default function PatientMessageInput({ patientId, providerId, disabled = 
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             placeholder="Type your message to your provider..."
-            className="flex-1"
+            className="flex-1 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             disabled={sendMessageMutation.isPending}
+            autoComplete="off"
           />
           <Button 
             type="submit" 
             disabled={!message.trim() || sendMessageMutation.isPending || !canSendMessages}
-            className="bg-blue-600 hover:bg-blue-700"
+            className="bg-blue-600 hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 active:bg-blue-800 transition-colors cursor-pointer"
           >
             {sendMessageMutation.isPending ? (
               <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
