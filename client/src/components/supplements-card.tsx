@@ -35,7 +35,7 @@ export default function SupplementsCard({ patient }: SupplementsCardProps) {
                   <Button
                     size="sm"
                     className={`${colorScheme.button} text-white shadow-lg hover:shadow-xl`}
-                    onClick={() => window.open(`https://www.thorne.com/u/PR115297`, '_blank')}
+                    onClick={() => window.open(`https://www.thorne.com`, '_blank')}
                   >
                     <span className="flex items-center gap-1">
                       Order
