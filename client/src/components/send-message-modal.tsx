@@ -98,6 +98,8 @@ export default function SendMessageModal({ patient, providerId, trigger }: SendM
 
   const sendTextMutation = useMutation({
     mutationFn: async (data: { content: string }) => {
+      console.log("Making API request to:", `/api/patients/${patient.id}/messages/text`);
+      console.log("Request data:", { ...data, providerId });
       return apiRequest("POST", `/api/patients/${patient.id}/messages/text`, { ...data, providerId });
     },
     onSuccess: () => {
@@ -107,10 +109,16 @@ export default function SendMessageModal({ patient, providerId, trigger }: SendM
       queryClient.invalidateQueries({ queryKey: ['/api/patients', patient.id, 'messages'] });
     },
     onError: (error: any) => {
-      console.error("Send message error:", error);
+      console.error("Send message error details:", error);
+      console.error("Error type:", typeof error);
+      console.error("Error message:", error?.message);
+      console.error("Error status:", error?.status);
+      
       let errorMessage = "Unknown error occurred";
       
-      if (error?.message?.includes("401") || error?.message?.includes("Not authenticated")) {
+      if (error?.message?.includes("404")) {
+        errorMessage = "Endpoint not found - please check the URL path";
+      } else if (error?.message?.includes("401") || error?.message?.includes("Not authenticated")) {
         errorMessage = "Please log in as a provider to send messages";
       } else if (error?.message?.includes("403")) {
         errorMessage = "Access denied - provider authentication required";
