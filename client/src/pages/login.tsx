@@ -152,7 +152,7 @@ export default function Login() {
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
       toast({
         title: "Account Created!",
-        description: "Welcome to DNA Diet Club! Your personalized health journey begins now.",
+        description: "Welcome! Your personalized health journey begins now.",
       });
       setLocation("/");
     },
@@ -174,7 +174,7 @@ export default function Login() {
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
       toast({
         title: "Provider Account Created!",
-        description: "Welcome to DNA Diet Club! You can now manage patients and create treatment plans.",
+        description: "Welcome! You can now manage patients and create treatment plans.",
       });
       setLocation("/");
     },
@@ -211,7 +211,7 @@ export default function Login() {
             id={titleId} 
             className="sr-only"
           >
-            DNA Diet Club Login
+            Health Platform Login
           </h1>
           <p 
             id={subtitleId} 
@@ -612,7 +612,7 @@ export default function Login() {
         </Card>
 
         <div className="text-center mt-6 text-sm text-gray-600">
-          <p>© 2025 DNA Diet Club. Personalized health management platform.</p>
+          <p>© 2025 Health Platform. Personalized health management platform.</p>
         </div>
       </div>
     </main>

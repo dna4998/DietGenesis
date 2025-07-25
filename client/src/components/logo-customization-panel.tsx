@@ -131,7 +131,7 @@ export default function LogoCustomizationPanel({ onLogoChange, onSettingsChange 
     setSettings({
       size: 'md',
       showTitle: true,
-      title: 'DNA Diet Club',
+      title: 'Health Platform',
       titleColor: '#1f2937',
       backgroundColor: '#ffffff',
       borderRadius: 8,

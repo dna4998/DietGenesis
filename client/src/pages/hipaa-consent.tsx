@@ -153,7 +153,7 @@ export default function HipaaConsent({ patientId, onComplete }: HipaaConsentProp
           <div className="bg-green-50 p-4 rounded-lg">
             <h3 className="font-semibold text-green-900 mb-2">Treatment & Services</h3>
             <p className="text-sm text-green-800">
-              DNA Diet Club provides personalized health and wellness services including AI-powered nutrition analysis, 
+              Our health platform provides personalized health and wellness services including AI-powered nutrition analysis, 
               meal planning, exercise recommendations, and health monitoring through secure digital platforms.
             </p>
           </div>
@@ -166,7 +166,7 @@ export default function HipaaConsent({ patientId, onComplete }: HipaaConsentProp
               className="mt-1 h-4 w-4 text-blue-600 border-2 border-gray-300 rounded focus:ring-blue-500"
             />
             <label htmlFor="consentToTreatment" className="text-sm font-medium text-gray-700 cursor-pointer">
-              I consent to treatment and services provided by DNA Diet Club and its healthcare providers.
+              I consent to treatment and services provided by our health platform and its healthcare providers.
             </label>
           </div>
           
@@ -206,7 +206,7 @@ export default function HipaaConsent({ patientId, onComplete }: HipaaConsentProp
           <div className="bg-purple-50 p-4 rounded-lg">
             <h3 className="font-semibold text-purple-900 mb-2">Digital Health Platform</h3>
             <p className="text-sm text-purple-800">
-              DNA Diet Club uses secure, encrypted electronic health records and communication systems to protect your privacy 
+              Our health platform uses secure, encrypted electronic health records and communication systems to protect your privacy 
               and ensure HIPAA compliance. All data is stored and transmitted using industry-standard security measures.
             </p>
           </div>
@@ -232,7 +232,7 @@ export default function HipaaConsent({ patientId, onComplete }: HipaaConsentProp
               className="mt-1 h-4 w-4 text-blue-600 border-2 border-gray-300 rounded focus:ring-blue-500"
             />
             <label htmlFor="consentToSecureMessaging" className="text-sm font-medium text-gray-700 cursor-pointer">
-              I consent to secure electronic messaging with my healthcare providers through the DNA Diet Club platform.
+              I consent to secure electronic messaging with my healthcare providers through our health platform.
             </label>
           </div>
           
@@ -245,7 +245,7 @@ export default function HipaaConsent({ patientId, onComplete }: HipaaConsentProp
               className="mt-1 h-4 w-4 text-blue-600 border-2 border-gray-300 rounded focus:ring-blue-500"
             />
             <label htmlFor="privacyPolicyRead" className="text-sm font-medium text-gray-700 cursor-pointer">
-              I have read and agree to the DNA Diet Club Privacy Policy and Terms of Service.
+              I have read and agree to our Privacy Policy and Terms of Service.
             </label>
           </div>
         </div>
@@ -395,7 +395,7 @@ export default function HipaaConsent({ patientId, onComplete }: HipaaConsentProp
         </Card>
 
         <div className="mt-6 text-center text-sm text-gray-600">
-          <p>© 2025 DNA Diet Club. HIPAA Compliant Healthcare Platform.</p>
+          <p>© 2025 Health Platform. HIPAA Compliant Healthcare Platform.</p>
           <p>For questions about your privacy rights, contact our Privacy Officer at privacy@dnadietclub.com</p>
         </div>
       </div>

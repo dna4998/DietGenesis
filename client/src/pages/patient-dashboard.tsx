@@ -41,7 +41,7 @@ export default function PatientDashboard({ selectedPatientId }: PatientDashboard
     if (subscriptionStatus === 'success') {
       toast({
         title: "Subscription Activated!",
-        description: "Your subscription has been successfully activated. Welcome to DNA Diet Club!",
+        description: "Your subscription has been successfully activated. Welcome to our health platform!",
       });
       // Clean up URL parameters
       window.history.replaceState({}, document.title, window.location.pathname);
