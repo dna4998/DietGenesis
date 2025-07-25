@@ -113,7 +113,7 @@ export default function MessagingCard({ patient }: MessagingCardProps) {
                     <div className="flex items-center gap-2">
                       {getMessageIcon(message.messageType)}
                       <span className="text-sm font-medium">
-                        {isFromProvider ? 'Provider: ' : 'You: '}
+                        {isFromProvider ? 'Service: ' : 'You: '}
                         {message.messageType === 'pdf' && 'PDF Document'}
                         {message.messageType === 'lab_results' && 'Lab Results'}
                         {message.messageType === 'gut_biome_test' && 'Gut Biome Test'}

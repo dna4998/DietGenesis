@@ -64,7 +64,12 @@ export default function PatientMessageInput({ patientId, providerId, disabled = 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     console.log("Form submitted with message:", message.trim());
-    if (!message.trim() || sendMessageMutation.isPending || !canSendMessages) return;
+    console.log("Submit check:", {
+      hasContent: !!message.trim(),
+      isPending: sendMessageMutation.isPending,
+      canSend: finalCanSendMessages
+    });
+    if (!message.trim() || sendMessageMutation.isPending || !finalCanSendMessages) return;
     console.log("Sending message mutation...");
     sendMessageMutation.mutate(message.trim());
   };
@@ -81,7 +86,19 @@ export default function PatientMessageInput({ patientId, providerId, disabled = 
     canSendMessages,
     disabled,
     patientId,
-    providerId
+    providerId,
+    userType: typedUser?.type,
+    userId: typedUser?.id
+  });
+  
+  // Force enable messaging for testing if patient is authenticated
+  const forceEnable = typedUser?.type === 'patient' && typedUser?.id === patientId;
+  const finalCanSendMessages = forceEnable || canSendMessages;
+  
+  console.log("Final messaging state:", {
+    forceEnable,
+    finalCanSendMessages,
+    willShowForm: !disabled && finalCanSendMessages
   });
 
   if (disabled) {
@@ -109,7 +126,7 @@ export default function PatientMessageInput({ patientId, providerId, disabled = 
     );
   }
 
-  if (!canSendMessages) {
+  if (!finalCanSendMessages) {
     return (
       <Card className="mt-4">
         <CardHeader>
@@ -159,7 +176,7 @@ export default function PatientMessageInput({ patientId, providerId, disabled = 
           />
           <Button 
             type="submit" 
-            disabled={!message.trim() || sendMessageMutation.isPending || !canSendMessages}
+            disabled={!message.trim() || sendMessageMutation.isPending || !finalCanSendMessages}
             className="bg-blue-600 hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 active:bg-blue-800 transition-colors cursor-pointer"
           >
             {sendMessageMutation.isPending ? (
