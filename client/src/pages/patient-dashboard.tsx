@@ -178,7 +178,7 @@ export default function PatientDashboard({ selectedPatientId }: PatientDashboard
           <MessagingCard patient={displayPatient} />
           <PatientMessageInput 
             patientId={displayPatient.id} 
-            providerId={1} 
+            providerId={3} 
             disabled={false}
           />
           <DexcomIntegration patientId={displayPatient.id} />
