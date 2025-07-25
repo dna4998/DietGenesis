@@ -178,7 +178,7 @@ export default function PatientDashboard({ selectedPatientId }: PatientDashboard
           <PatientMessageInput 
             patientId={displayPatient.id} 
             providerId={1} 
-            disabled={(subscriptionStatus as any)?.subscriptionStatus !== 'active'}
+            disabled={false}
           />
           <DexcomIntegration patientId={displayPatient.id} />
         </div>
