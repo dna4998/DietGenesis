@@ -112,7 +112,6 @@ export default function PatientMessageInput({ patientId, providerId, disabled = 
   console.log("Final messaging state:", {
     forceEnable,
     finalCanSendMessages,
-    testMode,
     willShowForm: !disabled && finalCanSendMessages,
     actuallyCanSend: finalCanSendMessages && !disabled
   });

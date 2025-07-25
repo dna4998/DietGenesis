@@ -138,7 +138,7 @@ export function requireSubscription(req: AuthenticatedRequest, res: Response, ne
 
 // Session middleware to attach user to request
 export async function sessionMiddleware(req: AuthenticatedRequest, res: Response, next: NextFunction) {
-  console.log("Auth check - Session ID:", req.sessionID ? "Present" : "Missing");
+  console.log("Auth check - Session ID:", req.cookies?.sessionId ? "Present" : "Missing");
   
   const sessionId = req.cookies?.sessionId;
   
