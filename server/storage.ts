@@ -255,9 +255,8 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getPatientByEmail(email: string): Promise<Patient | undefined> {
-    return Array.from(this.patients.values()).find(
-      (patient) => patient.email === email,
-    );
+    const [patient] = await db.select().from(patients).where(eq(patients.email, email));
+    return patient;
   }
 
   async getAllPatients(): Promise<Patient[]> {
@@ -318,9 +317,8 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getProviderByEmail(email: string): Promise<Provider | undefined> {
-    return Array.from(this.providers.values()).find(
-      (provider) => provider.email === email,
-    );
+    const [provider] = await db.select().from(providers).where(eq(providers.email, email));
+    return provider;
   }
 
   async getAllProviders(): Promise<Provider[]> {
