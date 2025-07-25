@@ -1352,8 +1352,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Patient not found" });
       }
 
-      // Allow messaging for patient ID 2 (Sarah Wilson) for testing, or verify authentication
-      if (patientId !== 2 && (!req.user || req.user.id !== patientId)) {
+      // Allow messaging for patient IDs 2 and 3 (Sarah Wilson and Mikaiah Ferrell) for testing
+      if (![2, 3].includes(patientId) && (!req.user || req.user.id !== patientId)) {
         return res.status(403).json({ message: "Access denied" });
       }
 

@@ -53,6 +53,25 @@ export async function seedDatabase() {
         adherence: 92,
         weightLoss: "3.2",
         bloodSugar: "Normal"
+      },
+      {
+        name: "Mikaiah Ferrell",
+        email: "mikaiah.ferrell@email.com",
+        password: "password123",
+        age: 35,
+        weight: "170.00",
+        weightGoal: "160.00",
+        bodyFat: "18.0",
+        bodyFatGoal: "15.0",
+        bloodPressure: "122/78",
+        insulinResistance: false,
+        lastVisit: "2024-01-20",
+        dietPlan: "Balanced nutrition with portion control",
+        exercisePlan: "Mixed cardio and resistance training 5x per week",
+        supplements: ["Multivitamin", "Protein powder", "Fish oil"],
+        adherence: 88,
+        weightLoss: "5.1",
+        bloodSugar: "Normal"
       }
     ];
 
