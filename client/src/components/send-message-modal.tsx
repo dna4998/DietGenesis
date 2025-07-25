@@ -108,9 +108,19 @@ export default function SendMessageModal({ patient, providerId, trigger }: SendM
     },
     onError: (error: any) => {
       console.error("Send message error:", error);
+      let errorMessage = "Unknown error occurred";
+      
+      if (error?.message?.includes("401") || error?.message?.includes("Not authenticated")) {
+        errorMessage = "Please log in as a provider to send messages";
+      } else if (error?.message?.includes("403")) {
+        errorMessage = "Access denied - provider authentication required";
+      } else if (error?.message) {
+        errorMessage = error.message;
+      }
+      
       toast({ 
         title: "Failed to send message", 
-        description: error?.message || "Unknown error occurred",
+        description: errorMessage,
         variant: "destructive" 
       });
     },
@@ -225,6 +235,8 @@ export default function SendMessageModal({ patient, providerId, trigger }: SendM
   });
 
   const onTextSubmit = (data: { content: string }) => {
+    console.log("Text form submitted with data:", data);
+    console.log("Patient ID:", patient.id, "Provider ID:", providerId);
     sendTextMutation.mutate(data);
   };
 
