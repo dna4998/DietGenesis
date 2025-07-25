@@ -169,6 +169,11 @@ export default function PatientDashboard({ selectedPatientId }: PatientDashboard
         <ProgressCard patient={displayPatient} />
       </div>
 
+      {/* Weight Progress Visualization - Position #3 */}
+      <div className="mb-6">
+        <WeightProgressChart patient={displayPatient} />
+      </div>
+
       {/* Daily Health Tip */}
       <div className="mb-6">
         <HealthTipsWidget patient={displayPatient} />
@@ -199,11 +204,6 @@ export default function PatientDashboard({ selectedPatientId }: PatientDashboard
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         <ExercisePlanCard patient={displayPatient} />
         <SupplementsCard patient={displayPatient} />
-      </div>
-
-      {/* Weight Progress Visualization */}
-      <div className="mb-8">
-        <WeightProgressChart patient={displayPatient} />
       </div>
 
       {/* Choose Your Plan - Positioned at the bottom */}
