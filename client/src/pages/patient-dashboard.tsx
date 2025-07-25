@@ -164,6 +164,11 @@ export default function PatientDashboard({ selectedPatientId }: PatientDashboard
         <HealthMetricsCard patient={displayPatient} />
       </div>
 
+      {/* Progress Overview - Positioned right below health metrics */}
+      <div className="mb-6">
+        <ProgressCard patient={displayPatient} />
+      </div>
+
       {/* Daily Health Tip */}
       <div className="mb-6">
         <HealthTipsWidget patient={displayPatient} />
@@ -173,7 +178,6 @@ export default function PatientDashboard({ selectedPatientId }: PatientDashboard
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         {/* Patient Demographics and Health Info */}
         <div className="space-y-6">
-          <ProgressCard patient={displayPatient} />
           <SimpleSubscriptionCard patient={displayPatient} />
         </div>
         
