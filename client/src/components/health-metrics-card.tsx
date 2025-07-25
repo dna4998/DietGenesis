@@ -11,26 +11,32 @@ interface HealthMetricsCardProps {
 }
 
 export default function HealthMetricsCard({ patient }: HealthMetricsCardProps) {
-  const [previousWeight, setPreviousWeight] = useState(patient.weight);
-  const [previousBodyFat, setPreviousBodyFat] = useState(patient.bodyFat);
+  // Convert string values to numbers for calculations
+  const currentWeight = parseFloat(patient.weight?.toString() || "0");
+  const currentBodyFat = parseFloat(patient.bodyFat?.toString() || "0");
+  const goalWeight = parseFloat(patient.weightGoal?.toString() || "0");
+  const goalBodyFat = parseFloat(patient.bodyFatGoal?.toString() || "0");
+  
+  const [previousWeight, setPreviousWeight] = useState(currentWeight);
+  const [previousBodyFat, setPreviousBodyFat] = useState(currentBodyFat);
   const [showMetricChange, setShowMetricChange] = useState(false);
   const [clickedMetric, setClickedMetric] = useState<string | null>(null);
 
   // Calculate if metrics are improving
-  const weightImproving = (patient.weight || 0) < previousWeight;
-  const bodyFatImproving = (patient.bodyFat || 0) < previousBodyFat;
-  const weightToGoalDiff = Math.abs((patient.weight || 0) - (patient.weightGoal || 0));
-  const bodyFatToGoalDiff = Math.abs((patient.bodyFat || 0) - (patient.bodyFatGoal || 0));
+  const weightImproving = currentWeight < previousWeight;
+  const bodyFatImproving = currentBodyFat < previousBodyFat;
+  const weightToGoalDiff = Math.abs(currentWeight - goalWeight);
+  const bodyFatToGoalDiff = Math.abs(currentBodyFat - goalBodyFat);
 
   // Detect changes for animations
   useEffect(() => {
-    if (patient.weight !== previousWeight || patient.bodyFat !== previousBodyFat) {
+    if (currentWeight !== previousWeight || currentBodyFat !== previousBodyFat) {
       setShowMetricChange(true);
       setTimeout(() => setShowMetricChange(false), 3000);
     }
-    setPreviousWeight(patient.weight);
-    setPreviousBodyFat(patient.bodyFat);
-  }, [patient.weight, patient.bodyFat, previousWeight, previousBodyFat]);
+    setPreviousWeight(currentWeight);
+    setPreviousBodyFat(currentBodyFat);
+  }, [currentWeight, currentBodyFat, previousWeight, previousBodyFat]);
 
   const getMetricStatus = (current: number, goal: number, isPercentage: boolean = false) => {
     const diff = Math.abs(current - goal);
@@ -41,8 +47,8 @@ export default function HealthMetricsCard({ patient }: HealthMetricsCardProps) {
     return { color: "yellow", label: "Working", pulse: false };
   };
 
-  const weightStatus = getMetricStatus(patient.weight || 0, patient.weightGoal || 0);
-  const bodyFatStatus = getMetricStatus(patient.bodyFat || 0, patient.bodyFatGoal || 0, true);
+  const weightStatus = getMetricStatus(currentWeight, goalWeight);
+  const bodyFatStatus = getMetricStatus(currentBodyFat, goalBodyFat, true);
 
   return (
     <Card className="bg-gradient-to-br from-white via-green-50 to-blue-50 shadow-lg border border-green-200">
@@ -66,6 +72,9 @@ export default function HealthMetricsCard({ patient }: HealthMetricsCardProps) {
               </button>
             }
           />
+          <div className="text-xs text-gray-500 mt-1">
+            💡 Click any metric below to update it
+          </div>
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -85,14 +94,14 @@ export default function HealthMetricsCard({ patient }: HealthMetricsCardProps) {
                   <Plus className="h-3 w-3 text-blue-600 ml-2 opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>
                 <CountUpAnimation 
-                  value={patient.weight || 0} 
+                  value={currentWeight} 
                   className="text-2xl font-bold text-blue-600"
                   duration={1.5}
                 />
                 <div className="text-sm text-gray-600 mt-1">Current Weight (lbs)</div>
-                <div className="text-xs text-gray-500">Goal: {patient.weightGoal} lbs</div>
+                <div className="text-xs text-gray-500">Goal: {goalWeight} lbs</div>
                 <div className="text-xs text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity mt-1">
-                  Click to update
+                  🖱️ Click to update
                 </div>
                 <Badge 
                   variant="secondary" 
@@ -125,15 +134,15 @@ export default function HealthMetricsCard({ patient }: HealthMetricsCardProps) {
                   <Plus className="h-3 w-3 text-green-600 ml-2 opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>
                 <CountUpAnimation 
-                  value={patient.bodyFat || 0} 
+                  value={currentBodyFat} 
                   suffix="%" 
                   className="text-2xl font-bold text-green-600"
                   duration={1.5}
                 />
                 <div className="text-sm text-gray-600 mt-1">Body Fat</div>
-                <div className="text-xs text-gray-500">Goal: {patient.bodyFatGoal}%</div>
+                <div className="text-xs text-gray-500">Goal: {goalBodyFat}%</div>
                 <div className="text-xs text-green-600 opacity-0 group-hover:opacity-100 transition-opacity mt-1">
-                  Click to update
+                  🖱️ Click to update
                 </div>
                 <Badge 
                   variant="secondary" 
@@ -163,7 +172,7 @@ export default function HealthMetricsCard({ patient }: HealthMetricsCardProps) {
                 <div className="text-lg font-semibold text-amber-700">{patient.bloodPressure}</div>
                 <div className="text-sm text-gray-600 mt-1">Blood Pressure</div>
                 <div className="text-xs text-amber-600 opacity-0 group-hover:opacity-100 transition-opacity mt-1">
-                  Click to update
+                  🖱️ Click to update
                 </div>
                 <div className="text-xs text-gray-500 mt-2">
                   {patient.bloodPressure === "120/80" ? "Optimal" : "Monitor"}
@@ -185,7 +194,7 @@ export default function HealthMetricsCard({ patient }: HealthMetricsCardProps) {
                 <div className="text-lg font-semibold text-purple-700">{patient.bloodSugar}</div>
                 <div className="text-sm text-gray-600 mt-1">Blood Sugar</div>
                 <div className="text-xs text-purple-600 opacity-0 group-hover:opacity-100 transition-opacity mt-1">
-                  Click to update
+                  🖱️ Click to update
                 </div>
                 <div className="text-xs text-gray-500 mt-2">
                   {parseInt(patient.bloodSugar) < 100 ? "Normal" : "Monitor"}
