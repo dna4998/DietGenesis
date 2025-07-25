@@ -153,6 +153,7 @@ Preferred communication style: Simple, everyday language.
 ✓ **Patient-to-Provider Messaging Verified Working** - Confirmed bidirectional messaging system operational with successful message delivery and database storage
 ✓ **User Interface Testing System** - Implemented testing infrastructure to easily switch between provider and patient views for mobile debugging
 ✓ **Improved Messaging Layout** - Repositioned patient message input to appear directly below received messages for better conversation flow and user experience
+✓ **Clickable Insulin Resistance System** - Insulin resistance box now fully clickable with 5-level selection (normal, mild, moderate, high, severe), color-coded visual indicators, and integrated with patient health metrics update system
 
 ## System Architecture
 
