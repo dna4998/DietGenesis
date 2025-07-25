@@ -15,13 +15,15 @@ export function useAuth() {
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
+  const typedUser = user as User | undefined;
+  
   return {
-    user: user as User | undefined,
+    user: typedUser,
     isLoading,
-    isAuthenticated: !!user,
-    isPatient: user?.type === 'patient',
-    isProvider: user?.type === 'provider',
-    hasSubscription: user?.hasSubscription || user?.type === 'provider', // Providers always have access
+    isAuthenticated: !!typedUser,
+    isPatient: typedUser?.type === 'patient',
+    isProvider: typedUser?.type === 'provider',
+    hasSubscription: typedUser?.hasSubscription || typedUser?.type === 'provider', // Providers always have access
     error,
   };
 }

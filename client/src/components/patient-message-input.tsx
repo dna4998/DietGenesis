@@ -69,10 +69,20 @@ export default function PatientMessageInput({ patientId, providerId, disabled = 
     sendMessageMutation.mutate(message.trim());
   };
 
-  const isAuthenticated = !!authUser && (authUser as any)?.type === 'patient';
+  const typedUser = authUser as any;
+  const isAuthenticated = !!typedUser && typedUser?.type === 'patient';
   
   // Remove subscription requirement - messaging is now free for all patients
   const canSendMessages = isAuthenticated; // No subscription check needed
+  
+  console.log("PatientMessageInput - Auth Debug:", {
+    authUser: typedUser,
+    isAuthenticated,
+    canSendMessages,
+    disabled,
+    patientId,
+    providerId
+  });
 
   if (disabled) {
     return (
@@ -99,7 +109,7 @@ export default function PatientMessageInput({ patientId, providerId, disabled = 
     );
   }
 
-  if (!isAuthenticated) {
+  if (!canSendMessages) {
     return (
       <Card className="mt-4">
         <CardHeader>
@@ -109,7 +119,8 @@ export default function PatientMessageInput({ patientId, providerId, disabled = 
           <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md flex items-center gap-2">
             <AlertCircle className="h-4 w-4 text-yellow-600" />
             <p className="text-sm text-yellow-700">
-              Please log in as a patient to send messages to your healthcare provider.
+              {!typedUser ? "Please log in to send messages to your healthcare provider." : 
+               "Authentication error. Please refresh the page and try again."}
             </p>
           </div>
           <div className="flex gap-2">
