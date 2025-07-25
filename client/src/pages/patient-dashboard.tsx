@@ -176,19 +176,18 @@ export default function PatientDashboard({ selectedPatientId }: PatientDashboard
         {/* Messages from Provider */}
         <div className="space-y-6">
           <MessagingCard patient={displayPatient} />
+          {/* Message Your Provider - Positioned right after received messages */}
+          <PatientMessageInput 
+            patientId={displayPatient.id} 
+            providerId={7} 
+            disabled={false}
+          />
           <DexcomIntegration patientId={displayPatient.id} />
           <TwoFactorSettings />
         </div>
       </div>
 
-      {/* Message Your Provider - Mobile optimized */}
-      <div className="mb-8">
-        <PatientMessageInput 
-          patientId={displayPatient.id} 
-          providerId={7} 
-          disabled={false}
-        />
-      </div>
+
 
       {/* Exercise and Supplement Cards */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
