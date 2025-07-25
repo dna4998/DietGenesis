@@ -192,18 +192,23 @@ export default function PatientDashboard({ selectedPatientId }: PatientDashboard
           />
         </div>
         
-        {/* Patient Settings and Integrations */}
+        {/* Exercise Plan - Positioned before Dexcom */}
         <div className="space-y-6">
-          <DexcomIntegration patientId={displayPatient.id} />
+          <ExercisePlanCard patient={displayPatient} />
         </div>
       </div>
 
-
-
-      {/* Exercise and Supplement Cards */}
+      {/* Patient Settings and Integrations */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        <ExercisePlanCard patient={displayPatient} />
-        <SupplementsCard patient={displayPatient} />
+        {/* Dexcom Integration */}
+        <div className="space-y-6">
+          <DexcomIntegration patientId={displayPatient.id} />
+        </div>
+        
+        {/* Supplements */}
+        <div className="space-y-6">
+          <SupplementsCard patient={displayPatient} />
+        </div>
       </div>
 
       {/* Choose Your Plan - Positioned at the bottom */}
