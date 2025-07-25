@@ -2,9 +2,10 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Send } from "lucide-react";
+// import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Send, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 
 interface PatientMessageInputProps {
@@ -17,6 +18,12 @@ export default function PatientMessageInput({ patientId, providerId, disabled = 
   const [message, setMessage] = useState("");
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  // Check authentication status
+  const { data: authUser } = useQuery({
+    queryKey: ['/api/auth/user'],
+    retry: false,
+  });
 
   const sendMessageMutation = useMutation({
     mutationFn: async (content: string) => {
@@ -32,9 +39,18 @@ export default function PatientMessageInput({ patientId, providerId, disabled = 
     },
     onError: (error: any) => {
       console.error("Send message error:", error);
+      let errorMessage = error?.message || "Please try again later";
+      
+      // Handle authentication errors specifically
+      if (error?.message?.includes("401") || error?.message?.includes("Not authenticated")) {
+        errorMessage = "Please log in to send messages to your provider";
+      } else if (error?.message?.includes("403") || error?.message?.includes("Patient access required")) {
+        errorMessage = "You need to be logged in as a patient to send messages";
+      }
+      
       toast({ 
         title: "Failed to send message", 
-        description: error?.message || "Please try again later",
+        description: errorMessage,
         variant: "destructive" 
       });
     },
@@ -45,6 +61,8 @@ export default function PatientMessageInput({ patientId, providerId, disabled = 
     if (!message.trim() || sendMessageMutation.isPending) return;
     sendMessageMutation.mutate(message.trim());
   };
+
+  const isAuthenticated = !!authUser && (authUser as any)?.type === 'patient';
 
   if (disabled) {
     return (
@@ -59,6 +77,34 @@ export default function PatientMessageInput({ patientId, providerId, disabled = 
           <div className="flex gap-2">
             <Input 
               placeholder="Message your provider..." 
+              disabled 
+              className="opacity-50"
+            />
+            <Button disabled className="opacity-50">
+              <Send className="h-4 w-4" />
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <Card className="mt-4">
+        <CardHeader>
+          <CardTitle className="text-lg text-gray-600">Message Your Provider</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md flex items-center gap-2">
+            <AlertCircle className="h-4 w-4 text-yellow-600" />
+            <p className="text-sm text-yellow-700">
+              Please log in as a patient to send messages to your healthcare provider.
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <Input 
+              placeholder="Login required to send messages..." 
               disabled 
               className="opacity-50"
             />
