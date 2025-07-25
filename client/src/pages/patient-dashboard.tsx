@@ -154,14 +154,14 @@ export default function PatientDashboard({ selectedPatientId }: PatientDashboard
 
 
 
-      {/* Health Status Overview - Shows adaptive theme */}
-      <div className="mb-6">
-        <HealthStatusIndicator patient={displayPatient} showRecommendations={true} />
-      </div>
-
-      {/* Health Metrics - Positioned right below health status overview */}
+      {/* Health Metrics - Position #1 */}
       <div className="mb-6">
         <HealthMetricsCard patient={displayPatient} />
+      </div>
+
+      {/* Health Status Overview - Position #2 */}
+      <div className="mb-6">
+        <HealthStatusIndicator patient={displayPatient} showRecommendations={true} />
       </div>
 
       {/* Progress Overview - Positioned right below health metrics */}
