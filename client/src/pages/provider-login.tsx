@@ -67,7 +67,7 @@ export default function ProviderLogin() {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
-            <FreshLogo size="login" />
+            <FreshLogo size="login" showTitle={false} />
           </div>
           <CardTitle className="text-2xl font-bold text-health-primary flex items-center justify-center gap-2">
             <Stethoscope className="h-6 w-6" />
