@@ -14,12 +14,13 @@ export default function HealthMetricsCard({ patient }: HealthMetricsCardProps) {
   const [previousWeight, setPreviousWeight] = useState(patient.weight);
   const [previousBodyFat, setPreviousBodyFat] = useState(patient.bodyFat);
   const [showMetricChange, setShowMetricChange] = useState(false);
+  const [clickedMetric, setClickedMetric] = useState<string | null>(null);
 
   // Calculate if metrics are improving
-  const weightImproving = patient.weight < previousWeight;
-  const bodyFatImproving = patient.bodyFat < previousBodyFat;
-  const weightToGoalDiff = Math.abs(patient.weight - patient.weightGoal);
-  const bodyFatToGoalDiff = Math.abs(patient.bodyFat - patient.bodyFatGoal);
+  const weightImproving = (patient.weight || 0) < previousWeight;
+  const bodyFatImproving = (patient.bodyFat || 0) < previousBodyFat;
+  const weightToGoalDiff = Math.abs((patient.weight || 0) - (patient.weightGoal || 0));
+  const bodyFatToGoalDiff = Math.abs((patient.bodyFat || 0) - (patient.bodyFatGoal || 0));
 
   // Detect changes for animations
   useEffect(() => {
@@ -40,8 +41,8 @@ export default function HealthMetricsCard({ patient }: HealthMetricsCardProps) {
     return { color: "yellow", label: "Working", pulse: false };
   };
 
-  const weightStatus = getMetricStatus(patient.weight, patient.weightGoal);
-  const bodyFatStatus = getMetricStatus(patient.bodyFat, patient.bodyFatGoal, true);
+  const weightStatus = getMetricStatus(patient.weight || 0, patient.weightGoal || 0);
+  const bodyFatStatus = getMetricStatus(patient.bodyFat || 0, patient.bodyFatGoal || 0, true);
 
   return (
     <Card className="bg-gradient-to-br from-white via-green-50 to-blue-50 shadow-lg border border-green-200">
@@ -70,89 +71,129 @@ export default function HealthMetricsCard({ patient }: HealthMetricsCardProps) {
       <CardContent>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {/* Weight Metric */}
-          <div className="text-center p-4 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg border border-blue-200 relative">
-            <div className="flex items-center justify-center mb-2">
-              <Target className="h-4 w-4 text-blue-600 mr-1" />
-              <PulseIndicator 
-                active={weightStatus.pulse} 
-                color={weightStatus.color} 
-                size="sm" 
-              />
-            </div>
-            <CountUpAnimation 
-              value={patient.weight} 
-              className="text-2xl font-bold text-blue-600"
-              duration={1.5}
-            />
-            <div className="text-sm text-gray-600 mt-1">Current Weight (lbs)</div>
-            <div className="text-xs text-gray-500">Goal: {patient.weightGoal} lbs</div>
-            <Badge 
-              variant="secondary" 
-              className={`mt-2 text-${weightStatus.color}-600 bg-${weightStatus.color}-100`}
-            >
-              {weightStatus.label}
-            </Badge>
-            {weightImproving && showMetricChange && (
-              <div className="absolute top-2 right-2">
-                <TrendingUp className="h-4 w-4 text-green-500 animate-bounce" />
+          <DailyMetricsInput 
+            patientId={patient.id}
+            triggerButton={
+              <div className="text-center p-4 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg border border-blue-200 relative cursor-pointer hover:shadow-md transition-all duration-200 hover:scale-105 group">
+                <div className="flex items-center justify-center mb-2">
+                  <Target className="h-4 w-4 text-blue-600 mr-1" />
+                  <PulseIndicator 
+                    active={weightStatus.pulse} 
+                    color={weightStatus.color} 
+                    size="sm" 
+                  />
+                  <Plus className="h-3 w-3 text-blue-600 ml-2 opacity-0 group-hover:opacity-100 transition-opacity" />
+                </div>
+                <CountUpAnimation 
+                  value={patient.weight || 0} 
+                  className="text-2xl font-bold text-blue-600"
+                  duration={1.5}
+                />
+                <div className="text-sm text-gray-600 mt-1">Current Weight (lbs)</div>
+                <div className="text-xs text-gray-500">Goal: {patient.weightGoal} lbs</div>
+                <div className="text-xs text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity mt-1">
+                  Click to update
+                </div>
+                <Badge 
+                  variant="secondary" 
+                  className={`mt-2 text-${weightStatus.color}-600 bg-${weightStatus.color}-100`}
+                >
+                  {weightStatus.label}
+                </Badge>
+                {weightImproving && showMetricChange && (
+                  <div className="absolute top-2 right-2">
+                    <TrendingUp className="h-4 w-4 text-green-500 animate-bounce" />
+                  </div>
+                )}
               </div>
-            )}
-          </div>
+            }
+            focusField="weight"
+          />
 
           {/* Body Fat Metric */}
-          <div className="text-center p-4 bg-gradient-to-br from-green-50 to-green-100 rounded-lg border border-green-200 relative">
-            <div className="flex items-center justify-center mb-2">
-              <Activity className="h-4 w-4 text-green-600 mr-1" />
-              <PulseIndicator 
-                active={bodyFatStatus.pulse} 
-                color={bodyFatStatus.color} 
-                size="sm" 
-              />
-            </div>
-            <CountUpAnimation 
-              value={patient.bodyFat} 
-              suffix="%" 
-              className="text-2xl font-bold text-green-600"
-              duration={1.5}
-            />
-            <div className="text-sm text-gray-600 mt-1">Body Fat</div>
-            <div className="text-xs text-gray-500">Goal: {patient.bodyFatGoal}%</div>
-            <Badge 
-              variant="secondary" 
-              className={`mt-2 text-${bodyFatStatus.color}-600 bg-${bodyFatStatus.color}-100`}
-            >
-              {bodyFatStatus.label}
-            </Badge>
-            {bodyFatImproving && showMetricChange && (
-              <div className="absolute top-2 right-2">
-                <TrendingUp className="h-4 w-4 text-green-500 animate-bounce" />
+          <DailyMetricsInput 
+            patientId={patient.id}
+            triggerButton={
+              <div className="text-center p-4 bg-gradient-to-br from-green-50 to-green-100 rounded-lg border border-green-200 relative cursor-pointer hover:shadow-md transition-all duration-200 hover:scale-105 group">
+                <div className="flex items-center justify-center mb-2">
+                  <Activity className="h-4 w-4 text-green-600 mr-1" />
+                  <PulseIndicator 
+                    active={bodyFatStatus.pulse} 
+                    color={bodyFatStatus.color} 
+                    size="sm" 
+                  />
+                  <Plus className="h-3 w-3 text-green-600 ml-2 opacity-0 group-hover:opacity-100 transition-opacity" />
+                </div>
+                <CountUpAnimation 
+                  value={patient.bodyFat || 0} 
+                  suffix="%" 
+                  className="text-2xl font-bold text-green-600"
+                  duration={1.5}
+                />
+                <div className="text-sm text-gray-600 mt-1">Body Fat</div>
+                <div className="text-xs text-gray-500">Goal: {patient.bodyFatGoal}%</div>
+                <div className="text-xs text-green-600 opacity-0 group-hover:opacity-100 transition-opacity mt-1">
+                  Click to update
+                </div>
+                <Badge 
+                  variant="secondary" 
+                  className={`mt-2 text-${bodyFatStatus.color}-600 bg-${bodyFatStatus.color}-100`}
+                >
+                  {bodyFatStatus.label}
+                </Badge>
+                {bodyFatImproving && showMetricChange && (
+                  <div className="absolute top-2 right-2">
+                    <TrendingUp className="h-4 w-4 text-green-500 animate-bounce" />
+                  </div>
+                )}
               </div>
-            )}
-          </div>
+            }
+            focusField="bodyFat"
+          />
 
           {/* Blood Pressure */}
-          <div className="text-center p-4 bg-gradient-to-br from-amber-50 to-amber-100 rounded-lg border border-amber-200">
-            <div className="flex items-center justify-center mb-2">
-              <Heart className="h-4 w-4 text-amber-600" />
-            </div>
-            <div className="text-lg font-semibold text-amber-700">{patient.bloodPressure}</div>
-            <div className="text-sm text-gray-600 mt-1">Blood Pressure</div>
-            <div className="text-xs text-gray-500 mt-2">
-              {patient.bloodPressure === "120/80" ? "Optimal" : "Monitor"}
-            </div>
-          </div>
+          <DailyMetricsInput 
+            patientId={patient.id}
+            triggerButton={
+              <div className="text-center p-4 bg-gradient-to-br from-amber-50 to-amber-100 rounded-lg border border-amber-200 cursor-pointer hover:shadow-md transition-all duration-200 hover:scale-105 group">
+                <div className="flex items-center justify-center mb-2">
+                  <Heart className="h-4 w-4 text-amber-600" />
+                  <Plus className="h-3 w-3 text-amber-600 ml-2 opacity-0 group-hover:opacity-100 transition-opacity" />
+                </div>
+                <div className="text-lg font-semibold text-amber-700">{patient.bloodPressure}</div>
+                <div className="text-sm text-gray-600 mt-1">Blood Pressure</div>
+                <div className="text-xs text-amber-600 opacity-0 group-hover:opacity-100 transition-opacity mt-1">
+                  Click to update
+                </div>
+                <div className="text-xs text-gray-500 mt-2">
+                  {patient.bloodPressure === "120/80" ? "Optimal" : "Monitor"}
+                </div>
+              </div>
+            }
+            focusField="bloodPressure"
+          />
 
           {/* Blood Sugar */}
-          <div className="text-center p-4 bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg border border-purple-200">
-            <div className="flex items-center justify-center mb-2">
-              <Star className="h-4 w-4 text-purple-600" />
-            </div>
-            <div className="text-lg font-semibold text-purple-700">{patient.bloodSugar}</div>
-            <div className="text-sm text-gray-600 mt-1">Blood Sugar</div>
-            <div className="text-xs text-gray-500 mt-2">
-              {parseInt(patient.bloodSugar) < 100 ? "Normal" : "Monitor"}
-            </div>
-          </div>
+          <DailyMetricsInput 
+            patientId={patient.id}
+            triggerButton={
+              <div className="text-center p-4 bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg border border-purple-200 cursor-pointer hover:shadow-md transition-all duration-200 hover:scale-105 group">
+                <div className="flex items-center justify-center mb-2">
+                  <Star className="h-4 w-4 text-purple-600" />
+                  <Plus className="h-3 w-3 text-purple-600 ml-2 opacity-0 group-hover:opacity-100 transition-opacity" />
+                </div>
+                <div className="text-lg font-semibold text-purple-700">{patient.bloodSugar}</div>
+                <div className="text-sm text-gray-600 mt-1">Blood Sugar</div>
+                <div className="text-xs text-purple-600 opacity-0 group-hover:opacity-100 transition-opacity mt-1">
+                  Click to update
+                </div>
+                <div className="text-xs text-gray-500 mt-2">
+                  {parseInt(patient.bloodSugar) < 100 ? "Normal" : "Monitor"}
+                </div>
+              </div>
+            }
+            focusField="bloodSugar"
+          />
         </div>
 
         {/* Insulin Resistance Status */}

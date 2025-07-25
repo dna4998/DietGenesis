@@ -16,18 +16,18 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 
 const dailyMetricsSchema = z.object({
-  weight: z.string().optional().transform(val => val ? parseFloat(val) : undefined),
-  bloodPressureSystolic: z.string().optional().transform(val => val ? parseInt(val) : undefined),
-  bloodPressureDiastolic: z.string().optional().transform(val => val ? parseInt(val) : undefined),
-  bloodSugar: z.string().optional().transform(val => val ? parseFloat(val) : undefined),
-  bodyFat: z.string().optional().transform(val => val ? parseFloat(val) : undefined),
-  waistCircumference: z.string().optional().transform(val => val ? parseFloat(val) : undefined),
-  heartRate: z.string().optional().transform(val => val ? parseInt(val) : undefined),
-  sleepHours: z.string().optional().transform(val => val ? parseFloat(val) : undefined),
-  stepsCount: z.string().optional().transform(val => val ? parseInt(val) : undefined),
-  waterIntake: z.string().optional().transform(val => val ? parseFloat(val) : undefined),
+  weight: z.union([z.string(), z.number()]).optional().transform(val => val && val !== "" ? parseFloat(val.toString()) : undefined),
+  bloodPressureSystolic: z.union([z.string(), z.number()]).optional().transform(val => val && val !== "" ? parseInt(val.toString()) : undefined),
+  bloodPressureDiastolic: z.union([z.string(), z.number()]).optional().transform(val => val && val !== "" ? parseInt(val.toString()) : undefined),
+  bloodSugar: z.union([z.string(), z.number()]).optional().transform(val => val && val !== "" ? parseFloat(val.toString()) : undefined),
+  bodyFat: z.union([z.string(), z.number()]).optional().transform(val => val && val !== "" ? parseFloat(val.toString()) : undefined),
+  waistCircumference: z.union([z.string(), z.number()]).optional().transform(val => val && val !== "" ? parseFloat(val.toString()) : undefined),
+  heartRate: z.union([z.string(), z.number()]).optional().transform(val => val && val !== "" ? parseInt(val.toString()) : undefined),
+  sleepHours: z.union([z.string(), z.number()]).optional().transform(val => val && val !== "" ? parseFloat(val.toString()) : undefined),
+  stepsCount: z.union([z.string(), z.number()]).optional().transform(val => val && val !== "" ? parseInt(val.toString()) : undefined),
+  waterIntake: z.union([z.string(), z.number()]).optional().transform(val => val && val !== "" ? parseFloat(val.toString()) : undefined),
   mood: z.string().optional(),
-  energyLevel: z.string().optional().transform(val => val ? parseInt(val) : undefined),
+  energyLevel: z.union([z.string(), z.number()]).optional().transform(val => val && val !== "" ? parseInt(val.toString()) : undefined),
   notes: z.string().optional(),
 });
 
@@ -36,29 +36,44 @@ type DailyMetricsForm = z.infer<typeof dailyMetricsSchema>;
 interface DailyMetricsInputProps {
   patientId: number;
   triggerButton?: React.ReactNode;
+  focusField?: string;
 }
 
-export default function DailyMetricsInput({ patientId, triggerButton }: DailyMetricsInputProps) {
+export default function DailyMetricsInput({ patientId, triggerButton, focusField }: DailyMetricsInputProps) {
   const [open, setOpen] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
+  // Auto-focus specific field when dialog opens
+  const handleOpenChange = (newOpen: boolean) => {
+    setOpen(newOpen);
+    if (newOpen && focusField) {
+      // Set focus to the specific field after dialog renders
+      setTimeout(() => {
+        const input = document.querySelector(`input[name="${focusField}"], input[name="${focusField}Systolic"]`) as HTMLInputElement;
+        if (input) {
+          input.focus();
+        }
+      }, 100);
+    }
+  };
+
   const form = useForm<DailyMetricsForm>({
     resolver: zodResolver(dailyMetricsSchema),
     defaultValues: {
-      weight: "",
-      bloodPressureSystolic: "",
-      bloodPressureDiastolic: "",
-      bloodSugar: "",
-      bodyFat: "",
-      waistCircumference: "",
-      heartRate: "",
-      sleepHours: "",
-      stepsCount: "",
-      waterIntake: "",
-      mood: "",
-      energyLevel: "",
-      notes: "",
+      weight: undefined,
+      bloodPressureSystolic: undefined,
+      bloodPressureDiastolic: undefined,
+      bloodSugar: undefined,
+      bodyFat: undefined,
+      waistCircumference: undefined,
+      heartRate: undefined,
+      sleepHours: undefined,
+      stepsCount: undefined,
+      waterIntake: undefined,
+      mood: undefined,
+      energyLevel: undefined,
+      notes: undefined,
     },
   });
 
@@ -69,10 +84,7 @@ export default function DailyMetricsInput({ patientId, triggerButton }: DailyMet
         date: new Date().toISOString(),
         ...data,
       };
-      return apiRequest(`/api/patients/${patientId}/daily-metrics`, {
-        method: 'POST',
-        body: JSON.stringify(metricsData),
-      });
+      return apiRequest('POST', `/api/patients/${patientId}/daily-metrics`, metricsData);
     },
     onSuccess: () => {
       toast({
@@ -97,7 +109,7 @@ export default function DailyMetricsInput({ patientId, triggerButton }: DailyMet
     // Filter out empty values
     const filteredData = Object.entries(data).reduce((acc, [key, value]) => {
       if (value !== "" && value !== undefined && value !== null) {
-        acc[key as keyof DailyMetricsForm] = value;
+        acc[key as keyof DailyMetricsForm] = value as any;
       }
       return acc;
     }, {} as Partial<DailyMetricsForm>);
@@ -121,8 +133,20 @@ export default function DailyMetricsInput({ patientId, triggerButton }: DailyMet
     </Button>
   );
 
+  // Get focused section title based on focusField
+  const getFocusedTitle = () => {
+    if (!focusField) return "Daily Health Metrics";
+    switch (focusField) {
+      case "weight": return "Update Weight";
+      case "bodyFat": return "Update Body Fat";
+      case "bloodPressure": return "Update Blood Pressure";
+      case "bloodSugar": return "Update Blood Sugar";
+      default: return "Daily Health Metrics";
+    }
+  };
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         {triggerButton || defaultTrigger}
       </DialogTrigger>
@@ -130,10 +154,13 @@ export default function DailyMetricsInput({ patientId, triggerButton }: DailyMet
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Calendar className="h-5 w-5 text-blue-600" />
-            Daily Health Metrics
+            {getFocusedTitle()}
           </DialogTitle>
           <DialogDescription>
-            Track your daily health data. Only fill in the metrics you have available today.
+            {focusField 
+              ? `Update your ${focusField.replace(/([A-Z])/g, ' $1').toLowerCase()} measurement for today.`
+              : "Track your daily health data. Only fill in the metrics you have available today."
+            }
           </DialogDescription>
         </DialogHeader>
 
