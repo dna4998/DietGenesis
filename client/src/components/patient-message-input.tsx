@@ -67,20 +67,8 @@ export default function PatientMessageInput({ patientId, providerId, disabled = 
 
   const isAuthenticated = !!authUser && (authUser as any)?.type === 'patient';
   
-  // Debug logging
-  console.log("PatientMessageInput Debug:", {
-    authUser,
-    isAuthenticated,
-    patientId,
-    providerId,
-    disabled,
-    messageValue: message
-  });
-
-  // Force authentication check for debugging
-  if (authUser && (authUser as any)?.type !== 'patient') {
-    console.warn("User is not a patient:", authUser);
-  }
+  // Remove subscription requirement - messaging is now free for all patients
+  const canSendMessages = isAuthenticated; // No subscription check needed
 
   if (disabled) {
     return (
@@ -90,7 +78,7 @@ export default function PatientMessageInput({ patientId, providerId, disabled = 
         </CardHeader>
         <CardContent>
           <p className="text-sm text-gray-500 mb-4">
-            Messaging is available with an active subscription. Please subscribe for full access to communicate with your healthcare provider.
+            Messaging is now available for free! Send messages directly to your healthcare provider.
           </p>
           <div className="flex gap-2">
             <Input 
@@ -144,12 +132,7 @@ export default function PatientMessageInput({ patientId, providerId, disabled = 
         <p className="text-sm text-gray-600 mb-4">
           Send a message directly to your healthcare provider. They will respond through this same messaging system.
         </p>
-        {/* Debug info */}
-        <div className="mb-2 p-2 bg-gray-50 border rounded text-xs">
-          <strong>Debug:</strong> Auth: {isAuthenticated ? 'Yes' : 'No'}, 
-          User: {authUser ? (authUser as any).name : 'None'}, 
-          Type: {authUser ? (authUser as any).type : 'None'}
-        </div>
+
         <form onSubmit={handleSubmit} className="flex gap-2">
           <Input
             value={message}
@@ -160,7 +143,7 @@ export default function PatientMessageInput({ patientId, providerId, disabled = 
           />
           <Button 
             type="submit" 
-            disabled={!message.trim() || sendMessageMutation.isPending || !isAuthenticated}
+            disabled={!message.trim() || sendMessageMutation.isPending || !canSendMessages}
             className="bg-blue-600 hover:bg-blue-700"
           >
             {sendMessageMutation.isPending ? (
