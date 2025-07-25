@@ -83,6 +83,12 @@ export default function PatientDashboard({ selectedPatientId }: PatientDashboard
   // Use local patient for demo purposes, fall back to fetched patient
   const displayPatient = localPatient || patient;
 
+  // Fetch subscription status
+  const { data: subscriptionStatus } = useQuery({
+    queryKey: ['/api/patients', selectedPatientId, 'subscription', 'status'],
+    enabled: !!displayPatient,
+  });
+
   if (isLoading) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -172,7 +178,7 @@ export default function PatientDashboard({ selectedPatientId }: PatientDashboard
           <PatientMessageInput 
             patientId={displayPatient.id} 
             providerId={1} 
-            disabled={subscriptionStatus?.subscriptionStatus !== 'active'}
+            disabled={(subscriptionStatus as any)?.subscriptionStatus !== 'active'}
           />
           <DexcomIntegration patientId={displayPatient.id} />
         </div>
@@ -192,7 +198,14 @@ export default function PatientDashboard({ selectedPatientId }: PatientDashboard
       {/* Progress Celebration Modal */}
       {showCelebration && celebrationData && (
         <ProgressCelebration
-          patient={celebrationData}
+          patient={{
+            name: celebrationData.name,
+            weight: parseFloat(celebrationData.weight as string) || 0,
+            weightGoal: parseFloat(celebrationData.weightGoal as string) || 0,
+            bodyFat: parseFloat(celebrationData.bodyFat as string) || 0,
+            bodyFatGoal: parseFloat(celebrationData.bodyFatGoal as string) || 0,
+            adherence: celebrationData.adherence || 0
+          }}
           onClose={closeCelebration}
         />
       )}
