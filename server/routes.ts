@@ -768,6 +768,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Daily health metrics endpoints
+  app.post("/api/patients/:id/daily-metrics", sessionMiddleware, requirePatient, async (req: AuthenticatedRequest, res) => {
+    try {
+      const patientId = parseInt(req.params.id);
+      const metricsData = {
+        ...req.body,
+        patientId,
+        date: new Date(req.body.date),
+      };
+
+      const metrics = await storage.createDailyHealthMetrics(metricsData);
+      res.status(201).json(metrics);
+    } catch (error) {
+      console.error('Error saving daily metrics:', error);
+      res.status(500).json({ error: 'Failed to save daily metrics' });
+    }
+  });
+
+  app.get("/api/patients/:id/daily-metrics", sessionMiddleware, requirePatient, async (req: AuthenticatedRequest, res) => {
+    try {
+      const patientId = parseInt(req.params.id);
+      const days = req.query.days ? parseInt(req.query.days as string) : 30;
+      
+      const metrics = await storage.getDailyHealthMetricsForPatient(patientId, days);
+      res.json(metrics);
+    } catch (error) {
+      console.error('Error fetching daily metrics:', error);
+      res.status(500).json({ error: 'Failed to fetch daily metrics' });
+    }
+  });
+
   // Analyze lab results for a patient
   app.post("/api/patients/:id/analyze-labs", async (req, res) => {
     try {

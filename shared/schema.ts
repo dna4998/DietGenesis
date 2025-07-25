@@ -105,6 +105,27 @@ export const dexcomData = pgTable("dexcom_data", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+// Daily health metrics tracking for patients
+export const dailyHealthMetrics = pgTable("daily_health_metrics", {
+  id: serial("id").primaryKey(),
+  patientId: integer("patient_id").notNull().references(() => patients.id),
+  date: timestamp("date").notNull(), // Date of the measurement
+  weight: decimal("weight", { precision: 5, scale: 2 }), // lbs
+  bloodPressureSystolic: integer("blood_pressure_systolic"), // mmHg
+  bloodPressureDiastolic: integer("blood_pressure_diastolic"), // mmHg
+  bloodSugar: decimal("blood_sugar", { precision: 5, scale: 1 }), // mg/dL
+  bodyFat: decimal("body_fat", { precision: 4, scale: 1 }), // %
+  waistCircumference: decimal("waist_circumference", { precision: 4, scale: 1 }), // inches
+  heartRate: integer("heart_rate"), // bpm
+  sleepHours: decimal("sleep_hours", { precision: 3, scale: 1 }), // hours
+  stepsCount: integer("steps_count"), // daily steps
+  waterIntake: decimal("water_intake", { precision: 4, scale: 1 }), // ounces
+  mood: text("mood"), // 'excellent', 'good', 'fair', 'poor'
+  energyLevel: integer("energy_level"), // 1-10 scale
+  notes: text("notes"), // Optional patient notes
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 export const insertPatientSchema = createInsertSchema(patients).omit({
   id: true,
   createdAt: true,
@@ -122,6 +143,17 @@ export const updatePatientSchema = createInsertSchema(patients).omit({
   stripeSubscriptionId: true,
   subscriptionStartDate: true,
   subscriptionEndDate: true,
+}).partial();
+
+export const insertDailyHealthMetricsSchema = createInsertSchema(dailyHealthMetrics).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const updateDailyHealthMetricsSchema = createInsertSchema(dailyHealthMetrics).omit({
+  id: true,
+  patientId: true,
+  createdAt: true,
 }).partial();
 
 export const insertProviderSchema = createInsertSchema(providers).omit({
@@ -254,3 +286,6 @@ export type SupplementRecommendation = typeof supplementRecommendations.$inferSe
 export type InsertSupplementRecommendation = z.infer<typeof insertSupplementRecommendationSchema>;
 export type ProviderAffiliateSettings = typeof providerAffiliateSettings.$inferSelect;
 export type InsertProviderAffiliateSettings = z.infer<typeof insertProviderAffiliateSettingsSchema>;
+export type DailyHealthMetrics = typeof dailyHealthMetrics.$inferSelect;
+export type InsertDailyHealthMetrics = z.infer<typeof insertDailyHealthMetricsSchema>;
+export type UpdateDailyHealthMetrics = z.infer<typeof updateDailyHealthMetricsSchema>;

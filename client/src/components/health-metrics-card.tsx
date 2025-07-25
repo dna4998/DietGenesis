@@ -1,9 +1,10 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Heart, Activity, Target, TrendingUp, Star } from "lucide-react";
+import { Heart, Activity, Target, TrendingUp, Star, Plus } from "lucide-react";
 import { CountUpAnimation, MicroAnimation, PulseIndicator } from "./micro-animations";
 import { useState, useEffect } from "react";
 import type { Patient } from "@shared/schema";
+import DailyMetricsInput from "./daily-metrics-input";
 
 interface HealthMetricsCardProps {
   patient: Patient;
@@ -45,13 +46,24 @@ export default function HealthMetricsCard({ patient }: HealthMetricsCardProps) {
   return (
     <Card className="bg-gradient-to-br from-white via-green-50 to-blue-50 shadow-lg border border-green-200">
       <CardHeader>
-        <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-          <Heart className="h-5 w-5 text-red-500" />
-          Health Metrics
-          <MicroAnimation 
-            type="improvement" 
-            trigger={showMetricChange && (weightImproving || bodyFatImproving)}
-            className="text-green-500"
+        <CardTitle className="text-lg font-semibold text-gray-900 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Heart className="h-5 w-5 text-red-500" />
+            Health Metrics
+            <MicroAnimation 
+              type="improvement" 
+              trigger={showMetricChange && (weightImproving || bodyFatImproving)}
+              className="text-green-500"
+            />
+          </div>
+          <DailyMetricsInput 
+            patientId={patient.id}
+            triggerButton={
+              <button className="inline-flex items-center px-3 py-1 text-sm font-medium text-blue-700 bg-blue-100 rounded-lg hover:bg-blue-200 transition-colors">
+                <Plus className="h-4 w-4 mr-1" />
+                Add Today's Data
+              </button>
+            }
           />
         </CardTitle>
       </CardHeader>

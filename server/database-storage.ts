@@ -27,6 +27,9 @@ import {
   type InsertProviderAffiliateSettings,
   type PasswordResetToken,
   type InsertPasswordResetToken,
+  dailyHealthMetrics,
+  type DailyHealthMetrics,
+  type InsertDailyHealthMetrics,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, lt } from "drizzle-orm";
@@ -102,6 +105,12 @@ export interface IStorage {
   verifyPasswordResetToken(token: string): Promise<{ email: string; userType: 'patient' | 'provider' } | null>;
   resetPassword(token: string, newPassword: string): Promise<boolean>;
   cleanupExpiredTokens(): Promise<void>;
+
+  // Daily Health Metrics operations
+  createDailyHealthMetrics(metrics: InsertDailyHealthMetrics): Promise<DailyHealthMetrics>;
+  getDailyHealthMetricsForPatient(patientId: number, days?: number): Promise<DailyHealthMetrics[]>;
+  getDailyHealthMetricsForDate(patientId: number, date: Date): Promise<DailyHealthMetrics | undefined>;
+  updateDailyHealthMetrics(id: number, updates: Partial<InsertDailyHealthMetrics>): Promise<DailyHealthMetrics | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -544,6 +553,44 @@ export class DatabaseStorage implements IStorage {
       console.error('Error updating backup codes:', error);
       return false;
     }
+  }
+
+  // Daily Health Metrics operations
+  async createDailyHealthMetrics(metrics: InsertDailyHealthMetrics): Promise<DailyHealthMetrics> {
+    const [result] = await db
+      .insert(dailyHealthMetrics)
+      .values(metrics)
+      .returning();
+    return result;
+  }
+
+  async getDailyHealthMetricsForPatient(patientId: number, days: number = 30): Promise<DailyHealthMetrics[]> {
+    return await db
+      .select()
+      .from(dailyHealthMetrics)
+      .where(eq(dailyHealthMetrics.patientId, patientId))
+      .orderBy(desc(dailyHealthMetrics.date))
+      .limit(days);
+  }
+
+  async getDailyHealthMetricsForDate(patientId: number, date: Date): Promise<DailyHealthMetrics | undefined> {
+    const [result] = await db
+      .select()
+      .from(dailyHealthMetrics)
+      .where(and(
+        eq(dailyHealthMetrics.patientId, patientId),
+        eq(dailyHealthMetrics.date, date)
+      ));
+    return result;
+  }
+
+  async updateDailyHealthMetrics(id: number, updates: Partial<InsertDailyHealthMetrics>): Promise<DailyHealthMetrics | undefined> {
+    const [result] = await db
+      .update(dailyHealthMetrics)
+      .set(updates)
+      .where(eq(dailyHealthMetrics.id, id))
+      .returning();
+    return result;
   }
 }
 
