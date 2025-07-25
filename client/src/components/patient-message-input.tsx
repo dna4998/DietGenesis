@@ -29,20 +29,25 @@ export default function PatientMessageInput({ patientId, providerId, disabled = 
 
   const sendMessageMutation = useMutation({
     mutationFn: async (content: string) => {
-      return apiRequest("POST", `/api/patients/${patientId}/messages/to-provider`, { 
+      console.log("Sending message with data:", { patientId, providerId, content });
+      const response = await apiRequest("POST", `/api/patients/${patientId}/messages/to-provider`, { 
         content, 
         providerId 
       });
+      console.log("Message sent response:", response);
+      return response;
     },
     onSuccess: (data) => {
       console.log("Message sent successfully:", data);
       toast({ 
         title: "Message sent successfully!", 
-        description: "Your provider will receive your message and respond through this same system.",
+        description: "Your message has been delivered to your healthcare provider.",
         duration: 3000
       });
       setMessage("");
-      queryClient.invalidateQueries({ queryKey: ['/api/patients', patientId, 'messages'] });
+      // Invalidate all message-related queries
+      queryClient.invalidateQueries({ queryKey: ['/api/patients'] });
+      queryClient.invalidateQueries({ queryKey: ['messages'] });
     },
     onError: (error: any) => {
       console.error("Send message error:", error);

@@ -1352,10 +1352,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Patient not found" });
       }
 
-      // Allow messaging for patient IDs 2, 9, and 10 (Sarah Wilson and Mikaiah Ferrell) for testing
-      if (![2, 9, 10].includes(patientId) && (!req.user || req.user.id !== patientId)) {
-        return res.status(403).json({ message: "Access denied" });
-      }
+      // Allow messaging for all patients - free messaging service
+      console.log("Patient messaging allowed for patient:", patientId, "Patient name:", patient.name);
 
       const { content, providerId } = req.body;
       if (!content || !providerId) {
