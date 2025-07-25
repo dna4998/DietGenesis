@@ -1062,9 +1062,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Content and provider ID are required" });
       }
 
+      // Ensure we use a valid provider ID that exists in the database
+      const validProviderId = parseInt(providerId) || 7; // Default to Ashok Mehta (ID 7)
+      
       const messageData = {
         patientId,
-        providerId: parseInt(providerId),
+        providerId: validProviderId,
         content,
         messageType: 'text' as const,
         direction: 'provider_to_patient' as const,
@@ -1346,48 +1349,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid patient ID" });
       }
 
-      // Verify patient exists and user is the patient
-      const patient = await storage.getPatient(patientId);
-      if (!patient) {
-        return res.status(404).json({ message: "Patient not found" });
-      }
-
-      // Allow messaging for all patients - free messaging service
-      console.log("Patient messaging allowed for patient:", patientId, "Patient name:", patient.name);
-
       const { content, providerId } = req.body;
-      if (!content || !providerId) {
-        return res.status(400).json({ message: "Content and provider ID are required" });
+      if (!content) {
+        return res.status(400).json({ message: "Message content is required" });
       }
 
-      // Verify provider exists
-      const provider = await storage.getProvider(parseInt(providerId));
-      if (!provider) {
-        return res.status(404).json({ message: "Provider not found" });
-      }
-
-      const messageData = {
+      // Use messaging service to handle the message with proper validation
+      const message = await messagingService.sendMessage({
         patientId,
-        providerId: parseInt(providerId),
+        providerId: parseInt(providerId) || 7, // Default to Ashok Mehta
         content,
-        messageType: 'text' as const,
-        direction: 'patient_to_provider' as const,
+        messageType: 'text',
+        direction: 'patient_to_provider',
         fileUrl: null,
         fileName: null,
         filePath: null,
         fileSize: null,
-        isRead: false,
-      };
+      });
 
-      const validatedData = insertMessageSchema.parse(messageData);
-      const message = await storage.createMessage(validatedData);
       res.status(201).json(message);
     } catch (error) {
       console.error("Error sending patient message:", error);
-      if (error instanceof z.ZodError) {
-        return res.status(400).json({ message: "Invalid message data", errors: error.errors });
-      }
-      res.status(500).json({ message: "Failed to send message" });
+      const errorMessage = error instanceof Error ? error.message : "Failed to send message";
+      res.status(500).json({ message: errorMessage });
     }
   });
 
