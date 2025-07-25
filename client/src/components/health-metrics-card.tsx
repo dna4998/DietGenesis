@@ -205,39 +205,64 @@ export default function HealthMetricsCard({ patient }: HealthMetricsCardProps) {
           />
         </div>
 
-        {/* Insulin Resistance Status */}
-        <div className="mt-6 p-4 bg-gradient-to-r from-gray-50 to-blue-50 rounded-lg border border-gray-200">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-gray-700">Insulin Resistance:</span>
-              <MicroAnimation 
-                type="streak" 
-                trigger={!patient.insulinResistance}
-                className="text-green-500"
-              />
+        {/* Insulin Resistance Status - Clickable */}
+        <DailyMetricsInput 
+          patientId={patient.id}
+          triggerButton={
+            <div className="mt-6 p-4 bg-gradient-to-r from-gray-50 to-blue-50 rounded-lg border border-gray-200 cursor-pointer hover:shadow-md transition-all duration-200 hover:border-blue-300 group">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium text-gray-700">Insulin Resistance:</span>
+                  <MicroAnimation 
+                    type="streak" 
+                    trigger={patient.insulinResistance === 'normal' || !patient.insulinResistance}
+                    className="text-green-500"
+                  />
+                  <Plus className="h-3 w-3 text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity" />
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                    !patient.insulinResistance || patient.insulinResistance === 'normal'
+                      ? "bg-green-100 text-green-800"
+                      : patient.insulinResistance === 'mild'
+                      ? "bg-yellow-100 text-yellow-800"
+                      : patient.insulinResistance === 'moderate'
+                      ? "bg-orange-100 text-orange-800"
+                      : "bg-red-100 text-red-800"
+                  }`}>
+                    {!patient.insulinResistance || patient.insulinResistance === 'normal' 
+                      ? "Normal" 
+                      : patient.insulinResistance === 'mild'
+                      ? "Mild"
+                      : patient.insulinResistance === 'moderate'
+                      ? "Moderate"
+                      : patient.insulinResistance === 'high'
+                      ? "High"
+                      : patient.insulinResistance === 'severe'
+                      ? "Severe"
+                      : "Not Set"
+                    }
+                  </span>
+                  <PulseIndicator 
+                    active={!patient.insulinResistance || patient.insulinResistance === 'normal'} 
+                    color={!patient.insulinResistance || patient.insulinResistance === 'normal' ? "green" : "red"} 
+                    size="sm" 
+                  />
+                </div>
+              </div>
+              {(!patient.insulinResistance || patient.insulinResistance === 'normal') && (
+                <div className="mt-2 text-xs text-green-600 flex items-center gap-1">
+                  <Star className="h-3 w-3" />
+                  Excellent metabolic health!
+                </div>
+              )}
+              <div className="mt-2 text-xs text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity">
+                🖱️ Click to update your insulin resistance level
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                patient.insulinResistance 
-                  ? "bg-red-100 text-red-800" 
-                  : "bg-green-100 text-green-800"
-              }`}>
-                {patient.insulinResistance ? "Present" : "Not Present"}
-              </span>
-              <PulseIndicator 
-                active={!patient.insulinResistance} 
-                color={patient.insulinResistance ? "red" : "green"} 
-                size="sm" 
-              />
-            </div>
-          </div>
-          {!patient.insulinResistance && (
-            <div className="mt-2 text-xs text-green-600 flex items-center gap-1">
-              <Star className="h-3 w-3" />
-              Excellent metabolic health!
-            </div>
-          )}
-        </div>
+          }
+          focusField="insulinResistance"
+        />
       </CardContent>
     </Card>
   );

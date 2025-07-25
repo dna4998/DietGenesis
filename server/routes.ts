@@ -781,14 +781,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/patients/:id/daily-metrics", sessionMiddleware, requirePatient, async (req: AuthenticatedRequest, res) => {
     try {
       const patientId = parseInt(req.params.id);
-      const metricsData = {
-        ...req.body,
-        patientId,
-        date: new Date(req.body.date),
-      };
-
-      const metrics = await storage.createDailyHealthMetrics(metricsData);
-      res.status(201).json(metrics);
+      const { insulinResistance, ...metricsData } = req.body;
+      
+      // Handle insulin resistance separately as it's a patient field, not daily metrics
+      if (insulinResistance !== undefined) {
+        await storage.updatePatient(patientId, { insulinResistance });
+      }
+      
+      // Only create daily metrics if there's actual daily data
+      if (Object.keys(metricsData).filter(key => key !== 'patientId' && key !== 'date').length > 0) {
+        const dailyData = {
+          ...metricsData,
+          patientId,
+          date: new Date(req.body.date),
+        };
+        const metrics = await storage.createDailyHealthMetrics(dailyData);
+        res.status(201).json(metrics);
+      } else {
+        // If only insulin resistance was updated, return success
+        res.status(200).json({ message: 'Patient data updated successfully' });
+      }
     } catch (error) {
       console.error('Error saving daily metrics:', error);
       res.status(500).json({ error: 'Failed to save daily metrics' });

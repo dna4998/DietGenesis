@@ -16,7 +16,7 @@ export const patients = pgTable("patients", {
   weightGoal: decimal("weight_goal", { precision: 5, scale: 2 }).notNull(),
   bodyFat: decimal("body_fat", { precision: 4, scale: 1 }).notNull(),
   bodyFatGoal: decimal("body_fat_goal", { precision: 4, scale: 1 }).notNull(),
-  insulinResistance: boolean("insulin_resistance").notNull().default(false),
+  insulinResistance: text("insulin_resistance").notNull().default('normal'), // 'normal', 'mild', 'moderate', 'high', 'severe'
   bloodPressure: text("blood_pressure").notNull(),
   lastVisit: text("last_visit").notNull(),
   dietPlan: text("diet_plan"),

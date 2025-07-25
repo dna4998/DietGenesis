@@ -28,6 +28,7 @@ const dailyMetricsSchema = z.object({
   waterIntake: z.union([z.string(), z.number()]).optional().transform(val => val && val !== "" ? parseFloat(val.toString()) : undefined),
   mood: z.string().optional(),
   energyLevel: z.union([z.string(), z.number()]).optional().transform(val => val && val !== "" ? parseInt(val.toString()) : undefined),
+  insulinResistance: z.string().optional(),
   notes: z.string().optional(),
 });
 
@@ -73,6 +74,7 @@ export default function DailyMetricsInput({ patientId, triggerButton, focusField
       waterIntake: undefined,
       mood: undefined,
       energyLevel: undefined,
+      insulinResistance: undefined,
       notes: undefined,
     },
   });
@@ -141,6 +143,7 @@ export default function DailyMetricsInput({ patientId, triggerButton, focusField
       case "bodyFat": return "Update Body Fat";
       case "bloodPressure": return "Update Blood Pressure";
       case "bloodSugar": return "Update Blood Sugar";
+      case "insulinResistance": return "Update Insulin Resistance";
       default: return "Daily Health Metrics";
     }
   };
@@ -278,6 +281,30 @@ export default function DailyMetricsInput({ patientId, triggerButton, focusField
                       <FormControl>
                         <Input placeholder="95" type="number" step="0.1" {...field} />
                       </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="insulinResistance"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Insulin Resistance Level</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select level" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="normal">Normal</SelectItem>
+                          <SelectItem value="mild">Mild</SelectItem>
+                          <SelectItem value="moderate">Moderate</SelectItem>
+                          <SelectItem value="high">High</SelectItem>
+                          <SelectItem value="severe">Severe</SelectItem>
+                        </SelectContent>
+                      </Select>
                       <FormMessage />
                     </FormItem>
                   )}
