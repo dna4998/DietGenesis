@@ -192,9 +192,9 @@ export default function Header({
               </SheetTrigger>
               <SheetContent side="right" className="w-[300px] sm:w-[400px]">
                 <SheetHeader>
-                  <SheetTitle>DNA Diet Club</SheetTitle>
+                  <SheetTitle>Navigation Menu</SheetTitle>
                   <SheetDescription>
-                    Personalized health and wellness platform
+                    Access your health platform features
                   </SheetDescription>
                 </SheetHeader>
                 <div className="grid gap-4 py-4">
