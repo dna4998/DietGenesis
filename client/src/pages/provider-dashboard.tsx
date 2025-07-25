@@ -254,13 +254,7 @@ export default function ProviderDashboard() {
               🎉 {showPatientView ? "Back to Provider" : "View Patient Celebrations"}
             </Button>
             
-            <Button 
-              onClick={() => window.location.href = '/login'} 
-              variant="outline"
-              className="flex items-center gap-2 w-full sm:w-auto bg-red-100 border-red-500 text-red-700"
-            >
-              📱 Test Patient Mobile View
-            </Button>
+
             <Button 
               onClick={() => setShowAddPatient(true)} 
               className="flex items-center gap-2 bg-medical-blue hover:bg-blue-700 text-white w-full sm:w-auto"
