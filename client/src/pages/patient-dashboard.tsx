@@ -190,7 +190,6 @@ export default function PatientDashboard({ selectedPatientId }: PatientDashboard
         {/* Patient Settings and Integrations */}
         <div className="space-y-6">
           <DexcomIntegration patientId={displayPatient.id} />
-          <TwoFactorSettings />
         </div>
       </div>
 
@@ -210,6 +209,11 @@ export default function PatientDashboard({ selectedPatientId }: PatientDashboard
       {/* Choose Your Plan - Positioned at the bottom */}
       <div className="mb-8">
         <SimpleSubscriptionCard patient={displayPatient} />
+      </div>
+
+      {/* Two Factor Authentication - Positioned at the very bottom */}
+      <div className="mb-8">
+        <TwoFactorSettings />
       </div>
 
       {/* Progress Celebration Modal */}
