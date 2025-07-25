@@ -67,6 +67,7 @@ export const messages = pgTable("messages", {
   providerId: integer("provider_id").notNull().references(() => providers.id),
   content: text("content").notNull(),
   messageType: text("message_type").notNull(), // 'text', 'pdf', 'video_link', 'pdf_link', 'lab_results', 'gut_biome_test', 'genetic_test', 'imaging_results', 'cardiology_report', 'general_report'
+  direction: text("direction").notNull().default('provider_to_patient'), // 'provider_to_patient' or 'patient_to_provider'
   fileUrl: text("file_url"), // For uploaded files or external links
   fileName: text("file_name"), // Original filename for uploads
   filePath: text("file_path"), // Server file path for uploaded files

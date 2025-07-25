@@ -225,6 +225,14 @@ export class DatabaseStorage implements IStorage {
     return result.rowCount > 0;
   }
 
+  async getMessagesForProvider(providerId: number): Promise<Message[]> {
+    return await db
+      .select()
+      .from(messages)
+      .where(eq(messages.providerId, providerId))
+      .orderBy(desc(messages.createdAt));
+  }
+
   // Subscription operations
   async updatePatientSubscription(id: number, subscriptionData: {
     subscriptionStatus: string;

@@ -76,7 +76,7 @@ export default function MessagingCard({ patient }: MessagingCardProps) {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <MessageCircle className="h-5 w-5" />
-          Messages from Your Provider
+          Message Center
           {messages.filter((m: Message) => !m.isRead).length > 0 && (
             <Badge variant="destructive" className="ml-2">
               {messages.filter((m: Message) => !m.isRead).length} new
@@ -87,70 +87,76 @@ export default function MessagingCard({ patient }: MessagingCardProps) {
       <CardContent>
         {messages.length === 0 ? (
           <div className="text-center text-gray-500 py-4">
-            No messages yet. Your provider will send you updates and resources here.
+            No messages yet. Use the message input below to contact your provider.
           </div>
         ) : (
           <div className="space-y-4 max-h-96 overflow-y-auto">
-            {messages.map((message: Message) => (
-              <div 
-                key={message.id} 
-                className={`p-4 rounded-lg border ${
-                  message.isRead ? 'bg-gray-50' : 'bg-blue-50 border-blue-200'
-                }`}
-              >
-                <div className="flex items-start justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    {getMessageIcon(message.messageType)}
-                    <span className="text-sm font-medium">
-                      {message.messageType === 'pdf' && 'PDF Document'}
-                      {message.messageType === 'lab_results' && 'Lab Results'}
-                      {message.messageType === 'gut_biome_test' && 'Gut Biome Test'}
-                      {message.messageType === 'video_link' && 'Video Resource'}
-                      {message.messageType === 'pdf_link' && 'PDF Link'}
-                      {message.messageType === 'text' && 'Message'}
-                    </span>
-                    {!message.isRead && (
-                      <Badge variant="secondary" className="text-xs">New</Badge>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-1 text-xs text-gray-500">
-                    <Clock className="h-3 w-3" />
-                    {format(new Date(message.createdAt!), 'MMM d, h:mm a')}
-                  </div>
-                </div>
-                
-                <p className="text-sm text-gray-700 mb-3">{message.content}</p>
-                
-                {message.fileUrl && (
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleFileClick(message)}
-                      className="flex items-center gap-2"
-                    >
-                      {(message.messageType === 'pdf' || message.messageType === 'lab_results' || message.messageType === 'gut_biome_test') ? (
-                        <>
-                          <Download className="h-4 w-4" />
-                          View PDF
-                        </>
-                      ) : (
-                        <>
-                          <ExternalLink className="h-4 w-4" />
-                          Open Link
-                        </>
-                      )}
-                    </Button>
-                    
-                    {message.fileName && (
-                      <span className="text-xs text-gray-500">
-                        {message.fileName}
+            {messages.map((message: Message) => {
+              const isFromProvider = message.direction === 'provider_to_patient';
+              return (
+                <div 
+                  key={message.id} 
+                  className={`p-4 rounded-lg border ${
+                    isFromProvider 
+                      ? (message.isRead ? 'bg-blue-50 border-blue-200' : 'bg-blue-100 border-blue-300')
+                      : 'bg-green-50 border-green-200 ml-8'
+                  }`}
+                >
+                  <div className="flex items-start justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      {getMessageIcon(message.messageType)}
+                      <span className="text-sm font-medium">
+                        {isFromProvider ? 'Provider: ' : 'You: '}
+                        {message.messageType === 'pdf' && 'PDF Document'}
+                        {message.messageType === 'lab_results' && 'Lab Results'}
+                        {message.messageType === 'gut_biome_test' && 'Gut Biome Test'}
+                        {message.messageType === 'video_link' && 'Video Resource'}
+                        {message.messageType === 'pdf_link' && 'PDF Link'}
+                        {message.messageType === 'text' && 'Message'}
                       </span>
-                    )}
+                      {!message.isRead && isFromProvider && (
+                        <Badge variant="secondary" className="text-xs">New</Badge>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-1 text-xs text-gray-500">
+                      <Clock className="h-3 w-3" />
+                      {format(new Date(message.createdAt!), 'MMM d, h:mm a')}
+                    </div>
                   </div>
-                )}
-              </div>
-            ))}
+                  
+                  <p className="text-sm text-gray-700 mb-3">{message.content}</p>
+                  
+                  {message.fileUrl && (
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleFileClick(message)}
+                        className="flex items-center gap-2"
+                      >
+                        {(message.messageType === 'pdf' || message.messageType === 'lab_results' || message.messageType === 'gut_biome_test') ? (
+                          <>
+                            <Download className="h-4 w-4" />
+                            View PDF
+                          </>
+                        ) : (
+                          <>
+                            <ExternalLink className="h-4 w-4" />
+                            Open Link
+                          </>
+                        )}
+                      </Button>
+                      
+                      {message.fileName && (
+                        <span className="text-xs text-gray-500">
+                          {message.fileName}
+                        </span>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         )}
       </CardContent>

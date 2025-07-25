@@ -111,6 +111,13 @@ export function requireProvider(req: AuthenticatedRequest, res: Response, next: 
   next();
 }
 
+export function requirePatient(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+  if (!req.user || req.user.type !== 'patient') {
+    return res.status(403).json({ message: 'Patient access required' });
+  }
+  next();
+}
+
 // Subscription middleware for patients
 export function requireSubscription(req: AuthenticatedRequest, res: Response, next: NextFunction) {
   if (!req.user) {

@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import HealthMetricsCard from "@/components/health-metrics-card";
 import MessagingCard from "@/components/messaging-card";
+import PatientMessageInput from "@/components/patient-message-input";
 import SimpleSubscriptionCard from "@/components/simple-subscription-card";
 import HealthTipsWidget from "@/components/health-tips-widget";
 import DexcomIntegration from "@/components/dexcom-integration";
@@ -168,6 +169,11 @@ export default function PatientDashboard({ selectedPatientId }: PatientDashboard
         {/* Messages from Provider */}
         <div className="space-y-6">
           <MessagingCard patient={displayPatient} />
+          <PatientMessageInput 
+            patientId={displayPatient.id} 
+            providerId={1} 
+            disabled={subscriptionStatus?.subscriptionStatus !== 'active'}
+          />
           <DexcomIntegration patientId={displayPatient.id} />
         </div>
       </div>

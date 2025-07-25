@@ -20,7 +20,7 @@ import { insertSupplementRecommendationSchema, insertProviderAffiliateSettingsSc
 import { z } from "zod";
 import { sendPatientWelcomeEmail } from "./email-service";
 
-import { AuthenticatedRequest, requireAuth, requireProvider, requireSubscription, createSession, deleteSession, sessionMiddleware } from "./auth";
+import { AuthenticatedRequest, requireAuth, requireProvider, requirePatient, requireSubscription, createSession, deleteSession, sessionMiddleware } from "./auth";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Authentication routes
@@ -772,6 +772,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         providerId: parseInt(providerId),
         content,
         messageType: 'text' as const,
+        direction: 'provider_to_patient' as const,
+        filePath: null,
+        fileSize: null,
         fileUrl: null,
         fileName: null,
         isRead: false,
@@ -818,8 +821,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         providerId: parseInt(providerId),
         content: content || `Lab Results: ${req.file.originalname}`,
         messageType: 'lab_results' as const,
+        direction: 'provider_to_patient' as const,
         fileUrl,
         fileName: req.file.originalname,
+        filePath: req.file?.path || null,
+        fileSize: req.file?.size || null,
         isRead: false,
       };
 
@@ -962,8 +968,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         providerId: parseInt(providerId),
         content: content || `Sent PDF: ${req.file.originalname}`,
         messageType: 'pdf' as const,
+        direction: 'provider_to_patient' as const,
         fileUrl,
         fileName: req.file.originalname,
+        filePath: req.file?.path || null,
+        fileSize: req.file?.size || null,
         isRead: false,
       };
 
@@ -1014,8 +1023,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         providerId: parseInt(providerId),
         content: content || `Shared ${linkType === 'video_link' ? 'video' : 'PDF'}: ${link}`,
         messageType: linkType as 'video_link' | 'pdf_link',
+        direction: 'provider_to_patient' as const,
         fileUrl: link,
         fileName: null,
+        filePath: null,
+        fileSize: null,
         isRead: false,
       };
 
@@ -1028,6 +1040,80 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid message data", errors: error.errors });
       }
       res.status(500).json({ message: "Failed to send link" });
+    }
+  });
+
+  // Patient sends message to provider (bidirectional messaging)
+  app.post("/api/patients/:id/messages/to-provider", sessionMiddleware, requirePatient, async (req: AuthenticatedRequest, res) => {
+    try {
+      const patientId = parseInt(req.params.id);
+      if (isNaN(patientId)) {
+        return res.status(400).json({ message: "Invalid patient ID" });
+      }
+
+      // Verify patient exists and user is the patient
+      const patient = await storage.getPatient(patientId);
+      if (!patient) {
+        return res.status(404).json({ message: "Patient not found" });
+      }
+
+      if (req.user.id !== patientId) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      const { content, providerId } = req.body;
+      if (!content || !providerId) {
+        return res.status(400).json({ message: "Content and provider ID are required" });
+      }
+
+      // Verify provider exists
+      const provider = await storage.getProvider(parseInt(providerId));
+      if (!provider) {
+        return res.status(404).json({ message: "Provider not found" });
+      }
+
+      const messageData = {
+        patientId,
+        providerId: parseInt(providerId),
+        content,
+        messageType: 'text' as const,
+        direction: 'patient_to_provider' as const,
+        fileUrl: null,
+        fileName: null,
+        filePath: null,
+        fileSize: null,
+        isRead: false,
+      };
+
+      const validatedData = insertMessageSchema.parse(messageData);
+      const message = await storage.createMessage(validatedData);
+      res.status(201).json(message);
+    } catch (error) {
+      console.error("Error sending patient message:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid message data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to send message" });
+    }
+  });
+
+  // Get all messages for provider dashboard (both directions)
+  app.get("/api/providers/:id/messages", sessionMiddleware, requireProvider, async (req: AuthenticatedRequest, res) => {
+    try {
+      const providerId = parseInt(req.params.id);
+      if (isNaN(providerId)) {
+        return res.status(400).json({ message: "Invalid provider ID" });
+      }
+
+      if (req.user.id !== providerId) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      const messages = await storage.getMessagesForProvider(providerId);
+      res.json(messages);
+    } catch (error) {
+      console.error("Error fetching provider messages:", error);
+      res.status(500).json({ message: "Failed to fetch messages" });
     }
   });
 
