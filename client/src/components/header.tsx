@@ -13,6 +13,7 @@ import { Home, Activity, MessageSquare, CreditCard, Stethoscope, Dna, Heart, Bra
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 
 import AuthHeader from "./auth-header";
+import FreshLogo from "./fresh-logo";
 import type { User } from "@/hooks/useAuth";
 import { Link } from "wouter";
 import { cn } from "@/lib/utils";
@@ -38,10 +39,14 @@ export default function Header({
       aria-label="Main navigation header"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-center h-36">
+        <div className="flex items-center justify-between h-36">
+          {/* Logo Section */}
+          <div className="flex items-center">
+            <FreshLogo size="lg" title={title} />
+          </div>
           {/* Navigation Menu */}
           {user && (
-            <NavigationMenu className="hidden md:flex" aria-label="Main navigation">
+            <NavigationMenu className="hidden md:flex flex-1 justify-center" aria-label="Main navigation">
               <NavigationMenuList>
                 <NavigationMenuItem>
                   <Link href="/">
@@ -263,7 +268,7 @@ export default function Header({
           )}
 
           {/* Authentication Section */}
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-4 ml-auto">
             {user ? (
               <AuthHeader user={user} />
             ) : (
