@@ -469,6 +469,82 @@ export class DatabaseStorage implements IStorage {
     await db.delete(passwordResetTokens)
       .where(lt(passwordResetTokens.expiresAt, new Date()));
   }
+  // Two-Factor Authentication operations
+  async enableTwoFactor(userId: number, userType: 'patient' | 'provider', secret: string, backupCodes: string[]): Promise<boolean> {
+    try {
+      if (userType === 'patient') {
+        await db
+          .update(patients)
+          .set({
+            twoFactorEnabled: true,
+            twoFactorSecret: secret,
+            twoFactorBackupCodes: backupCodes,
+          })
+          .where(eq(patients.id, userId));
+      } else {
+        await db
+          .update(providers)
+          .set({
+            twoFactorEnabled: true,
+            twoFactorSecret: secret,
+            twoFactorBackupCodes: backupCodes,
+          })
+          .where(eq(providers.id, userId));
+      }
+      return true;
+    } catch (error) {
+      console.error('Error enabling 2FA:', error);
+      return false;
+    }
+  }
+
+  async disableTwoFactor(userId: number, userType: 'patient' | 'provider'): Promise<boolean> {
+    try {
+      if (userType === 'patient') {
+        await db
+          .update(patients)
+          .set({
+            twoFactorEnabled: false,
+            twoFactorSecret: null,
+            twoFactorBackupCodes: null,
+          })
+          .where(eq(patients.id, userId));
+      } else {
+        await db
+          .update(providers)
+          .set({
+            twoFactorEnabled: false,
+            twoFactorSecret: null,
+            twoFactorBackupCodes: null,
+          })
+          .where(eq(providers.id, userId));
+      }
+      return true;
+    } catch (error) {
+      console.error('Error disabling 2FA:', error);
+      return false;
+    }
+  }
+
+  async updateBackupCodes(userId: number, userType: 'patient' | 'provider', backupCodes: string[]): Promise<boolean> {
+    try {
+      if (userType === 'patient') {
+        await db
+          .update(patients)
+          .set({ twoFactorBackupCodes: backupCodes })
+          .where(eq(patients.id, userId));
+      } else {
+        await db
+          .update(providers)
+          .set({ twoFactorBackupCodes: backupCodes })
+          .where(eq(providers.id, userId));
+      }
+      return true;
+    } catch (error) {
+      console.error('Error updating backup codes:', error);
+      return false;
+    }
+  }
 }
 
 export const storage = new DatabaseStorage();

@@ -21,12 +21,19 @@ import { z } from "zod";
 import { sendPatientWelcomeEmail } from "./email-service";
 
 import { AuthenticatedRequest, requireAuth, requireProvider, requirePatient, requireSubscription, createSession, deleteSession, sessionMiddleware } from "./auth";
+import { 
+  generateTwoFactorSecret, 
+  generateQRCodeDataUrl, 
+  verifyTwoFactorToken, 
+  removeUsedBackupCode,
+  isTwoFactorEnabled 
+} from "./two-factor-auth";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Authentication routes
   app.post('/api/login/provider', async (req, res) => {
     try {
-      const { email, password } = req.body;
+      const { email, password, twoFactorCode } = req.body;
       
       if (!email || !password) {
         return res.status(400).json({ message: 'Email and password are required' });
@@ -35,6 +42,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const provider = await storage.loginProvider(email, password);
       if (!provider) {
         return res.status(401).json({ message: 'Invalid credentials' });
+      }
+
+      // Check if 2FA is enabled
+      if (isTwoFactorEnabled(provider)) {
+        if (!twoFactorCode) {
+          return res.json({ requiresTwoFactor: true });
+        }
+
+        // Verify 2FA code
+        const verification = verifyTwoFactorToken(
+          twoFactorCode,
+          provider.twoFactorSecret!,
+          provider.twoFactorBackupCodes || []
+        );
+
+        if (!verification.isValid) {
+          return res.status(401).json({ message: 'Invalid two-factor authentication code' });
+        }
+
+        // Remove used backup code if applicable
+        if (verification.usedBackupCode && provider.twoFactorBackupCodes) {
+          const updatedBackupCodes = removeUsedBackupCode(provider.twoFactorBackupCodes, twoFactorCode);
+          await storage.updateBackupCodes(provider.id, 'provider', updatedBackupCodes);
+        }
       }
 
       const sessionId = await createSession(provider.id, 'provider');
@@ -46,6 +77,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           name: provider.name,
           email: provider.email,
           type: 'provider',
+          twoFactorEnabled: provider.twoFactorEnabled || false,
         },
       });
     } catch (error) {
@@ -130,11 +162,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/login/patient', async (req, res) => {
     try {
-      const { email, password } = req.body;
+      const { email, password, twoFactorCode } = req.body;
       
       const patient = await storage.loginPatient(email, password);
       if (!patient) {
         return res.status(401).json({ message: 'Invalid email or password' });
+      }
+
+      // Check if 2FA is enabled
+      if (isTwoFactorEnabled(patient)) {
+        if (!twoFactorCode) {
+          return res.json({ requiresTwoFactor: true });
+        }
+
+        // Verify 2FA code
+        const verification = verifyTwoFactorToken(
+          twoFactorCode,
+          patient.twoFactorSecret!,
+          patient.twoFactorBackupCodes || []
+        );
+
+        if (!verification.isValid) {
+          return res.status(401).json({ message: 'Invalid two-factor authentication code' });
+        }
+
+        // Remove used backup code if applicable
+        if (verification.usedBackupCode && patient.twoFactorBackupCodes) {
+          const updatedBackupCodes = removeUsedBackupCode(patient.twoFactorBackupCodes, twoFactorCode);
+          await storage.updateBackupCodes(patient.id, 'patient', updatedBackupCodes);
+        }
       }
 
       const sessionId = await createSession(patient.id, 'patient');
@@ -147,6 +203,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           email: patient.email,
           type: 'patient',
           hasSubscription: patient.hasSubscription,
+          twoFactorEnabled: patient.twoFactorEnabled || false,
         }
       });
     } catch (error) {
@@ -274,6 +331,127 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: 'Failed to reset password' });
     }
   });
+
+  // Two-Factor Authentication routes
+  app.post('/api/2fa/setup', requireAuth, async (req: AuthenticatedRequest, res) => {
+    try {
+      const user = req.user!;
+      const userType = user.type;
+      
+      // Generate 2FA secret and QR code
+      const twoFactorSetup = generateTwoFactorSecret(user.email);
+      const qrCodeDataUrl = await generateQRCodeDataUrl(twoFactorSetup.qrCodeUrl);
+      
+      res.json({
+        secret: twoFactorSetup.secret,
+        qrCode: qrCodeDataUrl,
+        backupCodes: twoFactorSetup.backupCodes,
+      });
+    } catch (error) {
+      console.error('2FA setup error:', error);
+      res.status(500).json({ message: 'Failed to setup two-factor authentication' });
+    }
+  });
+
+  app.post('/api/2fa/enable', requireAuth, async (req: AuthenticatedRequest, res) => {
+    try {
+      const { secret, verificationCode, backupCodes } = req.body;
+      const user = req.user!;
+      
+      if (!secret || !verificationCode || !backupCodes) {
+        return res.status(400).json({ message: 'Secret, verification code, and backup codes are required' });
+      }
+
+      // Verify the provided code
+      const verification = verifyTwoFactorToken(verificationCode, secret, []);
+      if (!verification.isValid) {
+        return res.status(400).json({ message: 'Invalid verification code' });
+      }
+
+      // Enable 2FA for the user
+      const success = await storage.enableTwoFactor(user.id, user.type, secret, backupCodes);
+      if (!success) {
+        return res.status(500).json({ message: 'Failed to enable two-factor authentication' });
+      }
+
+      res.json({ message: 'Two-factor authentication enabled successfully' });
+    } catch (error) {
+      console.error('2FA enable error:', error);
+      res.status(500).json({ message: 'Failed to enable two-factor authentication' });
+    }
+  });
+
+  app.post('/api/2fa/disable', requireAuth, async (req: AuthenticatedRequest, res) => {
+    try {
+      const { verificationCode } = req.body;
+      const user = req.user!;
+      
+      if (!verificationCode) {
+        return res.status(400).json({ message: 'Verification code is required' });
+      }
+
+      // Get current user to verify 2FA
+      let currentUser;
+      if (user.type === 'patient') {
+        currentUser = await storage.getPatient(user.id);
+      } else {
+        currentUser = await storage.getProvider(user.id);
+      }
+
+      if (!currentUser || !isTwoFactorEnabled(currentUser)) {
+        return res.status(400).json({ message: 'Two-factor authentication is not enabled' });
+      }
+
+      // Verify the provided code
+      const verification = verifyTwoFactorToken(
+        verificationCode, 
+        currentUser.twoFactorSecret!, 
+        currentUser.twoFactorBackupCodes || []
+      );
+      
+      if (!verification.isValid) {
+        return res.status(400).json({ message: 'Invalid verification code' });
+      }
+
+      // Disable 2FA for the user
+      const success = await storage.disableTwoFactor(user.id, user.type);
+      if (!success) {
+        return res.status(500).json({ message: 'Failed to disable two-factor authentication' });
+      }
+
+      res.json({ message: 'Two-factor authentication disabled successfully' });
+    } catch (error) {
+      console.error('2FA disable error:', error);
+      res.status(500).json({ message: 'Failed to disable two-factor authentication' });
+    }
+  });
+
+  app.get('/api/2fa/status', requireAuth, async (req: AuthenticatedRequest, res) => {
+    try {
+      const user = req.user!;
+      
+      // Get current user to check 2FA status
+      let currentUser;
+      if (user.type === 'patient') {
+        currentUser = await storage.getPatient(user.id);
+      } else {
+        currentUser = await storage.getProvider(user.id);
+      }
+
+      if (!currentUser) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+
+      res.json({
+        enabled: isTwoFactorEnabled(currentUser),
+        backupCodesCount: currentUser.twoFactorBackupCodes?.length || 0,
+      });
+    } catch (error) {
+      console.error('2FA status error:', error);
+      res.status(500).json({ message: 'Failed to get two-factor authentication status' });
+    }
+  });
+
   // Get all patients (requires authentication)
   app.get("/api/patients", requireAuth, async (req: AuthenticatedRequest, res) => {
     try {

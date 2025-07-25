@@ -21,6 +21,7 @@ import { PasswordResetModal } from "@/components/password-reset-modal";
 const loginSchema = z.object({
   email: z.string().email("Please enter a valid email"),
   password: z.string().min(6, "Password must be at least 6 characters"),
+  twoFactorCode: z.string().optional(),
 });
 
 const registerPatientSchema = z.object({
@@ -48,6 +49,10 @@ export default function Login() {
   const [activeTab, setActiveTab] = useState("patient-login");
   const [statusMessage, setStatusMessage] = useState("");
   const [showPasswordReset, setShowPasswordReset] = useState(false);
+  const [requiresTwoFactor, setRequiresTwoFactor] = useState<{patient: boolean, provider: boolean}>({
+    patient: false,
+    provider: false
+  });
   const queryClient = useQueryClient();
   
   // Generate unique IDs for accessibility
@@ -57,7 +62,7 @@ export default function Login() {
 
   const loginForm = useForm({
     resolver: zodResolver(loginSchema),
-    defaultValues: { email: "", password: "" },
+    defaultValues: { email: "", password: "", twoFactorCode: "" },
   });
 
   const registerPatientForm = useForm({
@@ -90,7 +95,16 @@ export default function Login() {
       const response = await apiRequest("POST", "/api/login/patient", data);
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      if (data.requiresTwoFactor) {
+        setRequiresTwoFactor(prev => ({ ...prev, patient: true }));
+        toast({
+          title: "Two-Factor Required",
+          description: "Please enter your authentication code",
+        });
+        return;
+      }
+      
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
       setStatusMessage("Login successful. Redirecting to dashboard...");
       announceToScreenReader("Login successful. Redirecting to dashboard.");
@@ -109,6 +123,7 @@ export default function Login() {
         description: errorMessage,
         variant: "destructive",
       });
+      setRequiresTwoFactor(prev => ({ ...prev, patient: false }));
     },
   });
 
@@ -121,6 +136,15 @@ export default function Login() {
       return result;
     },
     onSuccess: (data) => {
+      if (data.requiresTwoFactor) {
+        setRequiresTwoFactor(prev => ({ ...prev, provider: true }));
+        toast({
+          title: "Two-Factor Required",
+          description: "Please enter your authentication code",
+        });
+        return;
+      }
+      
       console.log("Provider login successful:", data);
       queryClient.setQueryData(["/api/auth/user"], data.user);
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
@@ -142,6 +166,7 @@ export default function Login() {
         description: `${errorMessage}. Please try: dr.emily@dnadietclub.com / password123`,
         variant: "destructive",
       });
+      setRequiresTwoFactor(prev => ({ ...prev, provider: false }));
     },
   });
 
@@ -354,6 +379,31 @@ export default function Login() {
                         </FormItem>
                       )}
                     />
+                    {requiresTwoFactor.patient && (
+                      <FormField
+                        control={loginForm.control}
+                        name="twoFactorCode"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel htmlFor={`${formId}-patient-2fa`}>Authentication Code</FormLabel>
+                            <FormControl>
+                              <Input 
+                                id={`${formId}-patient-2fa`}
+                                placeholder="123456" 
+                                maxLength={6}
+                                autoComplete="one-time-code"
+                                className="focus:ring-accessible"
+                                {...field} 
+                              />
+                            </FormControl>
+                            <FormMessage />
+                            <p className="text-sm text-gray-600">
+                              Enter the 6-digit code from your authenticator app or use a backup code
+                            </p>
+                          </FormItem>
+                        )}
+                      />
+                    )}
                     <Button type="submit" className="w-full" disabled={loginPatientMutation.isPending}>
                       {loginPatientMutation.isPending ? "Signing In..." : "Sign In"}
                     </Button>
@@ -541,6 +591,31 @@ export default function Login() {
                         </FormItem>
                       )}
                     />
+                    {requiresTwoFactor.provider && (
+                      <FormField
+                        control={loginForm.control}
+                        name="twoFactorCode"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel htmlFor={`${formId}-provider-2fa`}>Authentication Code</FormLabel>
+                            <FormControl>
+                              <Input 
+                                id={`${formId}-provider-2fa`}
+                                placeholder="123456" 
+                                maxLength={6}
+                                autoComplete="one-time-code"
+                                className="focus:ring-accessible"
+                                {...field} 
+                              />
+                            </FormControl>
+                            <FormMessage />
+                            <p className="text-sm text-gray-600">
+                              Enter the 6-digit code from your authenticator app or use a backup code
+                            </p>
+                          </FormItem>
+                        )}
+                      />
+                    )}
                     <Button type="submit" className="w-full" disabled={loginProviderMutation.isPending}>
                       {loginProviderMutation.isPending ? "Signing In..." : "Sign In as Provider"}
                     </Button>

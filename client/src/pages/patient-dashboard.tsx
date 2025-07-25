@@ -8,6 +8,7 @@ import SimpleSubscriptionCard from "@/components/simple-subscription-card";
 import HealthTipsWidget from "@/components/health-tips-widget";
 import DexcomIntegration from "@/components/dexcom-integration";
 import HealthStatusIndicator from "@/components/health-status-indicator";
+import TwoFactorSettings from "@/components/two-factor-settings";
 
 
 import CelebrationTrigger, { useCelebrationTrigger } from "@/components/celebration-trigger";
@@ -181,6 +182,7 @@ export default function PatientDashboard({ selectedPatientId }: PatientDashboard
             disabled={false}
           />
           <DexcomIntegration patientId={displayPatient.id} />
+          <TwoFactorSettings />
         </div>
       </div>
 
