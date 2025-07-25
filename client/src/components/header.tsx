@@ -42,7 +42,7 @@ export default function Header({
         <div className="flex items-center justify-between h-36">
           {/* Logo Section */}
           <div className="flex items-center">
-            <FreshLogo size="lg" title={title} />
+            <FreshLogo size="lg" title={title} showTitle={false} />
           </div>
           {/* Navigation Menu */}
           {user && (
