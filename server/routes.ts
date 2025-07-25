@@ -247,7 +247,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json({ message: 'Logged out successfully' });
   });
 
-  app.get('/api/auth/user', (req: AuthenticatedRequest, res) => {
+  app.get('/api/auth/user', sessionMiddleware, (req: AuthenticatedRequest, res) => {
+    console.log("Auth check - Session ID:", req.cookies?.sessionId ? "Present" : "Missing");
+    console.log("Auth check - User:", req.user ? `${req.user.type} ID ${req.user.id}` : "None");
+    
     if (req.user) {
       res.json(req.user);
     } else {
