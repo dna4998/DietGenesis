@@ -37,24 +37,24 @@ export default function ProviderLogin() {
     try {
       const response = await apiRequest("POST", "/api/login/provider", data);
       
-      if (response.ok) {
+      if (response && response.user) {
         toast({
           title: "Login Successful",
-          description: "Welcome back, provider!",
+          description: `Welcome back, ${response.user.name}!`,
         });
         setLocation("/provider-dashboard");
       } else {
-        const errorData = await response.json();
         toast({
           title: "Login Failed",
-          description: errorData.message || "Invalid credentials",
+          description: response.message || "Invalid credentials",
           variant: "destructive",
         });
       }
-    } catch (error) {
+    } catch (error: any) {
+      console.error("Login error:", error);
       toast({
         title: "Login Failed",
-        description: "An error occurred during login",
+        description: error.message || "An error occurred during login",
         variant: "destructive",
       });
     } finally {
