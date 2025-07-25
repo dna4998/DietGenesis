@@ -192,10 +192,15 @@ export default function PatientDashboard({ selectedPatientId }: PatientDashboard
           />
         </div>
         
-        {/* Exercise Plan - Positioned before Dexcom */}
+        {/* Exercise Plan - Positioned before supplements */}
         <div className="space-y-6">
           <ExercisePlanCard patient={displayPatient} />
         </div>
+      </div>
+
+      {/* Supplement Protocol - Positioned above Dexcom */}
+      <div className="mb-8">
+        <SupplementsCard patient={displayPatient} />
       </div>
 
       {/* Patient Settings and Integrations */}
@@ -203,11 +208,6 @@ export default function PatientDashboard({ selectedPatientId }: PatientDashboard
         {/* Dexcom Integration */}
         <div className="space-y-6">
           <DexcomIntegration patientId={displayPatient.id} />
-        </div>
-        
-        {/* Supplements */}
-        <div className="space-y-6">
-          <SupplementsCard patient={displayPatient} />
         </div>
       </div>
 
