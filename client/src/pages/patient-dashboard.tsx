@@ -17,6 +17,7 @@ import ProgressCard from "@/components/progress-card";
 import WeightProgressChart from "@/components/weight-progress-chart";
 import ExercisePlanCard from "@/components/exercise-plan-card";
 import SupplementsCard from "@/components/supplements-card";
+import DietPlanCard from "@/components/diet-plan-card";
 import { useProgressCelebration } from "@/hooks/use-progress-celebration";
 
 import { Skeleton } from "@/components/ui/skeleton";
@@ -192,10 +193,15 @@ export default function PatientDashboard({ selectedPatientId }: PatientDashboard
           />
         </div>
         
-        {/* Exercise Plan - Positioned before supplements */}
+        {/* Custom Diet Plan - Positioned above exercise plan */}
         <div className="space-y-6">
-          <ExercisePlanCard patient={displayPatient} />
+          <DietPlanCard patient={displayPatient} />
         </div>
+      </div>
+
+      {/* Exercise Plan Section */}
+      <div className="mb-8">
+        <ExercisePlanCard patient={displayPatient} />
       </div>
 
       {/* Supplement Protocol - Positioned above Dexcom */}
