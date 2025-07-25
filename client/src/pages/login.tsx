@@ -411,6 +411,14 @@ export default function Login() {
                 </Form>
                 <div className="text-center space-y-2">
                   <button
+                    onClick={() => setShowPasswordReset(true)}
+                    className="text-sm text-blue-600 hover:text-blue-800 underline"
+                  >
+                    Forgot Password?
+                  </button>
+                </div>
+                <div className="text-center space-y-2">
+                  <button
                     type="button"
                     onClick={() => setShowPasswordReset(true)}
                     className="text-sm text-blue-600 hover:text-blue-800 underline"
