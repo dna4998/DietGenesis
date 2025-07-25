@@ -102,7 +102,7 @@ export default function SubscriptionCard({ patient }: SubscriptionCardProps) {
           {getStatusIcon()}
         </CardTitle>
         <CardDescription>
-          Manage your DNA Diet Club subscription
+          Manage your health platform subscription
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -135,7 +135,7 @@ export default function SubscriptionCard({ patient }: SubscriptionCardProps) {
 
             <div className="pt-3 border-t">
               <p className="text-sm text-green-600 font-medium">
-                ✓ Full access to all DNA Diet Club features
+                ✓ Full access to all health platform features
               </p>
             </div>
           </div>

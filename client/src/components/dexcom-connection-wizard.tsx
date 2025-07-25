@@ -53,7 +53,7 @@ export default function DexcomConnectionWizard({ patientId, onConnectionComplete
     {
       id: 'authorize',
       title: 'Secure Authorization',
-      description: 'Authorize DNA Diet Club to access your Dexcom data',
+      description: 'Authorize health platform to access your Dexcom data',
       status: 'pending'
     },
     {

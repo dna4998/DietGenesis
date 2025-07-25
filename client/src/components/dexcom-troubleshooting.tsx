@@ -248,7 +248,7 @@ export default function DexcomTroubleshooting() {
                       2. Create or log into your developer account
                     </div>
                     <div className="text-sm text-yellow-700">
-                      3. Create a new application for "DNA Diet Club"
+                      3. Create a new application for "Health Platform"
                     </div>
                     <div className="text-sm text-yellow-700">
                       4. Set redirect URI to: <code className="bg-white px-1 rounded">{diagnostics?.redirectUri}</code>

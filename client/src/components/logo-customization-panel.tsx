@@ -38,7 +38,7 @@ export default function LogoCustomizationPanel({ onLogoChange, onSettingsChange 
   const [settings, setSettings] = useState<LogoSettings>({
     size: 'md',
     showTitle: true,
-    title: 'DNA Diet Club',
+    title: 'Health Platform',
     titleColor: '#1f2937',
     backgroundColor: '#ffffff',
     borderRadius: 8,
