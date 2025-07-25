@@ -182,13 +182,16 @@ export default function PatientDashboard({ selectedPatientId }: PatientDashboard
       </div>
 
       {/* Message Your Provider - Always visible on mobile and desktop */}
-      <div className="mb-8 bg-yellow-100 border-2 border-yellow-500 p-4 rounded-lg">
-        <h3 className="text-lg font-bold text-yellow-800 mb-2">MOBILE TEST: Message Component</h3>
-        <PatientMessageInput 
-          patientId={displayPatient.id} 
-          providerId={7} 
-          disabled={false}
-        />
+      <div className="mb-8 bg-red-200 border-4 border-red-600 p-6 rounded-lg">
+        <h2 className="text-2xl font-bold text-red-800 mb-4">🔴 MOBILE TEST: Message Component 🔴</h2>
+        <p className="text-red-700 mb-4">This should be visible on ALL devices and screen sizes!</p>
+        <div className="bg-white p-4 rounded">
+          <PatientMessageInput 
+            patientId={displayPatient.id} 
+            providerId={7} 
+            disabled={false}
+          />
+        </div>
       </div>
 
       {/* Exercise and Supplement Cards */}
