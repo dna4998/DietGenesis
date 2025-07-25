@@ -52,6 +52,17 @@ export const providers = pgTable("providers", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Password reset tokens table
+export const passwordResetTokens = pgTable("password_reset_tokens", {
+  id: serial("id").primaryKey(),
+  email: text("email").notNull(),
+  token: text("token").notNull().unique(),
+  userType: text("user_type").notNull(), // 'patient' or 'provider'
+  expiresAt: timestamp("expires_at").notNull(),
+  used: boolean("used").default(false).notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Session storage table for authentication
 export const sessions = pgTable("sessions", {
   id: text("id").primaryKey(),
@@ -122,6 +133,11 @@ export const insertMessageSchema = createInsertSchema(messages).omit({
   createdAt: true,
 });
 
+export const insertPasswordResetTokenSchema = createInsertSchema(passwordResetTokens).omit({
+  id: true,
+  createdAt: true,
+});
+
 export type InsertPatient = z.infer<typeof insertPatientSchema>;
 export type UpdatePatient = z.infer<typeof updatePatientSchema>;
 export type Patient = typeof patients.$inferSelect;
@@ -131,6 +147,8 @@ export type Message = typeof messages.$inferSelect;
 export type InsertMessage = z.infer<typeof insertMessageSchema>;
 export type DexcomData = typeof dexcomData.$inferSelect;
 export type InsertDexcomData = z.infer<typeof insertDexcomDataSchema>;
+export type PasswordResetToken = typeof passwordResetTokens.$inferSelect;
+export type InsertPasswordResetToken = z.infer<typeof insertPasswordResetTokenSchema>;
 
 // HIPAA Consent Records
 export const hipaaConsents = pgTable("hipaa_consents", {

@@ -197,6 +197,83 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(401).json({ message: 'Not authenticated' });
     }
   });
+
+  // Password reset routes
+  app.post('/api/password-reset/request', async (req, res) => {
+    try {
+      const { email, userType } = req.body;
+      
+      if (!email || !userType || !['patient', 'provider'].includes(userType)) {
+        return res.status(400).json({ message: 'Email and valid user type are required' });
+      }
+
+      const token = await storage.createPasswordResetToken(email, userType);
+      
+      // In a real application, you would send an email with the reset link
+      // For demo purposes, we'll return the token (remove this in production)
+      res.json({ 
+        message: 'Password reset email sent',
+        resetToken: token // Remove this in production
+      });
+    } catch (error: any) {
+      console.error('Password reset request error:', error);
+      if (error.message === 'User not found') {
+        return res.status(404).json({ message: 'Email not found' });
+      }
+      res.status(500).json({ message: 'Failed to process password reset request' });
+    }
+  });
+
+  app.post('/api/password-reset/verify', async (req, res) => {
+    try {
+      const { token } = req.body;
+      
+      if (!token) {
+        return res.status(400).json({ message: 'Reset token is required' });
+      }
+
+      const tokenData = await storage.verifyPasswordResetToken(token);
+      if (!tokenData) {
+        return res.status(400).json({ message: 'Invalid or expired reset token' });
+      }
+
+      res.json({ 
+        message: 'Token is valid',
+        email: tokenData.email,
+        userType: tokenData.userType
+      });
+    } catch (error) {
+      console.error('Password reset verify error:', error);
+      res.status(500).json({ message: 'Failed to verify reset token' });
+    }
+  });
+
+  app.post('/api/password-reset/reset', async (req, res) => {
+    try {
+      const { token, newPassword } = req.body;
+      
+      if (!token || !newPassword) {
+        return res.status(400).json({ message: 'Reset token and new password are required' });
+      }
+
+      if (newPassword.length < 6) {
+        return res.status(400).json({ message: 'Password must be at least 6 characters long' });
+      }
+
+      const success = await storage.resetPassword(token, newPassword);
+      if (!success) {
+        return res.status(400).json({ message: 'Invalid or expired reset token' });
+      }
+
+      // Clean up expired tokens
+      await storage.cleanupExpiredTokens();
+
+      res.json({ message: 'Password reset successfully' });
+    } catch (error) {
+      console.error('Password reset error:', error);
+      res.status(500).json({ message: 'Failed to reset password' });
+    }
+  });
   // Get all patients (requires authentication)
   app.get("/api/patients", requireAuth, async (req: AuthenticatedRequest, res) => {
     try {

@@ -3,6 +3,7 @@ import {
   providers,
   messages,
   dexcomData,
+  passwordResetTokens,
   type Patient,
   type Provider,
   type Message,
@@ -12,10 +13,13 @@ import {
   type InsertMessage,
   type DexcomData,
   type InsertDexcomData,
+  type PasswordResetToken,
+  type InsertPasswordResetToken,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq } from "drizzle-orm";
+import { eq, lt } from "drizzle-orm";
 import { hashPassword, verifyPassword } from "./auth";
+import crypto from "crypto";
 
 export interface IStorage {
   // Patient operations
@@ -61,6 +65,12 @@ export interface IStorage {
   getDexcomDataForPatient(patientId: number, hours?: number): Promise<DexcomData[]>;
   createDexcomData(data: InsertDexcomData): Promise<DexcomData>;
   createDexcomDataBatch(data: InsertDexcomData[]): Promise<DexcomData[]>;
+
+  // Password reset operations
+  createPasswordResetToken(email: string, userType: 'patient' | 'provider'): Promise<string>;
+  verifyPasswordResetToken(token: string): Promise<{ email: string; userType: 'patient' | 'provider' } | null>;
+  resetPassword(token: string, newPassword: string): Promise<boolean>;
+  cleanupExpiredTokens(): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -438,6 +448,83 @@ export class DatabaseStorage implements IStorage {
     }
     
     return createdData;
+  }
+
+  // Password reset operations
+  async createPasswordResetToken(email: string, userType: 'patient' | 'provider'): Promise<string> {
+    // Generate a secure random token
+    const token = crypto.randomBytes(32).toString('hex');
+    const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes from now
+
+    // Check if user exists
+    const userExists = userType === 'patient' 
+      ? await this.getPatientByEmail(email)
+      : await this.getProviderByEmail(email);
+    
+    if (!userExists) {
+      throw new Error('User not found');
+    }
+
+    // Clean up any existing tokens for this email
+    await db.delete(passwordResetTokens)
+      .where(eq(passwordResetTokens.email, email));
+
+    // Create new token
+    await db.insert(passwordResetTokens).values({
+      email,
+      token,
+      userType,
+      expiresAt,
+    });
+
+    return token;
+  }
+
+  async verifyPasswordResetToken(token: string): Promise<{ email: string; userType: 'patient' | 'provider' } | null> {
+    const [resetToken] = await db
+      .select()
+      .from(passwordResetTokens)
+      .where(eq(passwordResetTokens.token, token));
+
+    if (!resetToken || resetToken.used || new Date() > resetToken.expiresAt) {
+      return null;
+    }
+
+    return {
+      email: resetToken.email,
+      userType: resetToken.userType as 'patient' | 'provider'
+    };
+  }
+
+  async resetPassword(token: string, newPassword: string): Promise<boolean> {
+    const tokenData = await this.verifyPasswordResetToken(token);
+    if (!tokenData) {
+      return false;
+    }
+
+    const hashedPassword = await hashPassword(newPassword);
+
+    if (tokenData.userType === 'patient') {
+      await db.update(patients)
+        .set({ password: hashedPassword, updatedAt: new Date() })
+        .where(eq(patients.email, tokenData.email));
+    } else {
+      await db.update(providers)
+        .set({ password: hashedPassword })
+        .where(eq(providers.email, tokenData.email));
+    }
+
+    // Mark token as used
+    await db.update(passwordResetTokens)
+      .set({ used: true })
+      .where(eq(passwordResetTokens.token, token));
+
+    return true;
+  }
+
+  async cleanupExpiredTokens(): Promise<void> {
+    await db.delete(passwordResetTokens)
+      .where(lt(passwordResetTokens.expiresAt, new Date()));
   }
 }
 

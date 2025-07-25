@@ -16,6 +16,7 @@ import { Heart, Stethoscope, UserCheck, Shield } from "lucide-react";
 import FreshLogo from "@/components/fresh-logo";
 import { AccessibleLoading, AccessibleError, StatusAnnouncer } from "@/components/accessibility-features";
 import { announceToScreenReader, generateUniqueId } from "@/lib/accessibility";
+import { PasswordResetModal } from "@/components/password-reset-modal";
 
 const loginSchema = z.object({
   email: z.string().email("Please enter a valid email"),
@@ -46,6 +47,7 @@ export default function Login() {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("patient-login");
   const [statusMessage, setStatusMessage] = useState("");
+  const [showPasswordReset, setShowPasswordReset] = useState(false);
   const queryClient = useQueryClient();
   
   // Generate unique IDs for accessibility
@@ -357,8 +359,17 @@ export default function Login() {
                     </Button>
                   </form>
                 </Form>
-                <div className="text-center text-sm text-gray-600">
-                  Demo Account: john.doe@email.com / password123
+                <div className="text-center space-y-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowPasswordReset(true)}
+                    className="text-sm text-blue-600 hover:text-blue-800 underline"
+                  >
+                    Forgot your password?
+                  </button>
+                  <div className="text-sm text-gray-600">
+                    Demo Account: john.doe@email.com / password123
+                  </div>
                 </div>
               </TabsContent>
 
@@ -535,8 +546,17 @@ export default function Login() {
                     </Button>
                   </form>
                 </Form>
-                <div className="text-center text-sm text-gray-600">
-                  Demo Account: dr.emily@dnadietclub.com / password123
+                <div className="text-center space-y-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowPasswordReset(true)}
+                    className="text-sm text-blue-600 hover:text-blue-800 underline"
+                  >
+                    Forgot your password?
+                  </button>
+                  <div className="text-sm text-gray-600">
+                    Demo Account: dr.emily@dnadietclub.com / password123
+                  </div>
                 </div>
               </TabsContent>
 
@@ -615,6 +635,12 @@ export default function Login() {
           <p>© 2025 Health Platform. Personalized health management platform.</p>
         </div>
       </div>
+
+      {/* Password Reset Modal */}
+      <PasswordResetModal 
+        isOpen={showPasswordReset} 
+        onClose={() => setShowPasswordReset(false)} 
+      />
     </main>
   );
 }
