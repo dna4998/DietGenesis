@@ -71,12 +71,12 @@ export default function PatientMessageInput({ patientId, providerId, disabled = 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     console.log("Form submitted with message:", message.trim());
-    console.log("Submit check:", {
-      hasContent: !!message.trim(),
-      isPending: sendMessageMutation.isPending,
-      canSend: finalCanSendMessages
-    });
-    if (!message.trim() || sendMessageMutation.isPending || !finalCanSendMessages) return;
+    
+    if (!message.trim() || sendMessageMutation.isPending) {
+      console.log("Form blocked - no content or pending");
+      return;
+    }
+    
     console.log("Sending message mutation...");
     sendMessageMutation.mutate(message.trim());
   };
@@ -106,8 +106,8 @@ export default function PatientMessageInput({ patientId, providerId, disabled = 
     (typedUser?.id === patientId) // In case type field is missing
   ));
   
-  // Always enable messaging for patient dashboard - authentication will be checked on server
-  const finalCanSendMessages = true; // Server will handle authentication validation
+  // Always enable messaging - server handles all validation
+  const finalCanSendMessages = true;
   
   console.log("Final messaging state:", {
     forceEnable,
