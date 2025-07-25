@@ -22,7 +22,7 @@ interface MessagingCardProps {
 }
 
 export default function MessagingCard({ patient }: MessagingCardProps) {
-  const { data: messages = [], isLoading } = useQuery({
+  const { data: messages = [], isLoading } = useQuery<Message[]>({
     queryKey: ['/api/patients', patient.id, 'messages'],
   });
 

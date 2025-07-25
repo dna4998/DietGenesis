@@ -32,7 +32,8 @@ export default function PatientMessageInput({ patientId, providerId, disabled = 
         providerId 
       });
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log("Message sent successfully:", data);
       toast({ title: "Message sent to your provider!" });
       setMessage("");
       queryClient.invalidateQueries({ queryKey: ['/api/patients', patientId, 'messages'] });
@@ -58,11 +59,28 @@ export default function PatientMessageInput({ patientId, providerId, disabled = 
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    console.log("Form submitted with message:", message.trim());
     if (!message.trim() || sendMessageMutation.isPending) return;
+    console.log("Sending message mutation...");
     sendMessageMutation.mutate(message.trim());
   };
 
   const isAuthenticated = !!authUser && (authUser as any)?.type === 'patient';
+  
+  // Debug logging
+  console.log("PatientMessageInput Debug:", {
+    authUser,
+    isAuthenticated,
+    patientId,
+    providerId,
+    disabled,
+    messageValue: message
+  });
+
+  // Force authentication check for debugging
+  if (authUser && (authUser as any)?.type !== 'patient') {
+    console.warn("User is not a patient:", authUser);
+  }
 
   if (disabled) {
     return (
@@ -126,6 +144,12 @@ export default function PatientMessageInput({ patientId, providerId, disabled = 
         <p className="text-sm text-gray-600 mb-4">
           Send a message directly to your healthcare provider. They will respond through this same messaging system.
         </p>
+        {/* Debug info */}
+        <div className="mb-2 p-2 bg-gray-50 border rounded text-xs">
+          <strong>Debug:</strong> Auth: {isAuthenticated ? 'Yes' : 'No'}, 
+          User: {authUser ? (authUser as any).name : 'None'}, 
+          Type: {authUser ? (authUser as any).type : 'None'}
+        </div>
         <form onSubmit={handleSubmit} className="flex gap-2">
           <Input
             value={message}
@@ -136,7 +160,7 @@ export default function PatientMessageInput({ patientId, providerId, disabled = 
           />
           <Button 
             type="submit" 
-            disabled={!message.trim() || sendMessageMutation.isPending}
+            disabled={!message.trim() || sendMessageMutation.isPending || !isAuthenticated}
             className="bg-blue-600 hover:bg-blue-700"
           >
             {sendMessageMutation.isPending ? (
