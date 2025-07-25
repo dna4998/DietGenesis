@@ -182,7 +182,8 @@ export default function PatientDashboard({ selectedPatientId }: PatientDashboard
       </div>
 
       {/* Message Your Provider - Always visible on mobile and desktop */}
-      <div className="mb-8">
+      <div className="mb-8 bg-yellow-100 border-2 border-yellow-500 p-4 rounded-lg">
+        <h3 className="text-lg font-bold text-yellow-800 mb-2">MOBILE TEST: Message Component</h3>
         <PatientMessageInput 
           patientId={displayPatient.id} 
           providerId={7} 

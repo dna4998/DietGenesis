@@ -113,10 +113,15 @@ export default function PatientMessageInput({ patientId, providerId, disabled = 
     forceEnable,
     finalCanSendMessages,
     willShowForm: !disabled && finalCanSendMessages,
-    actuallyCanSend: finalCanSendMessages && !disabled
+    actuallyCanSend: finalCanSendMessages && !disabled,
+    componentWillRender: true
   });
 
-  if (disabled) {
+  // Force render component always for testing
+  const shouldAlwaysRender = true;
+
+  // Always show the component for now - remove conditional hiding
+  if (false) {
     return (
       <Card className="w-full">
         <CardHeader>
