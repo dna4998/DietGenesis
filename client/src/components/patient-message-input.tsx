@@ -118,7 +118,7 @@ export default function PatientMessageInput({ patientId, providerId, disabled = 
 
   if (disabled) {
     return (
-      <Card className="mt-4">
+      <Card className="w-full">
         <CardHeader>
           <CardTitle className="text-lg text-gray-600">Message Your Provider</CardTitle>
         </CardHeader>
@@ -126,14 +126,15 @@ export default function PatientMessageInput({ patientId, providerId, disabled = 
           <p className="text-sm text-gray-500 mb-4">
             Messaging is now available for free! Send messages directly to your healthcare provider.
           </p>
-          <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row gap-2">
             <Input 
               placeholder="Message your provider..." 
               disabled 
-              className="opacity-50"
+              className="opacity-50 flex-1 min-w-0"
             />
-            <Button disabled className="opacity-50">
-              <Send className="h-4 w-4" />
+            <Button disabled className="opacity-50 sm:w-auto w-full">
+              <Send className="h-4 w-4 mr-2" />
+              Send Message
             </Button>
           </div>
         </CardContent>
@@ -144,7 +145,7 @@ export default function PatientMessageInput({ patientId, providerId, disabled = 
   // Always show the messaging interface - server handles authentication
 
   return (
-    <Card className="mt-4">
+    <Card className="w-full">
       <CardHeader>
         <CardTitle className="text-lg text-blue-700">Message Your Provider</CardTitle>
       </CardHeader>
@@ -153,24 +154,30 @@ export default function PatientMessageInput({ patientId, providerId, disabled = 
           Send a message directly to your healthcare provider. They will respond through this same messaging system.
         </p>
 
-        <form onSubmit={handleSubmit} className="flex gap-2">
+        <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-2">
           <Input
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             placeholder="Type your message to your provider..."
-            className="flex-1 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="flex-1 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 min-w-0"
             disabled={sendMessageMutation.isPending}
             autoComplete="off"
           />
           <Button 
             type="submit" 
             disabled={!message.trim() || sendMessageMutation.isPending}
-            className="bg-blue-600 hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 active:bg-blue-800 transition-colors cursor-pointer"
+            className="bg-blue-600 hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 active:bg-blue-800 transition-colors cursor-pointer sm:w-auto w-full"
           >
             {sendMessageMutation.isPending ? (
-              <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
+              <>
+                <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full mr-2" />
+                Sending...
+              </>
             ) : (
-              <Send className="h-4 w-4" />
+              <>
+                <Send className="h-4 w-4 mr-2" />
+                Send Message
+              </>
             )}
           </Button>
         </form>
