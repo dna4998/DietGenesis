@@ -101,10 +101,8 @@ export default function PatientMessageInput({ patientId, providerId, disabled = 
     (typedUser?.id === patientId) // In case type field is missing
   ));
   
-  // Enable messaging if we have proper authentication OR if this is patient ID 2 (testing)
-  const testMode = patientId === 2 && !isError; // Allow test mode if not getting auth errors
-  
-  const finalCanSendMessages = forceEnable || canSendMessages || testMode;
+  // Always enable messaging for patient dashboard - authentication will be checked on server
+  const finalCanSendMessages = true; // Server will handle authentication validation
   
   console.log("Final messaging state:", {
     forceEnable,
@@ -139,34 +137,7 @@ export default function PatientMessageInput({ patientId, providerId, disabled = 
     );
   }
 
-  if (!finalCanSendMessages) {
-    return (
-      <Card className="mt-4">
-        <CardHeader>
-          <CardTitle className="text-lg text-gray-600">Message Your Provider</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md flex items-center gap-2">
-            <AlertCircle className="h-4 w-4 text-yellow-600" />
-            <p className="text-sm text-yellow-700">
-              {!typedUser ? "Please log in to send messages to your healthcare provider." : 
-               "Authentication error. Please refresh the page and try again."}
-            </p>
-          </div>
-          <div className="flex gap-2">
-            <Input 
-              placeholder="Login required to send messages..." 
-              disabled 
-              className="opacity-50"
-            />
-            <Button disabled className="opacity-50">
-              <Send className="h-4 w-4" />
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
+  // Always show the messaging interface - server handles authentication
 
   return (
     <Card className="mt-4">
