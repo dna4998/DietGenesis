@@ -154,7 +154,7 @@ export default function Login() {
         title: "Welcome back, Doctor!",
         description: "Successfully logged in to your provider account.",
       });
-      setLocation("/provider-dashboard");
+      setLocation("/");
     },
     onError: (error: any) => {
       console.error("Provider login error:", error);

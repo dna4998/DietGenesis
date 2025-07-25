@@ -95,6 +95,12 @@ function AuthenticatedApp() {
             <Route path="/login" component={Login} />
             <Route path="/provider-login" component={ProviderLogin} />
             <Route path="/privacy-policy" component={PrivacyPolicy} />
+            <Route path="/provider-dashboard">
+              <ProviderDashboard />
+            </Route>
+            <Route path="/patient-dashboard">
+              <PatientDashboard selectedPatientId={user?.id || 1} />
+            </Route>
             <Route path="/">
               {isPatient ? (
               <PatientDashboard selectedPatientId={user?.id || 1} />
