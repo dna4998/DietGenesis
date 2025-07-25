@@ -65,14 +65,20 @@ export async function seedDatabase() {
       {
         name: "Dr. Emily Chen",
         email: "dr.emily@dnadietclub.com",
-        password: "provider123",
+        password: "password123",
         specialty: "Functional Medicine & Metabolic Health"
       },
       {
         name: "Dr. Michael Rodriguez",
         email: "dr.michael@dnadietclub.com", 
-        password: "provider123",
+        password: "password123",
         specialty: "Endocrinology & Weight Management"
+      },
+      {
+        name: "Ashok Mehta",
+        email: "amehta@mimclinic.com",
+        password: "password123",
+        specialty: "Internal Medicine & Diabetes Care"
       }
     ];
 
