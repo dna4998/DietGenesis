@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import PatientDashboard from "./patient-dashboard";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -14,8 +15,9 @@ import { queryClient } from "@/lib/queryClient";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Plus } from "lucide-react";
-import type { Patient } from "@shared/schema";
+import { Plus, MessageCircle, Clock, Send, FileText, Video } from "lucide-react";
+import type { Patient, Message } from "@shared/schema";
+import { Badge } from "@/components/ui/badge";
 
 // Form schema for creating new patients
 const createPatientSchema = z.object({
@@ -46,8 +48,10 @@ export default function ProviderDashboard() {
   const [showHealthPrediction, setShowHealthPrediction] = useState(false);
   const [showAddPatient, setShowAddPatient] = useState(false);
   const [showPatientView, setShowPatientView] = useState(false);
+  const [showMessageCenter, setShowMessageCenter] = useState(false);
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
   const { toast } = useToast();
+  const { user } = useAuth();
 
   const form = useForm<CreatePatientForm>({
     resolver: zodResolver(createPatientSchema),
@@ -67,6 +71,13 @@ export default function ProviderDashboard() {
 
   const { data: patients, isLoading, error } = useQuery<Patient[]>({
     queryKey: ["/api/patients"],
+  });
+
+  // Get all messages for this provider
+  const { data: providerMessages, isLoading: messagesLoading } = useQuery({
+    queryKey: [`/api/providers/${user?.id}/messages`],
+    enabled: !!user?.id,
+    retry: false,
   });
 
   const updatePatientMutation = useMutation({
@@ -299,13 +310,17 @@ export default function ProviderDashboard() {
               </Button>
               <Button 
                 variant="outline" 
-                className="h-auto p-4 flex flex-col items-center space-y-2 hover:bg-purple-50 hover:border-purple-300"
-                onClick={() => patients?.[0] && handleUpdateClick(patients[0])}
-                disabled={!patients?.length}
+                className="h-auto p-4 flex flex-col items-center space-y-2 hover:bg-purple-50 hover:border-purple-300 relative"
+                onClick={() => setShowMessageCenter(true)}
               >
                 <span className="text-2xl">💬</span>
-                <span>Patient Messaging</span>
-                <span className="text-xs text-gray-500">Send plans & documents</span>
+                <span>Message Center</span>
+                <span className="text-xs text-gray-500">Patient messages</span>
+                {providerMessages && Array.isArray(providerMessages) && providerMessages.filter((m: any) => !m.isRead && m.direction === 'patient_to_provider').length > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                    {providerMessages.filter((m: any) => !m.isRead && m.direction === 'patient_to_provider').length}
+                  </span>
+                )}
               </Button>
             </div>
           </CardContent>
@@ -581,6 +596,130 @@ export default function ProviderDashboard() {
               </div>
             </form>
           </Form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Message Center Dialog */}
+      <Dialog open={showMessageCenter} onOpenChange={setShowMessageCenter}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-hidden">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <MessageCircle className="h-5 w-5" />
+              Message Center
+              {providerMessages && Array.isArray(providerMessages) && providerMessages.filter((m: any) => !m.isRead && m.direction === 'patient_to_provider').length > 0 && (
+                <Badge variant="destructive">
+                  {providerMessages.filter((m: any) => !m.isRead && m.direction === 'patient_to_provider').length} unread
+                </Badge>
+              )}
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="overflow-y-auto max-h-[60vh]">
+            {messagesLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" />
+              </div>
+            ) : !providerMessages || !Array.isArray(providerMessages) || providerMessages.length === 0 ? (
+              <div className="text-center text-gray-500 py-8">
+                <MessageCircle className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                <p>No messages yet. Patients will be able to send you messages from their dashboard.</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {providerMessages.map((message: any) => {
+                  // Find the patient for this message
+                  const messagePatient = patients?.find(p => p.id === message.patientId);
+                  const isFromPatient = message.direction === 'patient_to_provider';
+                  const isFromProvider = message.direction === 'provider_to_patient';
+                  
+                  const getMessageIcon = (messageType: string) => {
+                    switch (messageType) {
+                      case 'video_link': return <Video className="h-4 w-4" />;
+                      case 'pdf_link': case 'pdf': return <FileText className="h-4 w-4" />;
+                      default: return <Send className="h-4 w-4" />;
+                    }
+                  };
+
+                  return (
+                    <div 
+                      key={message.id} 
+                      className={`p-4 rounded-lg border ${
+                        isFromPatient 
+                          ? (message.isRead ? 'bg-green-50 border-green-200' : 'bg-green-100 border-green-300')
+                          : 'bg-blue-50 border-blue-200 ml-8'
+                      }`}
+                    >
+                      <div className="flex items-start justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          {getMessageIcon(message.messageType)}
+                          <span className="text-sm font-medium">
+                            {isFromPatient ? `From: ${messagePatient?.name || 'Unknown Patient'}` : 'You sent:'}
+                          </span>
+                          {isFromPatient && !message.isRead && (
+                            <Badge variant="destructive" className="text-xs">
+                              New
+                            </Badge>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2 text-xs text-gray-500">
+                          <Clock className="h-3 w-3" />
+                          {new Date(message.createdAt).toLocaleString()}
+                        </div>
+                      </div>
+                      
+                      <div className="text-sm text-gray-800 mb-2">
+                        {message.content}
+                      </div>
+                      
+                      {message.fileUrl && (
+                        <div className="mt-2">
+                          <a 
+                            href={message.fileUrl} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="text-blue-600 hover:text-blue-800 underline text-sm"
+                          >
+                            {message.messageType === 'video_link' ? 'View Video' : 
+                             message.messageType === 'pdf_link' ? 'View PDF' : 
+                             message.fileName || 'View File'}
+                          </a>
+                        </div>
+                      )}
+                      
+                      {isFromPatient && !message.isRead && (
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          className="mt-2"
+                          onClick={async () => {
+                            try {
+                              await apiRequest("PATCH", `/api/messages/${message.id}/read`);
+                              queryClient.invalidateQueries({ queryKey: [`/api/providers/${user?.id}/messages`] });
+                              toast({ title: "Message marked as read" });
+                            } catch (error) {
+                              toast({ 
+                                title: "Error", 
+                                description: "Failed to mark message as read",
+                                variant: "destructive" 
+                              });
+                            }
+                          }}
+                        >
+                          Mark as Read
+                        </Button>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+          
+          <div className="flex justify-end pt-4 border-t">
+            <Button onClick={() => setShowMessageCenter(false)}>
+              Close
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
