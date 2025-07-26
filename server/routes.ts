@@ -4,7 +4,7 @@ import { createServer, type Server } from "http";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
-import { storage } from "./database-storage";
+import { storage } from "./simple-storage";
 import { insertPatientSchema, updatePatientSchema, insertProviderSchema, insertMessageSchema } from "@shared/schema";
 import { generateNutritionInsights, generateMealPlan, generateExercisePlan } from "./ai-insights";
 import { generateDemoInsights, generateDemoMealPlan, generateDemoExercisePlan } from "./demo-insights";
